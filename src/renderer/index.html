@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cipher Code Editor</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../../node_modules/@vscode/codicons/dist/codicon.css">
+</head>
+<body>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splash-screen">
+    <div id="logo-container">
+      <img id="logo-img" src="assets/logo.png" alt="Cipher Logo">
+      <div id="logo-text">Cipher</div>
+      <div id="logo-subtitle">CODE EDITOR</div>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div id="app" style="display:none;">
+    
+    <!-- BARRA SUPERIOR -->
+    <div id="titlebar">
+      <div id="titlebar-left">
+        <img src="assets/logo.png" id="titlebar-logo">
+        <span id="titlebar-name">Cipher</span>
+      </div>
+      <div id="tabs-container">
+        <div class="tab active">
+          <span class="tab-icon">JS</span>
+          <span class="tab-name">sin título</span>
+          <span class="tab-close">×</span>
+        </div>
+      </div>
+      <div id="titlebar-right"></div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="main-content">
+
+      <!-- SIDEBAR IZQUIERDO -->
+      <div id="sidebar">
+        <div class="sidebar-icon active" id="btn-files" title="Archivos">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h7l2 2h9v16H3z"/></svg>
+        </div>
+        <div class="sidebar-icon" id="btn-search" title="Buscar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <div class="sidebar-icon" id="btn-git" title="Git">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg>
+        </div>
+        <div class="sidebar-icon" id="btn-ai" title="Agente IA">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        </div>
+        <div class="sidebar-icon" id="btn-settings" title="Configuración" style="margin-top:auto">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+      </div>
+
+      <!-- PANEL LATERAL -->
+      <div id="panel" class="visible">
+        <div id="panel-header">EXPLORADOR</div>
+        <div id="panel-content">
+          <div class="panel-empty">Abre una carpeta para empezar</div>
+          <button id="btn-open-folder">Abrir carpeta</button>
+        </div>
+      </div>
+
+      <!-- EDITOR -->
+      <div id="editor-area">
+        <div id="editor-container"></div>
+      </div>
+
+    </div>
+
+    <!-- STATUS BAR -->
+    <div id="statusbar">
+      <div class="status-left">
+        <span class="status-item">⎇ main</span>
+        <span class="status-item">0 errores</span>
+      </div>
+      <div class="status-right">
+        <span class="status-item">JavaScript</span>
+        <span class="status-item">UTF-8</span>
+        <span class="status-item">Ln 1, Col 1</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../../node_modules/monaco-editor/min/vs/loader.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
