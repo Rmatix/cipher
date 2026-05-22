@@ -3,10 +3,14 @@ const cipherAPI = window.cipher
 let currentFolder = null
 
 // ── Terminal State ──────────────────────────────────────
-const terminalInstances = new Map() // tabId -> { ptyId, term, fitAddon }
+const terminalInstances = new Map()
 let activeTerminalTab = null
 let terminalTabCounter = 0
 let terminalVisible = true
+
+// ── Tabs State ──────────────────────────────────────────
+const openTabs = new Map()
+let activeTabPath = null
 
 window.addEventListener('DOMContentLoaded', () => {
   const startupSound = new Audio('./assets/startup.mp3')
@@ -43,11 +47,9 @@ function runSplashAnimation() {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    // Ocultar todo al inicio
     logo.style.opacity = '0'
     subtitle.style.opacity = '0'
 
-    // Reconstruir letras
     logoText.innerHTML = ''
     logoText.style.opacity = '1'
     'Cipher'.split('').forEach(char => {
@@ -64,7 +66,6 @@ function runSplashAnimation() {
     logo.style.transition = 'opacity 1s ease'
     logo.style.opacity = '1'
 
-    // Pulso continuo del logo
     let pulseFrame = 0
     const pulseAnim = setInterval(() => {
       pulseFrame++
@@ -72,7 +73,7 @@ function runSplashAnimation() {
       logo.style.filter = `drop-shadow(0 0 ${glow}px #7c4dff) drop-shadow(0 0 ${glow * 0.5}px #4fc3f7)`
     }, 30)
 
-    // FASE 2 (1s): Letras aparecen una por una
+    // FASE 2: Letras aparecen una por una
     setTimeout(() => {
       const letters = document.querySelectorAll('#logo-text .letter')
       letters.forEach((letter, i) => {
@@ -84,13 +85,13 @@ function runSplashAnimation() {
       })
     }, 500)
 
-    // FASE 3 (2.5s): Subtitle aparece
+    // FASE 3: Subtitle aparece
     setTimeout(() => {
       subtitle.style.transition = 'opacity 0.8s ease'
       subtitle.style.opacity = '1'
     }, 1800)
 
-    // FASE 4 (7s): Espera 2 segundos después del audio y lanza partículas
+    // FASE 4: Partículas y transición al editor
     setTimeout(() => {
       clearInterval(pulseAnim)
       const container = document.getElementById('logo-container')
@@ -151,28 +152,19 @@ function runSplashAnimation() {
     }, 5500)
   })
 }
+
+// ════════════════════════════════════════════════════════
+//  WINDOW CONTROLS
+// ════════════════════════════════════════════════════════
+
 function initWindowControls() {
   const btnMinimize = document.getElementById('btn-minimize')
   const btnMaximize = document.getElementById('btn-maximize')
   const btnClose = document.getElementById('btn-close')
 
-  if (btnMinimize) {
-    btnMinimize.addEventListener('click', () => {
-      cipherAPI.minimizeWindow()
-    })
-  }
-
-  if (btnMaximize) {
-    btnMaximize.addEventListener('click', () => {
-      cipherAPI.maximizeWindow()
-    })
-  }
-
-  if (btnClose) {
-    btnClose.addEventListener('click', () => {
-      cipherAPI.closeWindow()
-    })
-  }
+  if (btnMinimize) btnMinimize.addEventListener('click', () => cipherAPI.minimizeWindow())
+  if (btnMaximize) btnMaximize.addEventListener('click', () => cipherAPI.maximizeWindow())
+  if (btnClose) btnClose.addEventListener('click', () => cipherAPI.closeWindow())
 }
 
 // ════════════════════════════════════════════════════════
@@ -187,7 +179,6 @@ function initMonaco() {
   })
 
   require(['vs/editor/editor.main'], function() {
-    // Define Cipher Dark theme
     monaco.editor.defineTheme('cipher-dark', {
       base: 'vs-dark',
       inherit: true,
@@ -247,12 +238,15 @@ function initMonaco() {
       if (window.currentFilePath) {
         const content = window.editor.getValue()
         await cipherAPI.saveFile(window.currentFilePath, content)
-        const tabName = document.querySelector('.tab-name')
-        tabName.textContent = tabName.textContent.replace(' ●', '')
+        const tab = openTabs.get(window.currentFilePath)
+        if (tab) {
+          const nameEl = tab.tabEl.querySelector('.tab-name')
+          nameEl.textContent = nameEl.textContent.replace(' ●', '')
+        }
       }
     })
 
-    // Toggle terminal with Ctrl+`
+    // Toggle terminal con Ctrl+`
     window.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backquote, () => {
       toggleTerminalPanel()
     })
@@ -265,7 +259,6 @@ function initMonaco() {
 
 function initSidebar() {
   const icons = document.querySelectorAll('.sidebar-icon')
-  const panel = document.getElementById('panel')
 
   icons.forEach(icon => {
     if (icon.id === 'btn-settings') return
@@ -273,6 +266,80 @@ function initSidebar() {
       togglePanel(icon.id)
     })
   })
+}
+
+// ════════════════════════════════════════════════════════
+//  TABS SYSTEM
+// ════════════════════════════════════════════════════════
+
+function createTab(filePath, fileName) {
+  if (openTabs.has(filePath)) {
+    activateTab(filePath)
+    return
+  }
+
+  const tabsContainer = document.getElementById('tabs-container')
+  const tabEl = document.createElement('div')
+  tabEl.className = 'tab'
+  tabEl.dataset.path = filePath
+  tabEl.innerHTML = `
+    <span class="tab-icon">${getTabIcon(fileName)}</span>
+    <span class="tab-name">${fileName}</span>
+    <span class="tab-close" title="Cerrar">×</span>
+  `
+
+  tabEl.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('tab-close')) {
+      activateTab(filePath)
+    }
+  })
+
+  tabEl.querySelector('.tab-close').addEventListener('click', (e) => {
+    e.stopPropagation()
+    closeTab(filePath)
+  })
+
+  tabsContainer.appendChild(tabEl)
+  openTabs.set(filePath, { tabEl, model: null })
+}
+
+function activateTab(filePath) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  const tab = openTabs.get(filePath)
+  if (!tab) return
+  tab.tabEl.classList.add('active')
+  activeTabPath = filePath
+  window.currentFilePath = filePath
+
+  if (tab.model && window.editor) {
+    window.editor.setModel(tab.model)
+    const fileName = filePath.split('\\').pop()
+    document.querySelector('.status-right .status-item:first-child').textContent = getLanguage(fileName)
+  }
+}
+
+function closeTab(filePath) {
+  const tab = openTabs.get(filePath)
+  if (!tab) return
+
+  tab.tabEl.remove()
+  if (tab.model) tab.model.dispose()
+  openTabs.delete(filePath)
+
+  if (activeTabPath === filePath) {
+    const remaining = Array.from(openTabs.keys())
+    if (remaining.length > 0) {
+      activateTab(remaining[remaining.length - 1])
+    } else {
+      activeTabPath = null
+      window.currentFilePath = null
+      if (window.editor) {
+        window.editor.setModel(
+          monaco.editor.createModel('// Abre un archivo para empezar', 'javascript')
+        )
+      }
+    }
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -286,9 +353,7 @@ function initFolder() {
     currentFolder = folderPath
     await renderFileTree(folderPath)
 
-    // Update title bar to show project name
     const projectName = folderPath.split('\\').pop() || folderPath.split('/').pop()
-    // Solo mostrar proyecto si es diferente de "cipher" (nombre por defecto)
     if (projectName && projectName.toLowerCase() !== 'cipher') {
       document.getElementById('titlebar-name').textContent = `Cipher — ${projectName}`
     } else {
@@ -351,29 +416,38 @@ function renderItems(items, container) {
 }
 
 async function openFile(filePath, fileName, lineNumber = 0) {
-  window.currentFilePath = filePath
+  if (openTabs.has(filePath)) {
+    activateTab(filePath)
+    if (lineNumber > 0 && window.editor) {
+      window.editor.setPosition({ lineNumber: lineNumber + 1, column: 1 })
+      window.editor.revealLine(lineNumber + 1)
+    }
+    return
+  }
+
   const content = await cipherAPI.readFile(filePath)
   const lang = getLanguage(fileName)
+  const model = monaco.editor.createModel(content, lang)
+
+  model.onDidChangeContent(() => {
+    const tab = openTabs.get(filePath)
+    if (tab && !tab.tabEl.querySelector('.tab-name').textContent.includes(' ●')) {
+      tab.tabEl.querySelector('.tab-name').textContent += ' ●'
+    }
+  })
+
+  createTab(filePath, fileName)
+  openTabs.get(filePath).model = model
+  activateTab(filePath)
 
   if (window.editor) {
-    const model = monaco.editor.createModel(content, lang)
     window.editor.setModel(model)
-
-    window.editor.onDidChangeModelContent(() => {
-      const tabName = document.querySelector('.tab-name')
-      if (!tabName.textContent.includes(' ●')) {
-        tabName.textContent = tabName.textContent + ' ●'
-      }
-    })
-
     if (lineNumber > 0) {
       window.editor.setPosition({ lineNumber: lineNumber + 1, column: 1 })
       window.editor.revealLine(lineNumber + 1)
     }
   }
 
-  document.querySelector('.tab-name').textContent = fileName
-  document.querySelector('.tab-icon').textContent = getTabIcon(fileName)
   document.querySelector('.status-right .status-item:first-child').textContent = lang
 }
 
@@ -382,9 +456,7 @@ async function openFile(filePath, fileName, lineNumber = 0) {
 // ════════════════════════════════════════════════════════
 
 async function initTerminal() {
-  // Listen for PTY data from main process
   cipherAPI.onTerminalData((ptyId, data) => {
-    // Find which tab has this ptyId
     for (const [tabId, instance] of terminalInstances) {
       if (instance.ptyId === ptyId) {
         instance.term.write(data)
@@ -393,7 +465,6 @@ async function initTerminal() {
     }
   })
 
-  // Listen for PTY exit
   cipherAPI.onTerminalExit((ptyId, exitCode) => {
     for (const [tabId, instance] of terminalInstances) {
       if (instance.ptyId === ptyId) {
@@ -404,39 +475,27 @@ async function initTerminal() {
     }
   })
 
-  // Create the first terminal tab
   await createTerminalTab()
 
-  // New terminal button
   document.getElementById('terminal-new-btn').addEventListener('click', () => {
     createTerminalTab()
   })
 
-  // Toggle terminal panel button
   const toggleBtn = document.getElementById('terminal-toggle-btn')
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', toggleTerminalPanel)
-  }
+  if (toggleBtn) toggleBtn.addEventListener('click', toggleTerminalPanel)
 
-  // Toggle terminal from status bar button
   const statusToggleBtn = document.getElementById('status-terminal-toggle')
-  if (statusToggleBtn) {
-    statusToggleBtn.addEventListener('click', toggleTerminalPanel)
-  }
+  if (statusToggleBtn) statusToggleBtn.addEventListener('click', toggleTerminalPanel)
 
-  // Handle window resize
   window.addEventListener('resize', () => {
     const active = terminalInstances.get(activeTerminalTab)
     if (active && active.fitAddon) {
       requestAnimationFrame(() => {
-        try {
-          active.fitAddon.fit()
-        } catch (e) {}
+        try { active.fitAddon.fit() } catch (e) {}
       })
     }
   })
 
-  // Global Ctrl+` toggle
   window.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === '`') {
       e.preventDefault()
@@ -444,25 +503,20 @@ async function initTerminal() {
     }
   })
 
-  // Initialize drag resize handle
   initTerminalResize()
 }
 
 async function createTerminalTab() {
   const tabId = ++terminalTabCounter
   const cwd = currentFolder || undefined
-
-  // Request a new PTY from main process
   const ptyId = await cipherAPI.terminalCreate(cwd)
 
-  // Ensure terminal panel is visible when a terminal tab is created
   const panel = document.getElementById('terminal-panel')
   if (panel && panel.style.display === 'none') {
     panel.style.display = 'flex'
     terminalVisible = true
   }
 
-  // Create xterm instance using globals
   const Terminal = window.Terminal
   const FitAddon = window.FitAddon.FitAddon
   const WebLinksAddon = window.WebLinksAddon.WebLinksAddon
@@ -504,34 +558,25 @@ async function createTerminalTab() {
 
   const fitAddon = new FitAddon()
   const webLinksAddon = new WebLinksAddon()
-
   term.loadAddon(fitAddon)
   term.loadAddon(webLinksAddon)
 
-  // Create the terminal DOM container
   const termContainer = document.createElement('div')
   termContainer.className = 'terminal-instance'
   termContainer.id = `terminal-${tabId}`
   termContainer.style.display = 'none'
   document.getElementById('terminal-container').appendChild(termContainer)
 
-  // Open terminal in the container
   term.open(termContainer)
 
-  // Forward input to PTY
   term.onData(data => {
     if (!terminalInstances.get(tabId)?.dead) {
       cipherAPI.terminalInput(ptyId, data)
     }
   })
 
-  // Store the instance
   terminalInstances.set(tabId, { ptyId, term, fitAddon, dead: false })
-
-  // Create tab UI
   createTerminalTabUI(tabId)
-
-  // Switch to this tab
   switchTerminalTab(tabId)
 
   return tabId
@@ -539,7 +584,6 @@ async function createTerminalTab() {
 
 function createTerminalTabUI(tabId) {
   const listContainer = document.getElementById('terminal-tabs-list')
-
   const tabEl = document.createElement('div')
   tabEl.className = 'terminal-tab'
   tabEl.dataset.tabId = tabId
@@ -554,14 +598,12 @@ function createTerminalTabUI(tabId) {
     <span class="terminal-tab-close" title="Cerrar terminal">×</span>
   `
 
-  // Click to switch
   tabEl.addEventListener('click', (e) => {
     if (!e.target.classList.contains('terminal-tab-close')) {
       switchTerminalTab(tabId)
     }
   })
 
-  // Close button
   tabEl.querySelector('.terminal-tab-close').addEventListener('click', (e) => {
     e.stopPropagation()
     closeTerminalTab(tabId)
@@ -571,11 +613,9 @@ function createTerminalTabUI(tabId) {
 }
 
 function switchTerminalTab(tabId) {
-  // Deactivate all
   document.querySelectorAll('.terminal-tab').forEach(t => t.classList.remove('active'))
   document.querySelectorAll('.terminal-instance').forEach(t => t.style.display = 'none')
 
-  // Activate this one
   const tabEl = document.querySelector(`.terminal-tab[data-tab-id="${tabId}"]`)
   if (tabEl) tabEl.classList.add('active')
 
@@ -584,38 +624,27 @@ function switchTerminalTab(tabId) {
 
   activeTerminalTab = tabId
 
-  // Fit the terminal
   const instance = terminalInstances.get(tabId)
   if (instance && instance.fitAddon) {
     requestAnimationFrame(() => {
       try {
         instance.fitAddon.fit()
-        // Send resize to PTY
         const dims = instance.fitAddon.proposeDimensions()
-        if (dims) {
-          cipherAPI.terminalResize(instance.ptyId, dims.cols, dims.rows)
-        }
+        if (dims) cipherAPI.terminalResize(instance.ptyId, dims.cols, dims.rows)
       } catch (e) {}
     })
   }
 
-  // Focus the terminal
-  if (instance && instance.term) {
-    instance.term.focus()
-  }
+  if (instance && instance.term) instance.term.focus()
 }
 
 async function closeTerminalTab(tabId) {
   const instance = terminalInstances.get(tabId)
   if (!instance) return
 
-  // Kill the PTY
   await cipherAPI.terminalKill(instance.ptyId)
-
-  // Dispose the terminal
   instance.term.dispose()
 
-  // Remove DOM
   const container = document.getElementById(`terminal-${tabId}`)
   if (container) container.remove()
 
@@ -624,7 +653,6 @@ async function closeTerminalTab(tabId) {
 
   terminalInstances.delete(tabId)
 
-  // Switch to another tab or hide/close the panel if no terminals left
   if (terminalInstances.size === 0) {
     const panel = document.getElementById('terminal-panel')
     terminalVisible = false
@@ -632,9 +660,10 @@ async function closeTerminalTab(tabId) {
     activeTerminalTab = null
     if (window.editor) window.editor.focus()
   } else {
-    // Switch to another existing terminal
     const remainingTabs = Array.from(terminalInstances.keys())
-    const nextTabId = remainingTabs.includes(activeTerminalTab) ? activeTerminalTab : remainingTabs[remainingTabs.length - 1]
+    const nextTabId = remainingTabs.includes(activeTerminalTab)
+      ? activeTerminalTab
+      : remainingTabs[remainingTabs.length - 1]
     switchTerminalTab(nextTabId)
   }
 }
@@ -654,16 +683,13 @@ function toggleTerminalPanel() {
           try {
             instance.fitAddon.fit()
             const dims = instance.fitAddon.proposeDimensions()
-            if (dims) {
-              cipherAPI.terminalResize(instance.ptyId, dims.cols, dims.rows)
-            }
+            if (dims) cipherAPI.terminalResize(instance.ptyId, dims.cols, dims.rows)
           } catch (e) {}
           instance.term.focus()
         })
       }
     }
   } else {
-    // Return focus to editor
     if (window.editor) window.editor.focus()
   }
 }
@@ -687,22 +713,16 @@ function initTerminalResize() {
     if (!isDragging) return
     const deltaY = startY - e.clientY
     let newHeight = startHeight + deltaY
-
-    // Limitar el alto del panel
     if (newHeight < 60) newHeight = 60
     if (newHeight > window.innerHeight - 150) newHeight = window.innerHeight - 150
-
     panel.style.height = `${newHeight}px`
 
-    // Ajustar terminal activa al nuevo tamaño del panel
     const active = terminalInstances.get(activeTerminalTab)
     if (active && active.fitAddon) {
       try {
         active.fitAddon.fit()
         const dims = active.fitAddon.proposeDimensions()
-        if (dims) {
-          cipherAPI.terminalResize(active.ptyId, dims.cols, dims.rows)
-        }
+        if (dims) cipherAPI.terminalResize(active.ptyId, dims.cols, dims.rows)
       } catch (err) {}
     }
   })
@@ -738,7 +758,7 @@ function getLanguage(fileName) {
 function getFileIcon(fileName) {
   const ext = fileName.split('.').pop().toLowerCase()
   const name = fileName.toLowerCase()
-  
+
   const icons = {
     js: '<i class="codicon codicon-symbol-method" style="color:#f7d154"></i>',
     ts: '<i class="codicon codicon-symbol-method" style="color:#3b82f6"></i>',
@@ -796,39 +816,36 @@ function getTabIcon(fileName) {
 
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    // Ctrl+Shift+F - Global Search
     if (e.ctrlKey && e.shiftKey && e.code === 'KeyF') {
       e.preventDefault()
       togglePanel('btn-search')
       document.getElementById('search-input').focus()
     }
-    
-    // Ctrl+Shift+G - Git
+
     if (e.ctrlKey && e.shiftKey && e.code === 'KeyG') {
       e.preventDefault()
       togglePanel('btn-git')
     }
-    
-    // Ctrl+B - Toggle Explorer
+
     if (e.ctrlKey && e.code === 'KeyB') {
       e.preventDefault()
       togglePanel('btn-files')
     }
 
-    // Ctrl+P - Go to File (Quick Open)
     if (e.ctrlKey && e.code === 'KeyP') {
       e.preventDefault()
-      if (window.editor) {
-        window.editor.trigger('', 'workbench.action.quickOpen')
-      }
+      if (window.editor) window.editor.trigger('', 'workbench.action.quickOpen')
     }
 
-    // Ctrl+G - Go to Line
     if (e.ctrlKey && e.code === 'KeyG') {
       e.preventDefault()
-      if (window.editor) {
-        window.editor.trigger('', 'editor.action.gotoLine')
-      }
+      if (window.editor) window.editor.trigger('', 'editor.action.gotoLine')
+    }
+
+    // Ctrl+W - Cerrar pestaña activa
+    if (e.ctrlKey && e.code === 'KeyW') {
+      e.preventDefault()
+      if (activeTabPath) closeTab(activeTabPath)
     }
   })
 }
