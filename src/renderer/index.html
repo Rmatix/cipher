@@ -6,35 +6,126 @@
   <title>Cipher Code Editor</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="../../node_modules/@vscode/codicons/dist/codicon.css">
+  <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
 </head>
 <body>
 
   <!-- SPLASH SCREEN -->
-  <div id="splash-screen">
-    <div id="logo-container">
-      <img id="logo-img" src="assets/logo.png" alt="Cipher Logo">
-      <div id="logo-text">Cipher</div>
-      <div id="logo-subtitle">CODE EDITOR</div>
+<div id="splash-screen">
+  <div id="logo-container">
+    <img id="logo-img" src="assets/logo.png" alt="Cipher Logo">
+    <div id="logo-text">
+      <span class="letter">C</span>
+      <span class="letter">i</span>
+      <span class="letter">p</span>
+      <span class="letter">h</span>
+      <span class="letter">e</span>
+      <span class="letter">r</span>
     </div>
+    <div id="logo-subtitle">CODE EDITOR</div>
   </div>
+  <canvas id="particle-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9998;"></canvas>
+</div>
 
   <!-- APP PRINCIPAL -->
   <div id="app" style="display:none;">
     
-    <!-- BARRA SUPERIOR -->
+    <!-- BARRA SUPERIOR (TITLEBAR) -->
     <div id="titlebar">
       <div id="titlebar-left">
         <img src="assets/logo.png" id="titlebar-logo">
         <span id="titlebar-name">Cipher</span>
-      </div>
-      <div id="tabs-container">
-        <div class="tab active">
-          <span class="tab-icon">JS</span>
-          <span class="tab-name">sin título</span>
-          <span class="tab-close">×</span>
+        
+        <!-- MENUBAR -->
+        <div class="menubar">
+          <div class="menu-item" id="menu-archivo">
+            Archivo
+            <div class="submenu" id="submenu-archivo">
+              <div class="submenu-item" data-action="new-file">Nuevo Archivo</div>
+              <div class="submenu-item" data-action="open-folder">Abrir Carpeta</div>
+              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <div class="submenu-item" data-action="save-file">Guardar (Ctrl+S)</div>
+              <div class="submenu-item" data-action="save-all">Guardar Todo</div>
+              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <div class="submenu-item" data-action="exit">Salir</div>
+            </div>
+          </div>
+          <div class="menu-item" id="menu-editar">
+            Editar
+            <div class="submenu" id="submenu-editar">
+              <div class="submenu-item" data-action="undo">Deshacer (Ctrl+Z)</div>
+              <div class="submenu-item" data-action="redo">Rehacer (Ctrl+Y)</div>
+              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <div class="submenu-item" data-action="cut">Cortar (Ctrl+X)</div>
+              <div class="submenu-item" data-action="copy">Copiar (Ctrl+C)</div>
+              <div class="submenu-item" data-action="paste">Pegar (Ctrl+V)</div>
+            </div>
+          </div>
+          <div class="menu-item" id="menu-seleccionar">
+            Selección
+            <div class="submenu" id="submenu-seleccionar">
+              <div class="submenu-item" data-action="select-all">Seleccionar Todo (Ctrl+A)</div>
+              <div class="submenu-item" data-action="select-line">Seleccionar Línea</div>
+              <div class="submenu-item" data-action="expand-selection">Expandir Selección</div>
+            </div>
+          </div>
+          <div class="menu-item" id="menu-ver">
+            Ver
+            <div class="submenu" id="submenu-ver">
+              <div class="submenu-item" data-action="toggle-explorer">Explorador (Ctrl+B)</div>
+              <div class="submenu-item" data-action="toggle-search">Búsqueda (Ctrl+Shift+F)</div>
+              <div class="submenu-item" data-action="toggle-git">Control de Versiones (Ctrl+Shift+G)</div>
+              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <div class="submenu-item" data-action="toggle-terminal">Terminal (Ctrl+`)</div>
+              <div class="submenu-item" data-action="zoom-in">Aumentar Zoom (+)</div>
+              <div class="submenu-item" data-action="zoom-out">Reducir Zoom (-)</div>
+            </div>
+          </div>
+          <div class="menu-item" id="menu-ir">
+            Ir
+            <div class="submenu" id="submenu-ir">
+              <div class="submenu-item" data-action="go-to-line">Ir a Línea (Ctrl+G)</div>
+              <div class="submenu-item" data-action="go-to-file">Ir a Archivo (Ctrl+P)</div>
+            </div>
+          </div>
+          <div class="menu-item" id="menu-terminal">
+            Terminal
+            <div class="submenu" id="submenu-terminal">
+              <div class="submenu-item" data-action="new-terminal">Nueva Terminal</div>
+              <div class="submenu-item" data-action="toggle-terminal">Mostrar/Ocultar (Ctrl+`)</div>
+              <div class="submenu-item" data-action="clear-terminal">Limpiar Terminal</div>
+            </div>
+          </div>
+          <div class="menu-item" id="menu-ayuda">
+            Ayuda
+            <div class="submenu" id="submenu-ayuda">
+              <div class="submenu-item" data-action="about">Acerca de Cipher</div>
+              <div class="submenu-item" data-action="documentation">Documentación</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div id="titlebar-right"></div>
+
+      <!-- CENTER SEARCH BAR -->
+      <div id="titlebar-center">
+        <div class="titlebar-search" id="titlebar-search-btn" title="Buscar en el proyecto (Ctrl+Shift+F)">
+          <i class="codicon codicon-search"></i>
+          <span id="search-placeholder">Buscar en el proyecto...</span>
+        </div>
+      </div>
+
+      <!-- WINDOW CONTROLS -->
+      <div id="titlebar-right">
+        <div class="window-control-btn" id="btn-minimize" title="Minimizar">
+          <i class="codicon codicon-chrome-minimize"></i>
+        </div>
+        <div class="window-control-btn" id="btn-maximize" title="Maximizar">
+          <i class="codicon codicon-chrome-maximize"></i>
+        </div>
+        <div class="window-control-btn" id="btn-close" title="Cerrar">
+          <i class="codicon codicon-chrome-close"></i>
+        </div>
+      </div>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -62,15 +153,103 @@
       <!-- PANEL LATERAL -->
       <div id="panel" class="visible">
         <div id="panel-header">EXPLORADOR</div>
-        <div id="panel-content">
-          <div class="panel-empty">Abre una carpeta para empezar</div>
-          <button id="btn-open-folder">Abrir carpeta</button>
+        
+        <!-- PANEL: FILE EXPLORER -->
+        <div id="panel-files" class="panel-view active">
+          <div id="panel-content">
+            <div class="panel-empty">Abre una carpeta para empezar</div>
+            <button id="btn-open-folder">Abrir carpeta</button>
+          </div>
+        </div>
+
+        <!-- PANEL: SEARCH -->
+        <div id="panel-search" class="panel-view">
+          <div class="search-input-box">
+            <input type="text" id="search-input" placeholder="Buscar..." class="search-input">
+            <button id="search-in-selection" title="Buscar solo en archivos abiertos" class="search-option-btn">
+              <i class="codicon codicon-filter"></i>
+            </button>
+            <button id="search-replace-toggle" title="Mostrar reemplazar" class="search-option-btn">
+              <i class="codicon codicon-replace-all"></i>
+            </button>
+          </div>
+          <div id="replace-input-box" style="display:none;">
+            <input type="text" id="replace-input" placeholder="Reemplazar..." class="search-input">
+            <button id="replace-all-btn" class="btn-mini">Reemplazar Todo</button>
+          </div>
+          <div id="search-results" class="search-results"></div>
+        </div>
+
+        <!-- PANEL: GIT -->
+        <div id="panel-git" class="panel-view">
+          <div class="git-status">
+            <div class="git-branch-info">
+              <span class="git-label">Rama:</span>
+              <span id="git-branch-name">main</span>
+            </div>
+          </div>
+          <div class="git-changes">
+            <div class="git-section-header">Cambios</div>
+            <div id="git-changes-list" class="git-list"></div>
+          </div>
+          <div class="git-section">
+            <div class="git-section-header">Mensaje de Commit</div>
+            <textarea id="git-commit-message" placeholder="Describa los cambios..." class="git-textarea"></textarea>
+            <button id="btn-commit" class="btn-primary">Commit</button>
+          </div>
+          <div class="git-section">
+            <div class="git-section-header">Acciones</div>
+            <div class="git-actions">
+              <button id="btn-push" class="btn-mini">Push</button>
+              <button id="btn-pull" class="btn-mini">Pull</button>
+              <button id="btn-git-log" class="btn-mini">Log</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- EDITOR -->
+      <!-- EDITOR Y TERMINAL -->
       <div id="editor-area">
+        <!-- TABS DE ARCHIVOS -->
+        <div id="tabs-container">
+          <div class="tab active">
+            <span class="tab-icon">JS</span>
+            <span class="tab-name">sin título</span>
+            <span class="tab-close">×</span>
+          </div>
+        </div>
         <div id="editor-container"></div>
+        
+        <!-- RESIZE HANDLE -->
+        <div id="terminal-resize-handle"></div>
+        
+        <!-- TERMINAL -->
+        <div id="terminal-panel">
+          <div id="terminal-tabs">
+            <div id="terminal-tabs-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              <span>TERMINAL</span>
+            </div>
+            <div id="terminal-tabs-list">
+              <!-- Terminal tabs will be added dynamically -->
+            </div>
+            <div id="terminal-new-btn" title="Nueva terminal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </div>
+            <div id="terminal-toggle-btn" title="Ocultar terminal (Ctrl+`)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div id="terminal-container"></div>
+        </div>
       </div>
 
     </div>
@@ -78,8 +257,13 @@
     <!-- STATUS BAR -->
     <div id="statusbar">
       <div class="status-left">
-        <span class="status-item">⎇ main</span>
+        <span class="status-item">⎇ <span id="status-git-branch">main</span></span>
         <span class="status-item">0 errores</span>
+      </div>
+      <div class="status-center">
+        <span class="status-item" id="status-terminal-toggle" title="Mostrar/Ocultar Terminal (Ctrl+`)">
+          <i class="codicon codicon-terminal" style="font-size: 11px; margin-right: 4px; vertical-align: middle;"></i>Terminal
+        </span>
       </div>
       <div class="status-right">
         <span class="status-item">JavaScript</span>
@@ -90,7 +274,11 @@
 
   </div>
 
+  <script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+  <script src="../../node_modules/@xterm/addon-web-links/lib/addon-web-links.js"></script>
   <script src="../../node_modules/monaco-editor/min/vs/loader.js"></script>
+  <script src="modules.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
