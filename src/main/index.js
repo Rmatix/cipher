@@ -219,6 +219,113 @@ ipcMain.handle('git-log', async (event, folderPath) => {
 
 // ── App lifecycle ────────────────────────────────────────
 
+// ── AI Agent ────────────────────────────────────────────
+
+ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context }) => {
+  const fetch = require('node-fetch')
+
+  try {
+    // Claude
+    if (model.startsWith('claude')) {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: 4096,
+          system: context ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}` : 'Eres un asistente de código experto.',
+          messages: messages
+        })
+      })
+      const data = await response.json()
+      if (data.error) return { error: data.error.message }
+      return { text: data.content[0].text }
+    }
+
+    // GPT
+    if (model.startsWith('gpt')) {
+      const systemMsg = context
+        ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}`
+        : 'Eres un asistente de código experto.'
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'system', content: systemMsg }, ...messages]
+        })
+      })
+      const data = await response.json()
+      if (data.error) return { error: data.error.message }
+      return { text: data.choices[0].message.content }
+    }
+
+    // Gemini
+    if (model.startsWith('gemini')) {
+      const prompt = context
+        ? `Contexto del archivo activo:\n\n${context}\n\n${messages[messages.length - 1].content}`
+        : messages[messages.length - 1].content
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      })
+      const data = await response.json()
+      if (data.error) return { error: data.error.message }
+      return { text: data.candidates[0].content.parts[0].text }
+    }
+
+    // LM Studio (compatible con API de OpenAI)
+if (model.startsWith('lmstudio:')) {
+  const response = await fetch('http://localhost:1234/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer lmstudio'
+    },
+    body: JSON.stringify({
+      model: 'local-model',
+      messages: context
+        ? [{ role: 'system', content: `Eres un asistente de código experto. Contexto:\n\n${context}` }, ...messages]
+        : messages,
+      stream: false
+    })
+  })
+  const data = await response.json()
+  if (data.error) return { error: data.error.message }
+  return { text: data.choices[0].message.content }
+}
+
+    // Ollama (local)
+    if (model.startsWith('ollama:')) {
+      const ollamaModel = model.replace('ollama:', '')
+      const response = await fetch('http://localhost:11434/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: ollamaModel,
+          messages: messages,
+          stream: false
+        })
+      })
+      const data = await response.json()
+      return { text: data.message.content }
+    }
+
+    return { error: 'Modelo no soportado' }
+  } catch (e) {
+    return { error: e.message }
+  }
+})
 app.whenReady().then(() => {
   createWindow()
   app.on('activate', () => {

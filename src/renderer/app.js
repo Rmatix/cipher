@@ -31,6 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
       initMenubar()
       initSearch()
       initGit()
+      initAI()
       setupKeyboardShortcuts()
     })
   }, 500)
@@ -808,6 +809,146 @@ function getTabIcon(fileName) {
     cs: 'C#', lua: 'LUA', gd: 'GD', md: 'MD'
   }
   return icons[ext] || '📄'
+}
+
+// ════════════════════════════════════════════════════════
+//  AI AGENT
+// ════════════════════════════════════════════════════════
+
+const aiChatHistory = []
+
+function initAI() {
+  const modelSelect = document.getElementById('ai-model-select')
+  const apiKeyInput = document.getElementById('ai-api-key')
+  const apiKeySave = document.getElementById('ai-key-save')
+  const sendBtn = document.getElementById('ai-send-btn')
+  const aiInput = document.getElementById('ai-input')
+  const messagesContainer = document.getElementById('ai-messages')
+
+  // Cargar API key guardada
+  const savedKey = localStorage.getItem(`cipher-api-key-${modelSelect.value}`)
+  if (savedKey) apiKeyInput.value = savedKey
+
+  // Cambiar modelo limpia la key y carga la guardada para ese modelo
+  modelSelect.addEventListener('change', () => {
+    const saved = localStorage.getItem(`cipher-api-key-${modelSelect.value}`)
+    apiKeyInput.value = saved || ''
+  })
+
+  // Guardar API key
+  apiKeySave.addEventListener('click', () => {
+    const model = modelSelect.value
+    const key = apiKeyInput.value.trim()
+    if (key) {
+      localStorage.setItem(`cipher-api-key-${model}`, key)
+      apiKeySave.textContent = '✅'
+      setTimeout(() => apiKeySave.textContent = '💾', 1500)
+    }
+  })
+
+  // Enviar con Enter (Shift+Enter para nueva línea)
+  aiInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
+  })
+
+  sendBtn.addEventListener('click', sendMessage)
+
+  async function sendMessage() {
+    const text = aiInput.value.trim()
+    if (!text) return
+
+    const model = modelSelect.value
+    const apiKey = apiKeyInput.value.trim()
+
+    // Ollama no necesita API key
+    if (!apiKey && !model.startsWith('ollama:')) {
+      appendMessage('error', 'Sistema', 'Agrega tu API key para este modelo.')
+      return
+    }
+
+    // Agregar mensaje del usuario
+    appendMessage('user', 'Tú', text)
+    aiChatHistory.push({ role: 'user', content: text })
+    aiInput.value = ''
+    sendBtn.disabled = true
+
+    // Contexto del archivo activo
+    let context = null
+    const useContext = document.getElementById('ai-use-context').checked
+    if (useContext && window.editor) {
+      const code = window.editor.getValue()
+      const fileName = window.currentFilePath
+        ? window.currentFilePath.split('\\').pop()
+        : 'sin título'
+      if (code && code.trim()) {
+        context = `Archivo: ${fileName}\n\`\`\`\n${code.slice(0, 8000)}\n\`\`\``
+      }
+    }
+
+    // Mostrar indicador de pensamiento
+    const thinkingEl = appendThinking()
+
+    try {
+      const result = await cipherAPI.aiChat({
+        model,
+        apiKey,
+        messages: aiChatHistory,
+        context
+      })
+
+      thinkingEl.remove()
+
+      if (result.error) {
+        appendMessage('error', 'Error', result.error)
+      } else {
+        appendMessage('assistant', 'Cipher IA', result.text)
+        aiChatHistory.push({ role: 'assistant', content: result.text })
+      }
+    } catch (e) {
+      thinkingEl.remove()
+      appendMessage('error', 'Error', e.message)
+    }
+
+    sendBtn.disabled = false
+    aiInput.focus()
+  }
+
+  function appendMessage(type, role, content) {
+    const msgEl = document.createElement('div')
+    msgEl.className = `ai-message ${type}`
+    msgEl.innerHTML = `
+      <div class="ai-message-role">${role}</div>
+      <div class="ai-message-content">${escapeHtml(content)}</div>
+    `
+    messagesContainer.appendChild(msgEl)
+    messagesContainer.scrollTop = messagesContainer.scrollHeight
+    return msgEl
+  }
+
+  function appendThinking() {
+    const el = document.createElement('div')
+    el.className = 'ai-thinking'
+    el.innerHTML = `
+      <span>Cipher IA está pensando</span>
+      <div class="ai-thinking-dots">
+        <span></span><span></span><span></span>
+      </div>
+    `
+    messagesContainer.appendChild(el)
+    messagesContainer.scrollTop = messagesContainer.scrollHeight
+    return el
+  }
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+  }
 }
 
 // ════════════════════════════════════════════════════════

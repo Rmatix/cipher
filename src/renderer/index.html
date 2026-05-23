@@ -11,93 +11,84 @@
 <body>
 
   <!-- SPLASH SCREEN -->
-<div id="splash-screen">
-  <div id="logo-container">
-    <img id="logo-img" src="assets/logo.png" alt="Cipher Logo">
-    <div id="logo-text">
-      <span class="letter">C</span>
-      <span class="letter">i</span>
-      <span class="letter">p</span>
-      <span class="letter">h</span>
-      <span class="letter">e</span>
-      <span class="letter">r</span>
+  <div id="splash-screen">
+    <div id="logo-container">
+      <img id="logo-img" src="assets/logo.png" alt="Cipher Logo">
+      <div id="logo-text">
+        <span class="letter">C</span>
+        <span class="letter">i</span>
+        <span class="letter">p</span>
+        <span class="letter">h</span>
+        <span class="letter">e</span>
+        <span class="letter">r</span>
+      </div>
+      <div id="logo-subtitle">CODE EDITOR</div>
     </div>
-    <div id="logo-subtitle">CODE EDITOR</div>
+    <canvas id="particle-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9998;"></canvas>
   </div>
-  <canvas id="particle-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9998;"></canvas>
-</div>
 
   <!-- APP PRINCIPAL -->
   <div id="app" style="display:none;">
-    
-    <!-- BARRA SUPERIOR (TITLEBAR) -->
+
+    <!-- TITLEBAR -->
     <div id="titlebar">
       <div id="titlebar-left">
         <img src="assets/logo.png" id="titlebar-logo">
         <span id="titlebar-name">Cipher</span>
-        
-        <!-- MENUBAR -->
         <div class="menubar">
-          <div class="menu-item" id="menu-archivo">
-            Archivo
+          <div class="menu-item" id="menu-archivo">Archivo
             <div class="submenu" id="submenu-archivo">
               <div class="submenu-item" data-action="new-file">Nuevo Archivo</div>
               <div class="submenu-item" data-action="open-folder">Abrir Carpeta</div>
-              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <hr style="margin:4px 0;border:none;border-top:1px solid #1e1e3a;">
               <div class="submenu-item" data-action="save-file">Guardar (Ctrl+S)</div>
               <div class="submenu-item" data-action="save-all">Guardar Todo</div>
-              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <hr style="margin:4px 0;border:none;border-top:1px solid #1e1e3a;">
               <div class="submenu-item" data-action="exit">Salir</div>
             </div>
           </div>
-          <div class="menu-item" id="menu-editar">
-            Editar
+          <div class="menu-item" id="menu-editar">Editar
             <div class="submenu" id="submenu-editar">
               <div class="submenu-item" data-action="undo">Deshacer (Ctrl+Z)</div>
               <div class="submenu-item" data-action="redo">Rehacer (Ctrl+Y)</div>
-              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <hr style="margin:4px 0;border:none;border-top:1px solid #1e1e3a;">
               <div class="submenu-item" data-action="cut">Cortar (Ctrl+X)</div>
               <div class="submenu-item" data-action="copy">Copiar (Ctrl+C)</div>
               <div class="submenu-item" data-action="paste">Pegar (Ctrl+V)</div>
             </div>
           </div>
-          <div class="menu-item" id="menu-seleccionar">
-            Selección
+          <div class="menu-item" id="menu-seleccionar">Selección
             <div class="submenu" id="submenu-seleccionar">
               <div class="submenu-item" data-action="select-all">Seleccionar Todo (Ctrl+A)</div>
               <div class="submenu-item" data-action="select-line">Seleccionar Línea</div>
               <div class="submenu-item" data-action="expand-selection">Expandir Selección</div>
             </div>
           </div>
-          <div class="menu-item" id="menu-ver">
-            Ver
+          <div class="menu-item" id="menu-ver">Ver
             <div class="submenu" id="submenu-ver">
               <div class="submenu-item" data-action="toggle-explorer">Explorador (Ctrl+B)</div>
               <div class="submenu-item" data-action="toggle-search">Búsqueda (Ctrl+Shift+F)</div>
               <div class="submenu-item" data-action="toggle-git">Control de Versiones (Ctrl+Shift+G)</div>
-              <hr style="margin: 4px 0; border: none; border-top: 1px solid #1e1e3a;">
+              <hr style="margin:4px 0;border:none;border-top:1px solid #1e1e3a;">
               <div class="submenu-item" data-action="toggle-terminal">Terminal (Ctrl+`)</div>
               <div class="submenu-item" data-action="zoom-in">Aumentar Zoom (+)</div>
               <div class="submenu-item" data-action="zoom-out">Reducir Zoom (-)</div>
             </div>
           </div>
-          <div class="menu-item" id="menu-ir">
-            Ir
+          <div class="menu-item" id="menu-ir">Ir
             <div class="submenu" id="submenu-ir">
               <div class="submenu-item" data-action="go-to-line">Ir a Línea (Ctrl+G)</div>
               <div class="submenu-item" data-action="go-to-file">Ir a Archivo (Ctrl+P)</div>
             </div>
           </div>
-          <div class="menu-item" id="menu-terminal">
-            Terminal
+          <div class="menu-item" id="menu-terminal">Terminal
             <div class="submenu" id="submenu-terminal">
               <div class="submenu-item" data-action="new-terminal">Nueva Terminal</div>
               <div class="submenu-item" data-action="toggle-terminal">Mostrar/Ocultar (Ctrl+`)</div>
               <div class="submenu-item" data-action="clear-terminal">Limpiar Terminal</div>
             </div>
           </div>
-          <div class="menu-item" id="menu-ayuda">
-            Ayuda
+          <div class="menu-item" id="menu-ayuda">Ayuda
             <div class="submenu" id="submenu-ayuda">
               <div class="submenu-item" data-action="about">Acerca de Cipher</div>
               <div class="submenu-item" data-action="documentation">Documentación</div>
@@ -105,33 +96,23 @@
           </div>
         </div>
       </div>
-
-      <!-- CENTER SEARCH BAR -->
       <div id="titlebar-center">
         <div class="titlebar-search" id="titlebar-search-btn" title="Buscar en el proyecto (Ctrl+Shift+F)">
           <i class="codicon codicon-search"></i>
           <span id="search-placeholder">Buscar en el proyecto...</span>
         </div>
       </div>
-
-      <!-- WINDOW CONTROLS -->
       <div id="titlebar-right">
-        <div class="window-control-btn" id="btn-minimize" title="Minimizar">
-          <i class="codicon codicon-chrome-minimize"></i>
-        </div>
-        <div class="window-control-btn" id="btn-maximize" title="Maximizar">
-          <i class="codicon codicon-chrome-maximize"></i>
-        </div>
-        <div class="window-control-btn" id="btn-close" title="Cerrar">
-          <i class="codicon codicon-chrome-close"></i>
-        </div>
+        <div class="window-control-btn" id="btn-minimize" title="Minimizar"><i class="codicon codicon-chrome-minimize"></i></div>
+        <div class="window-control-btn" id="btn-maximize" title="Maximizar"><i class="codicon codicon-chrome-maximize"></i></div>
+        <div class="window-control-btn" id="btn-close" title="Cerrar"><i class="codicon codicon-chrome-close"></i></div>
       </div>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
     <div id="main-content">
 
-      <!-- SIDEBAR IZQUIERDO -->
+      <!-- SIDEBAR -->
       <div id="sidebar">
         <div class="sidebar-icon active" id="btn-files" title="Archivos">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h7l2 2h9v16H3z"/></svg>
@@ -143,7 +124,14 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg>
         </div>
         <div class="sidebar-icon" id="btn-ai" title="Agente IA">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="8" width="18" height="13" rx="2"/>
+            <path d="M9 11h.01M15 11h.01"/>
+            <path d="M9 15h6"/>
+            <path d="M12 8V5"/>
+            <circle cx="12" cy="4" r="1"/>
+            <path d="M3 13H1M23 13h-2"/>
+          </svg>
         </div>
         <div class="sidebar-icon" id="btn-settings" title="Configuración" style="margin-top:auto">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
@@ -153,8 +141,8 @@
       <!-- PANEL LATERAL -->
       <div id="panel" class="visible">
         <div id="panel-header">EXPLORADOR</div>
-        
-        <!-- PANEL: FILE EXPLORER -->
+
+        <!-- PANEL: FILES -->
         <div id="panel-files" class="panel-view active">
           <div id="panel-content">
             <div class="panel-empty">Abre una carpeta para empezar</div>
@@ -166,12 +154,8 @@
         <div id="panel-search" class="panel-view">
           <div class="search-input-box">
             <input type="text" id="search-input" placeholder="Buscar..." class="search-input">
-            <button id="search-in-selection" title="Buscar solo en archivos abiertos" class="search-option-btn">
-              <i class="codicon codicon-filter"></i>
-            </button>
-            <button id="search-replace-toggle" title="Mostrar reemplazar" class="search-option-btn">
-              <i class="codicon codicon-replace-all"></i>
-            </button>
+            <button id="search-in-selection" title="Buscar solo en archivos abiertos" class="search-option-btn"><i class="codicon codicon-filter"></i></button>
+            <button id="search-replace-toggle" title="Mostrar reemplazar" class="search-option-btn"><i class="codicon codicon-replace-all"></i></button>
           </div>
           <div id="replace-input-box" style="display:none;">
             <input type="text" id="replace-input" placeholder="Reemplazar..." class="search-input">
@@ -206,24 +190,70 @@
             </div>
           </div>
         </div>
+
+        <!-- PANEL: AI AGENT -->
+        <div id="panel-ai" class="panel-view">
+          <div class="ai-model-selector">
+            <select id="ai-model-select" class="ai-select">
+              <optgroup label="Anthropic">
+                <option value="claude-opus-4-5">Claude Opus 4.5</option>
+                <option value="claude-sonnet-4-5" selected>Claude Sonnet 4.5</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+              </optgroup>
+              <optgroup label="OpenAI">
+                <option value="gpt-5.5">GPT-5.5</option>
+                <option value="gpt-5.5-pro">GPT-5.5 Pro</option>
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="o3">o3 (Razonamiento)</option>
+                <option value="o3-mini">o3 Mini</option>
+              </optgroup>
+              <optgroup label="Google">
+                <option value="gemini-3-pro">Gemini 3 Pro</option>
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              </optgroup>
+              <optgroup label="Ollama (Local)">
+                <option value="ollama:qwen2.5-coder">Qwen 2.5 Coder</option>
+                <option value="ollama:gemma">Gemma</option>
+                <option value="ollama:llama3">Llama 3 (8B)</option>
+                <option value="ollama:deepseek-coder">DeepSeek Coder</option>
+                <option value="ollama:mistral">Mistral</option>
+                <option value="ollama:codellama">CodeLlama</option>
+              </optgroup>
+              <optgroup label="LM Studio (Local)">
+                <option value="lmstudio:local">LM Studio (Modelo activo)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="ai-key-section" id="ai-key-section">
+            <input type="password" id="ai-api-key" placeholder="API Key..." class="ai-key-input">
+            <button id="ai-key-save" class="btn-mini" title="Guardar key">💾</button>
+          </div>
+          <div class="ai-context-toggle">
+            <label class="ai-toggle-label">
+              <input type="checkbox" id="ai-use-context" checked>
+              <span>Usar archivo activo como contexto</span>
+            </label>
+          </div>
+          <div id="ai-messages" class="ai-messages"></div>
+          <div class="ai-input-area">
+            <textarea id="ai-input" placeholder="Escríbele al agente..." class="ai-input" rows="3"></textarea>
+            <button id="ai-send-btn" class="ai-send-btn" title="Enviar (Enter)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+
       </div>
 
       <!-- EDITOR Y TERMINAL -->
       <div id="editor-area">
-        <!-- TABS DE ARCHIVOS -->
-        <div id="tabs-container">
-          <div class="tab active">
-  <span class="tab-icon">JS</span>
-  <span class="tab-name">sin título</span>
-  <span class="tab-close">×</span>
-</div>
-        </div>
+        <div id="tabs-container"></div>
         <div id="editor-container"></div>
-        
-        <!-- RESIZE HANDLE -->
         <div id="terminal-resize-handle"></div>
-        
-        <!-- TERMINAL -->
         <div id="terminal-panel">
           <div id="terminal-tabs">
             <div id="terminal-tabs-label">
@@ -233,9 +263,7 @@
               </svg>
               <span>TERMINAL</span>
             </div>
-            <div id="terminal-tabs-list">
-              <!-- Terminal tabs will be added dynamically -->
-            </div>
+            <div id="terminal-tabs-list"></div>
             <div id="terminal-new-btn" title="Nueva terminal">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -262,7 +290,7 @@
       </div>
       <div class="status-center">
         <span class="status-item" id="status-terminal-toggle" title="Mostrar/Ocultar Terminal (Ctrl+`)">
-          <i class="codicon codicon-terminal" style="font-size: 11px; margin-right: 4px; vertical-align: middle;"></i>Terminal
+          <i class="codicon codicon-terminal" style="font-size:11px;margin-right:4px;vertical-align:middle;"></i>Terminal
         </span>
       </div>
       <div class="status-right">

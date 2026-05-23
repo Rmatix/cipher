@@ -379,37 +379,34 @@ function togglePanel(panelId) {
   const icons = document.querySelectorAll('.sidebar-icon')
   const panel = document.getElementById('panel')
 
-  icons.forEach(icon => {
-    if (icon.id === 'btn-settings') return
-    icon.classList.remove('active')
-  })
-
   const panelMap = {
-    'btn-files': { view: 'panel-files', header: 'EXPLORADOR' },
+    'btn-files':  { view: 'panel-files',  header: 'EXPLORADOR' },
     'btn-search': { view: 'panel-search', header: 'BUSCAR' },
-    'btn-git': { view: 'panel-git', header: 'CONTROL DE VERSIONES' }
+    'btn-git':    { view: 'panel-git',    header: 'CONTROL DE VERSIONES' },
+    'btn-ai':     { view: 'panel-ai',     header: 'AGENTE IA' },
   }
 
   const config = panelMap[panelId]
   if (!config) return
 
-  document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('active'))
-  document.getElementById(config.view)?.classList.add('active')
-  document.getElementById('panel-header').textContent = config.header
-
   const icon = document.getElementById(panelId)
-  if (icon) {
-    if (panel.classList.contains('visible') && icon.classList.contains('active')) {
-      panel.classList.remove('visible')
-      icon.classList.remove('active')
-    } else {
-      panel.classList.add('visible')
-      icon.classList.add('active')
-      
-      if (panelId === 'btn-git') {
-        refreshGitStatus()
-      }
-    }
+  const isAlreadyActive = panel.classList.contains('visible') && icon?.classList.contains('active')
+
+  icons.forEach(i => {
+    if (i.id !== 'btn-settings') i.classList.remove('active')
+  })
+
+  document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('active'))
+
+  if (isAlreadyActive) {
+    panel.classList.remove('visible')
+  } else {
+    panel.classList.add('visible')
+    if (icon) icon.classList.add('active')
+    document.getElementById(config.view)?.classList.add('active')
+    document.getElementById('panel-header').textContent = config.header
+
+    if (panelId === 'btn-git') refreshGitStatus()
   }
 }
 

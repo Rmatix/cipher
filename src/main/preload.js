@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('cipher', {
+  aiChat: (params) => ipcRenderer.invoke('ai-chat', params),
   // File system
   openFolder: () => ipcRenderer.invoke('open-folder'),
   readDirectory: (path) => ipcRenderer.invoke('read-directory', path),
