@@ -1397,3 +1397,19 @@ body {
 #panel-ai.active {
   display: flex;
 }
+
+/* Fix altura panel AI */
+#panel-ai {
+  height: calc(100% - 32px);
+  overflow: hidden;
+}
+
+#panel-ai .ai-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#panel-ai .ai-input-area {
+  flex-shrink: 0;
+}
