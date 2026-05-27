@@ -221,8 +221,7 @@ ipcMain.handle('git-log', async (event, folderPath) => {
 
 // ── AI Agent ────────────────────────────────────────────
 
-ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context }) => {
-  const fetch = require('node-fetch')
+ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, systemPrompt }) => {
 
   try {
     // Claude
@@ -237,7 +236,7 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context }) =>
         body: JSON.stringify({
           model: model,
           max_tokens: 4096,
-          system: context ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}` : 'Eres un asistente de código experto.',
+          system: systemPrompt || (context ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}` : 'Eres un asistente de código experto.'),
           messages: messages
         })
       })
@@ -248,9 +247,9 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context }) =>
 
     // GPT
     if (model.startsWith('gpt')) {
-      const systemMsg = context
-        ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}`
-        : 'Eres un asistente de código experto.'
+      const systemMsg = systemPrompt || (context
+  ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}`
+  : 'Eres un asistente de código experto.')
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -269,9 +268,8 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context }) =>
 
     // Gemini
     if (model.startsWith('gemini')) {
-      const prompt = context
-        ? `Contexto del archivo activo:\n\n${context}\n\n${messages[messages.length - 1].content}`
-        : messages[messages.length - 1].content
+      const sysPrefix = systemPrompt || (context ? `Contexto del archivo activo:\n\n${context}\n\n` : '')
+const prompt = sysPrefix + messages[messages.length - 1].content
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -305,25 +303,172 @@ if (model.startsWith('lmstudio:')) {
   return { text: data.choices[0].message.content }
 }
 
+// DeepSeek
+if (model.startsWith('deepseek:')) {
+  const dsModel = model.replace('deepseek:', '')
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: dsModel,
+      messages: systemPrompt
+        ? [{ role: 'system', content: systemPrompt }, ...messages]
+        : messages
+    })
+  })
+  const data = await response.json()
+  if (data.error) return { error: data.error.message }
+  return { text: data.choices[0].message.content }
+}
+
+// Kimi (Moonshot)
+if (model.startsWith('kimi:')) {
+  const kimiModel = model.replace('kimi:', '')
+  const response = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: kimiModel,
+      messages: systemPrompt
+        ? [{ role: 'system', content: systemPrompt }, ...messages]
+        : messages
+    })
+  })
+  const data = await response.json()
+  if (data.error) return { error: data.error.message }
+  return { text: data.choices[0].message.content }
+}
+
+// Qwen (Alibaba)
+if (model.startsWith('qwen:')) {
+  const qwenModel = model.replace('qwen:', '')
+  const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: qwenModel,
+      messages: systemPrompt
+        ? [{ role: 'system', content: systemPrompt }, ...messages]
+        : messages
+    })
+  })
+  const data = await response.json()
+  if (data.error) return { error: data.error.message }
+  return { text: data.choices[0].message.content }
+}
+
     // Ollama (local)
-    if (model.startsWith('ollama:')) {
-      const ollamaModel = model.replace('ollama:', '')
-      const response = await fetch('http://localhost:11434/api/chat', {
+if (model.startsWith('ollama:')) {
+  const ollamaModel = model.replace('ollama:', '')
+  const systemMsg = systemPrompt || (context
+  ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}`
+  : 'Eres un asistente de código experto.')
+  
+  const response = await fetch('http://localhost:11434/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: ollamaModel,
+      messages: [
+        { role: 'system', content: systemMsg },
+        ...messages
+      ],
+      stream: false
+    })
+  })
+  const data = await response.json()
+  return { text: data.message.content }
+}
+
+// OpenRouter
+if (model.startsWith('openrouter:')) {
+  const orModel = model.replace('openrouter:', '')
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': 'https://github.com/Rmatix/cipher',
+      'X-Title': 'Cipher Code Editor'
+    },
+    body: JSON.stringify({
+      model: orModel,
+      messages: systemPrompt
+        ? [{ role: 'system', content: systemPrompt }, ...messages]
+        : messages
+    })
+  })
+  const data = await response.json()
+  if (data.error) return { error: data.error.message }
+  return { text: data.choices[0].message.content }
+}
+
+// NVIDIA NIM
+if (model.startsWith('nim:')) {
+  const nimModel = model.replace('nim:', '')
+  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: nimModel,
+      messages: systemPrompt
+        ? [{ role: 'system', content: systemPrompt }, ...messages]
+        : messages
+    })
+  })
+  const data = await response.json()
+  if (data.error) return { error: data.error.message }
+  return { text: data.choices[0].message.content }
+}
+
+    // Compatible OpenAI custom URL
+    if (model.startsWith('openai-compatible:')) {
+      const parts = model.replace('openai-compatible:', '').split(':')
+      const baseUrl = parts[0]
+      const modelId = parts.slice(1).join(':')
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
-          model: ollamaModel,
-          messages: messages,
-          stream: false
+          model: modelId,
+          messages: systemPrompt
+            ? [{ role: 'system', content: systemPrompt }, ...messages]
+            : messages
         })
       })
       const data = await response.json()
-      return { text: data.message.content }
+      if (data.error) return { error: data.error.message }
+      return { text: data.choices[0].message.content }
     }
 
     return { error: 'Modelo no soportado' }
   } catch (e) {
     return { error: e.message }
+  }
+})
+
+ipcMain.handle('ollama-list', async () => {
+  try {
+    const response = await fetch('http://localhost:11434/api/tags')
+    const data = await response.json()
+    return data.models || []
+  } catch (e) {
+    return []
   }
 })
 app.whenReady().then(() => {
@@ -341,3 +486,4 @@ app.on('window-all-closed', () => {
   terminals.clear()
   if (process.platform !== 'darwin') app.quit()
 })
+

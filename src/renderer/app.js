@@ -816,37 +816,185 @@ function getTabIcon(fileName) {
 // ════════════════════════════════════════════════════════
 
 const aiChatHistory = []
+let currentAIMode = 'chat'
+let currentPlan = null
+let aiAbortController = null
 
 function initAI() {
   const modelSelect = document.getElementById('ai-model-select')
+  const devModelSelect = document.getElementById('ai-dev-model-select')
   const apiKeyInput = document.getElementById('ai-api-key')
   const apiKeySave = document.getElementById('ai-key-save')
   const sendBtn = document.getElementById('ai-send-btn')
+  const stopBtn = document.getElementById('ai-stop-btn')
   const aiInput = document.getElementById('ai-input')
   const messagesContainer = document.getElementById('ai-messages')
+  const devModelRow = document.getElementById('ai-dev-model-row')
+  const planActions = document.getElementById('ai-plan-actions')
+  const approvePlanBtn = document.getElementById('ai-approve-plan-btn')
+
+  // ── Modelos personalizados ──
+  function loadCustomModels() {
+    const saved = JSON.parse(localStorage.getItem('cipher-custom-models') || '[]')
+    const group = document.getElementById('custom-models-group')
+    const groupDev = document.getElementById('custom-models-group-dev')
+    const listEl = document.getElementById('custom-models-list')
+
+    if (group) group.innerHTML = ''
+    if (groupDev) groupDev.innerHTML = ''
+    if (listEl) listEl.innerHTML = ''
+
+    saved.forEach((model, index) => {
+      const value = `custom:${index}`
+
+      if (group) {
+        const opt = document.createElement('option')
+        opt.value = value
+        opt.textContent = model.name
+        group.appendChild(opt)
+      }
+
+      if (groupDev) {
+        const opt = document.createElement('option')
+        opt.value = value
+        opt.textContent = model.name
+        groupDev.appendChild(opt)
+      }
+
+      if (listEl) {
+        const item = document.createElement('div')
+        item.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1e1e3a;font-size:12px;color:#e0e0f0;'
+        item.innerHTML = `
+          <span>${model.name} <span style="color:#6b6b8a;font-size:10px;">(${model.provider})</span></span>
+          <button data-index="${index}" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:16px;">×</button>
+        `
+        item.querySelector('button').addEventListener('click', () => {
+          saved.splice(index, 1)
+          localStorage.setItem('cipher-custom-models', JSON.stringify(saved))
+          loadCustomModels()
+        })
+        listEl.appendChild(item)
+      }
+    })
+  }
+
+  // Abrir modal
+  document.getElementById('ai-add-model-btn').addEventListener('click', () => {
+    document.getElementById('ai-custom-model-modal').style.display = 'block'
+    loadCustomModels()
+  })
+
+  // Cerrar modal
+  document.getElementById('ai-close-modal-btn').addEventListener('click', () => {
+    document.getElementById('ai-custom-model-modal').style.display = 'none'
+  })
+
+  // Mostrar URL si es compatible OpenAI
+  document.getElementById('custom-model-provider').addEventListener('change', (e) => {
+    const urlInput = document.getElementById('custom-model-url')
+    urlInput.style.display = e.target.value === 'openai-compatible' ? 'block' : 'none'
+  })
+
+  // Guardar modelo personalizado
+  document.getElementById('ai-save-custom-model-btn').addEventListener('click', () => {
+    const name = document.getElementById('custom-model-name').value.trim()
+    const provider = document.getElementById('custom-model-provider').value
+    const modelId = document.getElementById('custom-model-id').value.trim()
+    const url = document.getElementById('custom-model-url').value.trim()
+    const key = document.getElementById('custom-model-key').value.trim()
+
+    if (!name || !modelId) {
+      alert('El nombre y el ID del modelo son obligatorios.')
+      return
+    }
+
+    const saved = JSON.parse(localStorage.getItem('cipher-custom-models') || '[]')
+    saved.push({ name, provider, modelId, url, key })
+    localStorage.setItem('cipher-custom-models', JSON.stringify(saved))
+
+    if (key) localStorage.setItem(`cipher-api-key-custom:${saved.length - 1}`, key)
+
+    document.getElementById('custom-model-name').value = ''
+    document.getElementById('custom-model-id').value = ''
+    document.getElementById('custom-model-url').value = ''
+    document.getElementById('custom-model-key').value = ''
+
+    loadCustomModels()
+    alert(`✅ Modelo "${name}" guardado correctamente.`)
+  })
+
+  loadCustomModels()
 
   // Cargar API key guardada
   const savedKey = localStorage.getItem(`cipher-api-key-${modelSelect.value}`)
   if (savedKey) apiKeyInput.value = savedKey
 
-  // Cambiar modelo limpia la key y carga la guardada para ese modelo
   modelSelect.addEventListener('change', () => {
     const saved = localStorage.getItem(`cipher-api-key-${modelSelect.value}`)
     apiKeyInput.value = saved || ''
   })
 
-  // Guardar API key
   apiKeySave.addEventListener('click', () => {
-    const model = modelSelect.value
     const key = apiKeyInput.value.trim()
     if (key) {
-      localStorage.setItem(`cipher-api-key-${model}`, key)
+      localStorage.setItem(`cipher-api-key-${modelSelect.value}`, key)
       apiKeySave.textContent = '✅'
       setTimeout(() => apiKeySave.textContent = '💾', 1500)
     }
   })
 
-  // Enviar con Enter (Shift+Enter para nueva línea)
+  // MODO TABS
+  document.getElementById('btn-mode-chat').addEventListener('click', () => setMode('chat'))
+  document.getElementById('btn-mode-plan').addEventListener('click', () => setMode('plan'))
+  document.getElementById('btn-mode-dev').addEventListener('click', () => setMode('dev'))
+
+  function setMode(mode) {
+    currentAIMode = mode
+    document.querySelectorAll('.ai-mode-btn').forEach(b => b.classList.remove('active'))
+    document.getElementById(`btn-mode-${mode}`).classList.add('active')
+
+    const modelLabel = document.getElementById('ai-model-label-text')
+
+    if (mode === 'chat') {
+      devModelRow.style.display = 'none'
+      planActions.style.display = 'none'
+      modelLabel.textContent = 'Modelo'
+      aiInput.placeholder = 'Escríbele al agente...'
+    } else if (mode === 'plan') {
+      devModelRow.style.display = 'flex'
+      planActions.style.display = 'none'
+      modelLabel.textContent = 'Plan IA'
+      aiInput.placeholder = 'Describe qué quieres construir o analizar...'
+    } else if (mode === 'dev') {
+      devModelRow.style.display = 'flex'
+      planActions.style.display = 'none'
+      modelLabel.textContent = 'Plan IA'
+      aiInput.placeholder = 'Describe qué quieres desarrollar...'
+    }
+  }
+
+  // BOTÓN DETENER
+  stopBtn.addEventListener('click', () => {
+    if (aiAbortController) {
+      aiAbortController.abort()
+      aiAbortController = null
+    }
+    stopBtn.style.display = 'none'
+    sendBtn.style.display = 'flex'
+    sendBtn.disabled = false
+    appendMessage('error', 'Sistema', 'Respuesta detenida.')
+  })
+
+  // APROBAR PLAN
+  approvePlanBtn.addEventListener('click', async () => {
+    if (!currentPlan) return
+    planActions.style.display = 'none'
+    appendMessage('assistant', 'Sistema', '✅ Plan aprobado. Iniciando modo desarrollo...')
+    setMode('dev')
+    await startDevelopment(currentPlan)
+  })
+
+  // Enviar con Enter
   aiInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -863,19 +1011,17 @@ function initAI() {
     const model = modelSelect.value
     const apiKey = apiKeyInput.value.trim()
 
-    // Ollama no necesita API key
-    if (!apiKey && !model.startsWith('ollama:')) {
+    if (!apiKey && !model.startsWith('ollama:') && !model.startsWith('lmstudio:')) {
       appendMessage('error', 'Sistema', 'Agrega tu API key para este modelo.')
       return
     }
 
-    // Agregar mensaje del usuario
     appendMessage('user', 'Tú', text)
     aiChatHistory.push({ role: 'user', content: text })
     aiInput.value = ''
-    sendBtn.disabled = true
+    sendBtn.style.display = 'none'
+    stopBtn.style.display = 'flex'
 
-    // Contexto del archivo activo
     let context = null
     const useContext = document.getElementById('ai-use-context').checked
     if (useContext && window.editor) {
@@ -888,32 +1034,176 @@ function initAI() {
       }
     }
 
-    // Mostrar indicador de pensamiento
+    const thinkingEl = appendThinking()
+
+    // Resolver modelo personalizado
+    let resolvedModel = model
+    let resolvedApiKey = apiKey
+    if (model.startsWith('custom:')) {
+      const index = parseInt(model.replace('custom:', ''))
+      const saved = JSON.parse(localStorage.getItem('cipher-custom-models') || '[]')
+      const custom = saved[index]
+      if (!custom) {
+        appendMessage('error', 'Error', 'Modelo personalizado no encontrado.')
+        return
+      }
+      resolvedModel = `${custom.provider}:${custom.modelId}`
+      resolvedApiKey = custom.key || apiKey
+      if (custom.url) resolvedModel = `openai-compatible:${custom.url}:${custom.modelId}`
+    }
+
+    try {
+      let systemPrompt = 'Eres un asistente de código experto.'
+
+      if (currentAIMode === 'plan') {
+        systemPrompt = `Eres un arquitecto de software experto. Tu tarea es analizar lo que el usuario quiere construir y generar un PLAN DETALLADO con:
+1. Descripción general
+2. Estructura de archivos y carpetas
+3. Tecnologías a usar
+4. Pasos de desarrollo en orden
+5. Consideraciones importantes
+
+Genera el plan en formato Markdown claro y estructurado.`
+      } else if (currentAIMode === 'dev') {
+        systemPrompt = `Eres un desarrollador experto ejecutando un plan. Escribe código real, completo y funcional. Cuando necesites crear un archivo indícalo con:
+[CREAR ARCHIVO: nombre_archivo.ext]
+\`\`\`
+código aquí
+\`\`\`
+[FIN ARCHIVO]
+
+Cuando necesites ejecutar un comando indícalo con:
+[EJECUTAR: comando aquí]`
+      }
+
+      if (context) systemPrompt += `\n\nContexto del proyecto:\n${context}`
+
+      aiAbortController = new AbortController()
+
+      const result = await cipherAPI.aiChat({
+        model: resolvedModel,
+        apiKey: resolvedApiKey,
+        messages: aiChatHistory,
+        context: null,
+        systemPrompt
+      })
+
+      thinkingEl.remove()
+      aiAbortController = null
+      stopBtn.style.display = 'none'
+      sendBtn.style.display = 'flex'
+      sendBtn.disabled = false
+
+      if (result.error) {
+        appendMessage('error', 'Error', result.error)
+      } else {
+        aiChatHistory.push({ role: 'assistant', content: result.text })
+
+        if (currentAIMode === 'plan') {
+          currentPlan = result.text
+          appendPlanMessage(result.text)
+          document.getElementById('ai-plan-actions').style.display = 'block'
+        } else if (currentAIMode === 'dev') {
+          appendMessage('assistant', 'Cipher Dev', result.text)
+          await processDeveloperResponse(result.text)
+        } else {
+          appendMessage('assistant', 'Cipher IA', result.text)
+        }
+      }
+    } catch (e) {
+      thinkingEl.remove()
+      stopBtn.style.display = 'none'
+      sendBtn.style.display = 'flex'
+      sendBtn.disabled = false
+      if (e.name !== 'AbortError') {
+        appendMessage('error', 'Error', e.message)
+      }
+    }
+
+    aiInput.focus()
+  }
+
+  async function startDevelopment(plan) {
+    const devModel = devModelSelect.value
+    const apiKey = apiKeyInput.value.trim()
+
+    const devMessages = [{
+      role: 'user',
+      content: `Ejecuta este plan de desarrollo paso a paso:\n\n${plan}\n\nEmpieza con el primer archivo o paso.`
+    }]
+
     const thinkingEl = appendThinking()
 
     try {
       const result = await cipherAPI.aiChat({
-        model,
+        model: devModel,
         apiKey,
-        messages: aiChatHistory,
-        context
+        messages: devMessages,
+        context: null,
+        systemPrompt: `Eres un desarrollador experto ejecutando un plan. Escribe código real y completo. Para crear archivos usa:
+[CREAR ARCHIVO: nombre.ext]
+\`\`\`
+código
+\`\`\`
+[FIN ARCHIVO]
+Para ejecutar comandos usa: [EJECUTAR: comando]`
       })
 
       thinkingEl.remove()
 
       if (result.error) {
-        appendMessage('error', 'Error', result.error)
+        appendMessage('error', 'Error Dev', result.error)
       } else {
-        appendMessage('assistant', 'Cipher IA', result.text)
-        aiChatHistory.push({ role: 'assistant', content: result.text })
+        appendMessage('assistant', 'Cipher Dev', result.text)
+        await processDeveloperResponse(result.text)
       }
     } catch (e) {
       thinkingEl.remove()
       appendMessage('error', 'Error', e.message)
     }
+  }
 
-    sendBtn.disabled = false
-    aiInput.focus()
+  async function processDeveloperResponse(text) {
+    const fileRegex = /\[CREAR ARCHIVO: (.+?)\]\n```[\w]*\n([\s\S]+?)\n```\n\[FIN ARCHIVO\]/g
+    const cmdRegex = /\[EJECUTAR: (.+?)\]/g
+
+    let fileMatch
+    while ((fileMatch = fileRegex.exec(text)) !== null) {
+      const fileName = fileMatch[1]
+      const fileContent = fileMatch[2]
+
+      if (currentFolder) {
+        const filePath = `${currentFolder}\\${fileName}`
+        await cipherAPI.saveFile(filePath, fileContent)
+        appendMessage('assistant', 'Sistema', `📄 Archivo creado: ${fileName}`)
+        await renderFileTree(currentFolder)
+        await openFile(filePath, fileName)
+      }
+    }
+
+    let cmdMatch
+    while ((cmdMatch = cmdRegex.exec(text)) !== null) {
+      const command = cmdMatch[1]
+      appendMessage('assistant', 'Sistema', `⚡ Ejecutando: ${command}`)
+      const active = terminalInstances.get(activeTerminalTab)
+      if (active && active.term) {
+        cipherAPI.terminalInput(active.ptyId, command + '\r')
+      }
+    }
+  }
+
+  function appendPlanMessage(text) {
+    const msgEl = document.createElement('div')
+    msgEl.className = 'ai-message assistant'
+    msgEl.innerHTML = `
+      <div class="ai-message-role">📋 Plan generado — edítalo si quieres</div>
+      <textarea class="ai-plan-editor">${escapeHtml(text)}</textarea>
+    `
+    msgEl.querySelector('.ai-plan-editor').addEventListener('input', (e) => {
+      currentPlan = e.target.value
+    })
+    messagesContainer.appendChild(msgEl)
+    messagesContainer.scrollTop = messagesContainer.scrollHeight
   }
 
   function appendMessage(type, role, content) {

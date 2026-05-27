@@ -192,62 +192,210 @@
         </div>
 
         <!-- PANEL: AI AGENT -->
-        <div id="panel-ai" class="panel-view">
-          <div class="ai-model-selector">
-            <select id="ai-model-select" class="ai-select">
-              <optgroup label="Anthropic">
-                <option value="claude-opus-4-5">Claude Opus 4.5</option>
-                <option value="claude-sonnet-4-5" selected>Claude Sonnet 4.5</option>
-                <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
-              </optgroup>
-              <optgroup label="OpenAI">
-                <option value="gpt-5.5">GPT-5.5</option>
-                <option value="gpt-5.5-pro">GPT-5.5 Pro</option>
-                <option value="gpt-4o">GPT-4o</option>
-                <option value="o3">o3 (Razonamiento)</option>
-                <option value="o3-mini">o3 Mini</option>
-              </optgroup>
-              <optgroup label="Google">
-                <option value="gemini-3-pro">Gemini 3 Pro</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-              </optgroup>
-              <optgroup label="Ollama (Local)">
-                <option value="ollama:qwen2.5-coder">Qwen 2.5 Coder</option>
-                <option value="ollama:gemma">Gemma</option>
-                <option value="ollama:llama3">Llama 3 (8B)</option>
-                <option value="ollama:deepseek-coder">DeepSeek Coder</option>
-                <option value="ollama:mistral">Mistral</option>
-                <option value="ollama:codellama">CodeLlama</option>
-              </optgroup>
-              <optgroup label="LM Studio (Local)">
-                <option value="lmstudio:local">LM Studio (Modelo activo)</option>
-              </optgroup>
-            </select>
-          </div>
-          <div class="ai-key-section" id="ai-key-section">
-            <input type="password" id="ai-api-key" placeholder="API Key..." class="ai-key-input">
-            <button id="ai-key-save" class="btn-mini" title="Guardar key">💾</button>
-          </div>
-          <div class="ai-context-toggle">
-            <label class="ai-toggle-label">
-              <input type="checkbox" id="ai-use-context" checked>
-              <span>Usar archivo activo como contexto</span>
-            </label>
-          </div>
-          <div id="ai-messages" class="ai-messages"></div>
-          <div class="ai-input-area">
-            <textarea id="ai-input" placeholder="Escríbele al agente..." class="ai-input" rows="3"></textarea>
-            <button id="ai-send-btn" class="ai-send-btn" title="Enviar (Enter)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-      </div>
+<div id="panel-ai" class="panel-view">
+ 
+  <!-- MODO TABS -->
+  <div class="ai-mode-tabs">
+    <button class="ai-mode-btn active" id="btn-mode-chat" title="Chat normal">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Chat
+    </button>
+    <button class="ai-mode-btn" id="btn-mode-plan" title="Modo Plan">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Plan
+    </button>
+    <button class="ai-mode-btn" id="btn-mode-dev" title="Modo Desarrollo">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Dev
+    </button>
+  </div>
+ 
+  <!-- MODELO SELECTOR -->
+  <div class="ai-model-selector">
+ 
+    <!-- Modelo principal -->
+    <div class="ai-model-row">
+      <span class="ai-model-label" id="ai-model-label-text">Modelo</span>
+      <select id="ai-model-select" class="ai-select">
+        <optgroup label="Anthropic">
+          <option value="claude-opus-4-7">Claude Opus 4.7</option>
+          <option value="claude-sonnet-4-5" selected>Claude Sonnet 4.5</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+        </optgroup>
+        <optgroup label="OpenAI">
+          <option value="gpt-5.5">GPT-5.5</option>
+          <option value="gpt-5.5-pro">GPT-5.5 Pro</option>
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="o3">o3 (Razonamiento)</option>
+          <option value="o3-mini">o3 Mini</option>
+        </optgroup>
+        <optgroup label="Google">
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+          <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        </optgroup>
+        <optgroup label="DeepSeek">
+          <option value="deepseek:deepseek-chat">DeepSeek V3</option>
+          <option value="deepseek:deepseek-coder">DeepSeek Coder</option>
+          <option value="deepseek:deepseek-reasoner">DeepSeek R1</option>
+        </optgroup>
+        <optgroup label="Kimi (Moonshot)">
+          <option value="kimi:moonshot-v1-8k">Kimi 8K</option>
+          <option value="kimi:moonshot-v1-32k">Kimi 32K</option>
+        </optgroup>
+        <optgroup label="Qwen (Alibaba)">
+          <option value="qwen:qwen-turbo">Qwen Turbo</option>
+          <option value="qwen:qwen-plus">Qwen Plus</option>
+          <option value="qwen:qwen-max">Qwen Max</option>
+        </optgroup>
+        <optgroup label="OpenRouter">
+          <option value="openrouter:deepseek/deepseek-v4-flash:free">DeepSeek V4 Flash (Free)</option>
+          <option value="openrouter:qwen/qwen-2.5-coder-7b-instruct:free">Qwen Coder (Free)</option>
+          <option value="openrouter:google/gemini-flash-1.5:free">Gemini Flash (Free)</option>
+          <option value="openrouter:meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (Free)</option>
+        </optgroup>
+        <optgroup label="NVIDIA NIM">
+          <option value="nim:meta/llama-3.1-8b-instruct">Llama 3.1 8B NIM</option>
+          <option value="nim:microsoft/phi-3-mini-128k-instruct">Phi-3 Mini NIM</option>
+        </optgroup>
+        <optgroup label="Ollama (Local - Sin internet)">
+          <option value="ollama:qwen2.5-coder:7b">Qwen 2.5 Coder 7B ⭐</option>
+          <option value="ollama:qwen">Qwen (último)</option>
+          <option value="ollama:deepseek-v3">DeepSeek V3</option>
+          <option value="ollama:llama4">Llama 4</option>
+          <option value="ollama:gemma4">Gemma 4</option>
+          <option value="ollama:gemma4:4b">Gemma 4 4B (ligero)</option>
+          <option value="ollama:mistral">Mistral</option>
+          <option value="ollama:codellama">CodeLlama</option>
+        </optgroup>
+        <optgroup label="LM Studio (Local - Sin internet)">
+          <option value="lmstudio:local">LM Studio (Modelo activo)</option>
+        </optgroup>
+        <optgroup label="➕ Modelos Personalizados" id="custom-models-group">
+        </optgroup>
+      </select>
+    </div>
+ 
+    <!-- Modelo desarrollador (solo en modo Plan/Dev) -->
+    <div class="ai-model-row" id="ai-dev-model-row" style="display:none;">
+      <span class="ai-model-label">Dev IA</span>
+      <select id="ai-dev-model-select" class="ai-select">
+        <optgroup label="Anthropic">
+          <option value="claude-opus-4-7">Claude Opus 4.7</option>
+          <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+        </optgroup>
+        <optgroup label="OpenAI">
+          <option value="gpt-5.5">GPT-5.5</option>
+          <option value="gpt-4o">GPT-4o</option>
+        </optgroup>
+        <optgroup label="Google">
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        </optgroup>
+        <optgroup label="DeepSeek">
+          <option value="deepseek:deepseek-chat">DeepSeek V3</option>
+          <option value="deepseek:deepseek-reasoner">DeepSeek R1</option>
+        </optgroup>
+        <optgroup label="OpenRouter">
+          <option value="openrouter:deepseek/deepseek-v4-flash:free">DeepSeek V4 Flash (Free)</option>
+          <option value="openrouter:qwen/qwen-2.5-coder-7b-instruct:free">Qwen Coder (Free)</option>
+        </optgroup>
+        <optgroup label="Ollama (Local - Sin internet)">
+          <option value="ollama:qwen2.5-coder:7b" selected>Qwen 2.5 Coder 7B ⭐</option>
+          <option value="ollama:deepseek-v3">DeepSeek V3</option>
+          <option value="ollama:llama4">Llama 4</option>
+          <option value="ollama:gemma4">Gemma 4</option>
+          <option value="ollama:codellama">CodeLlama</option>
+        </optgroup>
+        <optgroup label="LM Studio (Local - Sin internet)">
+          <option value="lmstudio:local">LM Studio (Modelo activo)</option>
+        </optgroup>
+        <optgroup label="➕ Modelos Personalizados" id="custom-models-group-dev">
+        </optgroup>
+      </select>
+    </div>
+ 
+  </div>
+ 
+  <!-- BOTÓN AGREGAR MODELO -->
+  <button id="ai-add-model-btn" class="btn-mini" style="margin: 4px 12px 8px; width: calc(100% - 24px);">
+    ➕ Agregar modelo personalizado
+  </button>
+ 
+  <!-- MODAL: MODELO PERSONALIZADO -->
+  <div id="ai-custom-model-modal" style="display:none; position:absolute; inset:0; background:#0d0d1a; z-index:100; padding:12px; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <span style="font-size:12px; font-weight:700; color:#e0e0f0;">Modelo Personalizado</span>
+      <button id="ai-close-modal-btn" style="background:none; border:none; color:#6b6b8a; cursor:pointer; font-size:18px;">×</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <input type="text" id="custom-model-name" placeholder="Nombre (ej: Mi DeepSeek)" class="ai-key-input">
+      <select id="custom-model-provider" class="ai-select">
+        <option value="openrouter">OpenRouter</option>
+        <option value="deepseek">DeepSeek</option>
+        <option value="kimi">Kimi (Moonshot)</option>
+        <option value="qwen">Qwen (Alibaba)</option>
+        <option value="nim">NVIDIA NIM</option>
+        <option value="ollama">Ollama (local)</option>
+        <option value="lmstudio">LM Studio (local)</option>
+        <option value="openai-compatible">Compatible OpenAI (custom URL)</option>
+      </select>
+      <input type="text" id="custom-model-id" placeholder="ID del modelo (ej: deepseek/deepseek-v4-flash:free)" class="ai-key-input">
+      <input type="text" id="custom-model-url" placeholder="URL base (solo si es compatible OpenAI)" class="ai-key-input" style="display:none;">
+      <input type="password" id="custom-model-key" placeholder="API Key (vacío si es local)" class="ai-key-input">
+      <button id="ai-save-custom-model-btn" class="btn-primary">Guardar modelo</button>
+    </div>
+    <div style="margin-top:12px;">
+      <div style="font-size:11px; color:#6b6b8a; margin-bottom:6px;">Modelos guardados:</div>
+      <div id="custom-models-list"></div>
+    </div>
+  </div>
+ 
+  <!-- API KEY -->
+  <div class="ai-key-section" id="ai-key-section">
+    <input type="password" id="ai-api-key" placeholder="API Key..." class="ai-key-input">
+    <button id="ai-key-save" class="btn-mini" title="Guardar key">💾</button>
+  </div>
+ 
+  <!-- CONTEXTO -->
+  <div class="ai-context-toggle">
+    <label class="ai-toggle-label">
+      <input type="checkbox" id="ai-use-context" checked>
+      <span>Usar archivo activo como contexto</span>
+    </label>
+  </div>
+ 
+  <!-- MENSAJES -->
+  <div id="ai-messages" class="ai-messages"></div>
+ 
+  <!-- PLAN APROBACION -->
+  <div id="ai-plan-actions" style="display:none;">
+    <button id="ai-approve-plan-btn" class="btn-primary" style="margin:8px 12px;width:calc(100% - 24px);">
+      ✅ Aprobar Plan e Iniciar Desarrollo
+    </button>
+  </div>
+ 
+  <!-- INPUT -->
+  <div class="ai-input-area">
+    <textarea id="ai-input" placeholder="Escríbele al agente..." class="ai-input" rows="3"></textarea>
+    <div class="ai-input-buttons">
+      <button id="ai-stop-btn" class="ai-stop-btn" title="Detener respuesta" style="display:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="4" y="4" width="16" height="16" rx="2"/>
+        </svg>
+      </button>
+      <button id="ai-send-btn" class="ai-send-btn" title="Enviar (Enter)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+ 
+</div>
 
       <!-- EDITOR Y TERMINAL -->
       <div id="editor-area">
