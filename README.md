@@ -1,4 +1,15 @@
-# Cipher Code Editor
+<div align="center">
+  <img src="renderer/public/logo.png" alt="Cipher logo" width="120" />
+
+  # Cipher Code Editor
+
+  **Open source code editor with multi-model AI agent**
+
+  ![License](https://img.shields.io/badge/license-MIT-blue)
+  ![Platform](https://img.shields.io/badge/platform-Windows-blue)
+  ![Status](https://img.shields.io/badge/status-official%20early%20build-orange)
+  ![Version](https://img.shields.io/badge/version-v0.1.0-7c4dff)
+</div>
 
 Cipher es un editor de codigo open source para Windows, construido con Electron, React, TypeScript, Monaco Editor y un panel de agente IA multi-proveedor.
 
