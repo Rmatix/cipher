@@ -1,4 +1,44 @@
-node_modules
-.pnpm-store
-dist
-out
+node_modules/
+.pnpm-store/
+dist/
+out/
+build/
+release/
+release-build/
+release-build-nosign/
+*.zip
+*.7z
+*.exe
+*.msi
+*.blockmap
+builder-debug.yml
+builder-effective-config.yaml
+
+# Generated renderer builds
+src/renderer-dist/
+renderer/dist/
+
+# Local editor/agent state
+.agents/
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+*.crt
+
+# Logs and captures
+*.log
+npm-debug.log*
+pnpm-debug.log*
+Captura de pantalla*.png
+Screenshots/

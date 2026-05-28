@@ -7,10 +7,45 @@
   "license": "MIT",
   "type": "commonjs",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dev": "concurrently \"cd renderer && pnpm dev\" \"wait-on http://localhost:5173 && set NODE_ENV=development&& electron .\"",
+    "build": "cd renderer && pnpm build",
+    "pack": "pnpm build && electron-builder --dir",
+    "dist": "pnpm build && electron-builder --win --x64",
+    "lint": "cd renderer && pnpm lint",
+    "preview": "cd renderer && pnpm preview"
+  },
+  "build": {
+    "appId": "com.rmatix.cipher",
+    "productName": "Cipher",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/main/**/*",
+      "src/renderer-dist/**/*",
+      "renderer/public/logo.ico",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "renderer/public/logo.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "devDependencies": {
-    "electron": "^42.1.0"
+    "concurrently": "^9.2.1",
+    "electron": "^42.1.0",
+    "electron-builder": "^26.8.1",
+    "wait-on": "^9.0.10"
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.45",
