@@ -23,6 +23,7 @@ renderer/dist/
 .claude/
 .vscode/
 .idea/
+CLAUDE.md
 .DS_Store
 Thumbs.db
 
