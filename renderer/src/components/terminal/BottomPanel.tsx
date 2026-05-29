@@ -57,7 +57,7 @@ export default function BottomPanel() {
   const [content, setContent] = useState('')
   const [debugInput, setDebugInput] = useState('')
   const [debugLog, setDebugLog] = useState<string[]>([
-    'Debug Console lista. Ejecuta expresiones JavaScript simples o comandos del depurador cuando se integre un runtime.',
+    'Debug Console lista. Los comandos se registran aqui hasta conectar un runtime de depuracion.',
   ])
 
   useEffect(() => {
@@ -83,17 +83,11 @@ export default function BottomPanel() {
   const problems = useMemo(() => analyzeContent(activeTabPath, analyzedContent), [activeTabPath, analyzedContent])
   const activeFileName = activeTabPath?.split(/[\\/]/).pop() || 'Sin archivo activo'
 
-  const runDebugExpression = () => {
+  const runDebugCommand = () => {
     if (!debugInput.trim()) return
-    const expression = debugInput.trim()
+    const command = debugInput.trim()
     setDebugInput('')
-    try {
-      const result = Function(`"use strict"; return (${expression})`)()
-      const formatted = typeof result === 'string' ? result : JSON.stringify(result, null, 2)
-      setDebugLog(log => [...log, `> ${expression}`, formatted ?? String(result)])
-    } catch (error) {
-      setDebugLog(log => [...log, `> ${expression}`, `Error: ${(error as Error).message}`])
-    }
+    setDebugLog(log => [...log, `> ${command}`, 'Runtime de depuracion no conectado.'])
   }
 
   return (
@@ -192,14 +186,14 @@ export default function BottomPanel() {
                 onKeyDown={event => {
                   if (event.key === 'Enter') {
                     event.preventDefault()
-                    runDebugExpression()
+                    runDebugCommand()
                   }
                 }}
-                placeholder="Expresion de debug..."
+                placeholder="Comando de debug..."
                 className="h-8 min-w-0 flex-1 bg-transparent font-mono text-[12px] text-[#dce4ff] outline-none placeholder-[#596585]"
               />
               <button
-                onClick={runDebugExpression}
+                onClick={runDebugCommand}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7f8bb0] transition-all hover:bg-white/[0.06] hover:text-white"
                 title="Ejecutar"
               >

@@ -6,6 +6,59 @@ const os = require('os')
 let mainWindow = null
 const terminals = new Map() // id -> ptyProcess
 let terminalIdCounter = 0
+const allowedRoots = new Set()
+
+function normalizeFsPath(inputPath) {
+  if (typeof inputPath !== 'string' || inputPath.trim() === '') {
+    throw new Error('Ruta invalida')
+  }
+  return path.resolve(inputPath)
+}
+
+function rememberAllowedRoot(folderPath) {
+  allowedRoots.add(normalizeFsPath(folderPath))
+}
+
+function isPathInside(parentPath, childPath) {
+  const parent = normalizeFsPath(parentPath)
+  const child = normalizeFsPath(childPath)
+  const relative = path.relative(parent, child)
+  return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative))
+}
+
+function requireAllowedPath(targetPath) {
+  const resolved = normalizeFsPath(targetPath)
+  for (const root of allowedRoots) {
+    if (isPathInside(root, resolved)) return resolved
+  }
+  throw new Error('Ruta fuera de la carpeta abierta')
+}
+
+function resolveAllowedCwd(cwd) {
+  if (cwd) return requireAllowedPath(cwd)
+  const firstRoot = allowedRoots.values().next().value
+  return firstRoot || process.env.USERPROFILE || process.env.HOME || os.homedir()
+}
+
+function requireHttpUrl(urlString) {
+  const parsed = new URL(urlString)
+  if (!['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
+    throw new Error('Protocolo externo no permitido')
+  }
+  return parsed.toString()
+}
+
+function isTrustedAppNavigation(urlString) {
+  try {
+    const parsed = new URL(urlString)
+    if (process.env.NODE_ENV === 'development') {
+      return parsed.origin === 'http://localhost:5173'
+    }
+    return parsed.protocol === 'file:'
+  } catch {
+    return false
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -17,6 +70,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      sandbox: true,
       preload: path.join(__dirname, 'preload.js')
     },
     frame: false,
@@ -29,6 +83,21 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer-dist/index.html'))
   }
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    try {
+      shell.openExternal(requireHttpUrl(url))
+    } catch {
+      // Block unsupported external protocols.
+    }
+    return { action: 'deny' }
+  })
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!isTrustedAppNavigation(url)) {
+      event.preventDefault()
+    }
+  })
 }
 
 // ── Terminal management ──────────────────────────────────
@@ -39,7 +108,7 @@ function createTerminal(cwd) {
   const isWin = os.platform() === 'win32'
   const shell = isWin ? 'powershell.exe' : 'bash'
   const args = isWin ? ['-NoLogo'] : []
-  const spawnCwd = cwd || process.env.HOME || process.env.USERPROFILE
+  const spawnCwd = resolveAllowedCwd(cwd)
 
   const ptyProcess = pty.spawn(shell, args, {
     name: 'xterm-256color',
@@ -123,7 +192,7 @@ ipcMain.handle('window-is-maximized', () => {
 })
 
 ipcMain.handle('open-external', async (event, url) => {
-  await shell.openExternal(url)
+  await shell.openExternal(requireHttpUrl(url))
   return true
 })
 
@@ -135,16 +204,18 @@ ipcMain.handle('open-folder', async () => {
     properties: ['openDirectory']
   })
   if (result.canceled) return null
+  rememberAllowedRoot(result.filePaths[0])
   return result.filePaths[0]
 })
 
 // Leer directorio
 ipcMain.handle('read-directory', async (event, folderPath) => {
-  const items = fs.readdirSync(folderPath, { withFileTypes: true })
+  const safeFolderPath = requireAllowedPath(folderPath)
+  const items = fs.readdirSync(safeFolderPath, { withFileTypes: true })
   return items.map(item => ({
     name: item.name,
     isDirectory: item.isDirectory(),
-    path: path.join(folderPath, item.name)
+    path: path.join(safeFolderPath, item.name)
   })).sort((a, b) => {
     if (a.isDirectory && !b.isDirectory) return -1
     if (!a.isDirectory && b.isDirectory) return 1
@@ -154,18 +225,18 @@ ipcMain.handle('read-directory', async (event, folderPath) => {
 
 // Leer archivo
 ipcMain.handle('read-file', async (event, filePath) => {
-  return fs.readFileSync(filePath, 'utf-8')
+  return fs.readFileSync(requireAllowedPath(filePath), 'utf-8')
 })
 
 // Guardar archivo
 ipcMain.handle('save-file', async (event, filePath, content) => {
-  fs.writeFileSync(filePath, content, 'utf-8')
+  fs.writeFileSync(requireAllowedPath(filePath), content, 'utf-8')
   return true
 })
 
 // ── Git operations ──────────────────────────────────────
 
-const { execFileSync, execSync } = require('child_process')
+const { execFileSync } = require('child_process')
 
 function stripProvider(model, provider) {
   return model.startsWith(`${provider}:`) ? model.replace(`${provider}:`, '') : model
@@ -179,7 +250,7 @@ function toSystemPrompt(context, systemPrompt) {
 
 ipcMain.handle('git-status', async (event, folderPath) => {
   try {
-    const output = execSync('git status --short', { cwd: folderPath, encoding: 'utf-8' })
+    const output = execFileSync('git', ['status', '--short'], { cwd: requireAllowedPath(folderPath), encoding: 'utf-8' })
     return output.split('\n').filter(line => line.trim()).map(line => {
       const status = line.substring(0, 2).trim()
       const file = line.substring(3)
@@ -192,7 +263,7 @@ ipcMain.handle('git-status', async (event, folderPath) => {
 
 ipcMain.handle('git-branch', async (event, folderPath) => {
   try {
-    const output = execSync('git branch --show-current', { cwd: folderPath, encoding: 'utf-8' })
+    const output = execFileSync('git', ['branch', '--show-current'], { cwd: requireAllowedPath(folderPath), encoding: 'utf-8' })
     return output.trim()
   } catch (e) {
     return 'unknown'
@@ -201,8 +272,9 @@ ipcMain.handle('git-branch', async (event, folderPath) => {
 
 ipcMain.handle('git-commit', async (event, folderPath, message) => {
   try {
-    execSync(`git add .`, { cwd: folderPath })
-    execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, { cwd: folderPath })
+    const safeCwd = requireAllowedPath(folderPath)
+    execFileSync('git', ['add', '.'], { cwd: safeCwd })
+    execFileSync('git', ['commit', '-m', String(message || '').slice(0, 500)], { cwd: safeCwd })
     return { success: true }
   } catch (e) {
     return { success: false, error: e.message }
@@ -211,7 +283,7 @@ ipcMain.handle('git-commit', async (event, folderPath, message) => {
 
 ipcMain.handle('git-push', async (event, folderPath) => {
   try {
-    execSync('git push', { cwd: folderPath })
+    execFileSync('git', ['push'], { cwd: requireAllowedPath(folderPath) })
     return { success: true }
   } catch (e) {
     return { success: false, error: e.message }
@@ -220,7 +292,7 @@ ipcMain.handle('git-push', async (event, folderPath) => {
 
 ipcMain.handle('git-pull', async (event, folderPath) => {
   try {
-    execSync('git pull', { cwd: folderPath })
+    execFileSync('git', ['pull'], { cwd: requireAllowedPath(folderPath) })
     return { success: true }
   } catch (e) {
     return { success: false, error: e.message }
@@ -229,7 +301,7 @@ ipcMain.handle('git-pull', async (event, folderPath) => {
 
 ipcMain.handle('git-log', async (event, folderPath) => {
   try {
-    const output = execSync('git log --oneline -n 10', { cwd: folderPath, encoding: 'utf-8' })
+    const output = execFileSync('git', ['log', '--oneline', '-n', '10'], { cwd: requireAllowedPath(folderPath), encoding: 'utf-8' })
     return output
   } catch (e) {
     return ''
@@ -289,7 +361,7 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
     if (model.startsWith('gemini') || model.startsWith('google:')) {
       const googleModel = stripProvider(model, 'google')
       const sysPrefix = systemPrompt || (context ? `Contexto del archivo activo:\n\n${context}\n\n` : '')
-const prompt = sysPrefix + messages[messages.length - 1].content
+      const prompt = sysPrefix + messages[messages.length - 1].content
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${googleModel}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -313,7 +385,7 @@ if (model.startsWith('lmstudio:')) {
     body: JSON.stringify({
       model: 'local-model',
       messages: context
-        ? [{ role: 'system', content: `Eres un asistente de código experto. Contexto:\n\n${context}` }, ...messages]
+        ? [{ role: 'system', content: `Eres un asistente de codigo experto. Contexto:\n\n${context}` }, ...messages]
         : messages,
       stream: false
     })
@@ -390,8 +462,8 @@ if (model.startsWith('qwen:')) {
 if (model.startsWith('ollama:')) {
   const ollamaModel = model.replace('ollama:', '')
   const systemMsg = systemPrompt || (context
-  ? `Eres un asistente de código experto. Contexto del archivo activo:\n\n${context}`
-  : 'Eres un asistente de código experto.')
+  ? `Eres un asistente de codigo experto. Contexto del archivo activo:\n\n${context}`
+  : 'Eres un asistente de codigo experto.')
   
   const response = await fetch('http://localhost:11434/api/chat', {
     method: 'POST',
@@ -528,7 +600,7 @@ ipcMain.handle('ai-cli-run', async (event, { tool, prompt, cwd, model }) => {
 
   try {
     const output = execFileSync(cli.command, args, {
-      cwd: cwd || process.cwd(),
+      cwd: resolveAllowedCwd(cwd),
       encoding: 'utf-8',
       timeout: 120000,
       maxBuffer: 1024 * 1024 * 8
