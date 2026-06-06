@@ -12,6 +12,17 @@ export default defineConfig({
   build: {
     outDir: '../src/renderer-dist',
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000, // raise limit to 1 MB to silence warning
+    rollupOptions: {
+      output: {
+        // Separate vendor libraries into their own chunk
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+    },
   }
 })
 

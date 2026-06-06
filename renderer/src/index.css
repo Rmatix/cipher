@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+:root {
+  --cipher-bg: #080a12;
+  --cipher-surface: #0b0d16;
+  --cipher-surface-alt: #0d1020;
+  --cipher-border: rgba(255,255,255,0.07);
+  --cipher-border-soft: rgba(255,255,255,0.045);
+  --cipher-accent: #7a5cff;
+  --cipher-accent-alt: #4fc3f7;
+  --cipher-accent-soft: #7a5cff55;
+  --cipher-accent-bg: #7a5cff22;
+  --cipher-text: #dce4ff;
+  --cipher-text-muted: #7884aa;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -7,8 +21,8 @@
 }
 
 body {
-  background: #080a12;
-  color: #dce4ff;
+  background: var(--cipher-bg);
+  color: var(--cipher-text);
   font-family: Inter, 'Segoe UI', system-ui, sans-serif;
   overflow: hidden;
   height: 100vh;
@@ -276,12 +290,12 @@ select {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27304a;
+  background: color-mix(in srgb, var(--cipher-accent) 35%, transparent);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7a5cff;
+  background: var(--cipher-accent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -293,4 +307,102 @@ select {
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
   }
+}
+
+/* Glow line note decoration in Monaco gutter */
+.cipher-line-note-decor {
+  position: relative;
+}
+.cipher-line-note-decor::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--cipher-accent);
+  border-radius: 9999px;
+  box-shadow: 0 0 8px var(--cipher-accent);
+  cursor: pointer;
+  z-index: 10;
+}
+/* Premium Dark Theme Enhancements */
+body {
+  background: linear-gradient(135deg, #0b0d16 0%, #080a12 100%);
+  background-attachment: fixed;
+  overflow-y: overlay;
+}
+
+/* Glassmorphism container */
+.glass {
+  background: rgba(13, 16, 32, 0.48);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--cipher-border-soft);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.48);
+}
+
+/* Accent button */
+button.accent {
+  background: var(--cipher-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  transition: background 0.2s, transform 0.1s;
+}
+button.accent:hover {
+  background: var(--cipher-accent-alt);
+  transform: translateY(-2px);
+}
+button.accent:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Hover glow for icons */
+.icon:hover {
+  filter: drop-shadow(0 0 6px var(--cipher-accent));
+}
+
+/* Fade-in animation for panels */
+@keyframes glass-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.glass {
+  animation: glass-fade-in 300ms ease-out both;
+}
+
+/* Scrollbar custom */
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--cipher-accent) 45%, transparent);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cipher-accent);
+}
+
+/* Light theme definitions */
+[data-theme='light'] {
+  --cipher-bg: #f5f7ff;
+  --cipher-surface: #ffffff;
+  --cipher-surface-alt: #f0f2f5;
+  --cipher-border: rgba(0,0,0,0.07);
+  --cipher-border-soft: rgba(0,0,0,0.045);
+  --cipher-accent: #7a5cff;
+  --cipher-accent-alt: #4fc3f7;
+  --cipher-accent-soft: #7a5cff55;
+  --cipher-accent-bg: #7a5cff22;
+  --cipher-text: #1a1a2a;
+  --cipher-text-muted: #6b7089;
+}
+
+/* Transition for theme changes */
+html[data-theme] {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Light theme body gradient */
+[data-theme='light'] body {
+  background: linear-gradient(135deg, #e0e7ff 0%, #ffffff 100%);
 }

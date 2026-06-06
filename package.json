@@ -1,6 +1,6 @@
 {
   "name": "cipher",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Open source code editor with multi-model AI agent",
   "main": "src/main/index.js",
   "author": "Rmatix",
@@ -8,10 +8,13 @@
   "type": "commonjs",
   "scripts": {
     "start": "electron .",
-    "dev": "concurrently \"cd renderer && pnpm dev\" \"wait-on http://localhost:5173 && set NODE_ENV=development&& electron .\"",
+    "dev": "concurrently \"cd renderer && pnpm dev\" \"wait-on http://localhost:5173 && set NODE_ENV=development && electron .\"",
     "build": "cd renderer && pnpm build",
     "pack": "pnpm build && electron-builder --dir",
-    "dist": "pnpm build && electron-builder --win --x64",
+    "dist": "pnpm build && electron-builder",
+    "dist:win": "pnpm build && electron-builder --win --x64",
+    "dist:mac": "pnpm build && electron-builder --mac",
+    "dist:linux": "pnpm build && electron-builder --linux",
     "lint": "cd renderer && pnpm lint",
     "preview": "cd renderer && pnpm preview"
   },
@@ -27,21 +30,15 @@
       "renderer/public/logo.ico",
       "package.json"
     ],
-    "win": {
-      "target": [
-        "nsis",
-        "zip"
-      ],
-      "icon": "renderer/public/logo.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
+    "win": { "target": ["nsis", "zip"] },
+    "mac": { "target": ["dmg", "zip"], "icon": "renderer/public/logo.png", "category": "public.app-category.developer-tools" },
+    "linux": { "target": ["AppImage", "deb", "tar.gz"], "icon": "renderer/public/logo.png", "category": "Development" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true },
+    "extraResources": ["native/*.node"],
+    "asarUnpack": ["**/*.node"]
   },
   "devDependencies": {
+    "@napi-rs/cli": "^3.7.0",
     "concurrently": "^9.2.1",
     "electron": "^42.1.0",
     "electron-builder": "^26.8.1",

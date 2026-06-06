@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react'
+import { ChevronRight, ChevronDown } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import type { FileItem } from '../../types/electron'
-import { getLanguage } from '../../utils/fileUtils'
+import { getLanguage, getMaterialFolderIcon } from '../../utils/fileUtils'
 import FileIcon from '../shared/FileIcon'
 
 interface TreeItemProps {
@@ -50,10 +50,13 @@ function TreeItem({ item, depth }: TreeItemProps) {
               ? <ChevronDown size={15} className="flex-shrink-0 text-[#707b9d] transition-all group-hover:text-[#aab4d6]" />
               : <ChevronRight size={15} className="flex-shrink-0 text-[#707b9d] transition-all group-hover:text-[#aab4d6]" />
             }
-            {open
-              ? <FolderOpen size={18} strokeWidth={1.75} className="flex-shrink-0 text-[#d9b85f]" />
-              : <Folder size={18} strokeWidth={1.75} className="flex-shrink-0 text-[#d9b85f]" />
-            }
+            <img
+              src={getMaterialFolderIcon(item.name, open)}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="h-[18px] w-[18px] flex-shrink-0 select-none object-contain"
+            />
           </>
         ) : (
           <>
@@ -98,8 +101,14 @@ export default function FileExplorer() {
     <div className="flex flex-col h-full overflow-hidden">
       {!currentFolder ? (
         <div className="cipher-fade-up flex flex-col items-center gap-7 px-8 pt-12">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.035] text-[#9d87ff]">
-            <Folder size={24} strokeWidth={1.75} />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.035]">
+            <img
+              src={getMaterialFolderIcon('src', true)}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="h-8 w-8 select-none object-contain"
+            />
           </div>
           <p className="text-center text-[14px] leading-6 text-[#7e8bae]">
             Ninguna carpeta abierta

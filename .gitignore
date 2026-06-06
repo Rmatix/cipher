@@ -11,8 +11,11 @@ release-build-nosign/
 *.exe
 *.msi
 *.blockmap
+native/
+*.node
 builder-debug.yml
 builder-effective-config.yaml
+docs/
 
 # Generated renderer builds
 src/renderer-dist/
@@ -43,3 +46,9 @@ npm-debug.log*
 pnpm-debug.log*
 Captura de pantalla*.png
 Screenshots/
+
+# Rust build artifacts (ignore compiled output)
+target/
+# Keep native Rust source files tracked (unignore)
+!native/
+!native/**

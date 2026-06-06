@@ -1,93 +1,353 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   onDone: () => void
 }
 
-const FALLBACK_DURATION = 3600
+const DURATION = 5520
+
+// ── Particles ────────────────────────────────────────────
+
+interface Particle {
+  id: number
+  x: number
+  y: number
+  size: number
+  opacity: number
+  duration: number
+  delay: number
+  color: string
+}
+
+function generateParticles(count: number): Particle[] {
+  const colors = ['#7a5cff', '#4fc3f7', '#9d87ff', '#80d8ff', '#c5b8ff']
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2.5 + 0.5,
+    opacity: Math.random() * 0.5 + 0.1,
+    duration: Math.random() * 3 + 2,
+    delay: Math.random() * 2,
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }))
+}
+
+const PARTICLES = generateParticles(40)
 
 export default function SplashScreen({ onDone }: Props) {
-  const [exiting, setExiting] = useState(false)
+  const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter')
+  const [progress, setProgress] = useState(0)
+  const [glitchActive, setGlitchActive] = useState(false)
+  const doneRef = useRef(false)
 
   useEffect(() => {
+    // Progress bar animation
+    const startTime = Date.now()
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const pct = Math.min((elapsed / (DURATION * 0.85)) * 100, 100)
+      setProgress(pct)
+    }, 16)
+
+    // Glitch effect at ~40% in
+    const glitchTimer = setTimeout(() => {
+      setGlitchActive(true)
+      setTimeout(() => setGlitchActive(false), 180)
+    }, DURATION * 0.4)
+
+    // Phases
+    const holdTimer = setTimeout(() => setPhase('hold'), 600)
+
+    const exitTimer = setTimeout(() => {
+      setPhase('exit')
+      clearInterval(progressInterval)
+      setProgress(100)
+    }, DURATION - 500)
+
+    const doneTimer = setTimeout(() => {
+      if (!doneRef.current) {
+        doneRef.current = true
+        onDone()
+      }
+    }, DURATION)
+
+    // Sound
     const sound = new Audio('./startup.mp3')
     sound.volume = 0.34
-
-    let done = false
-    let exitTimer = 0
-    let endTimer = 0
-
-    const finish = () => {
-      if (done) return
-      done = true
-      setExiting(true)
-      endTimer = window.setTimeout(onDone, 460)
-    }
-
-    const armFallback = (duration = FALLBACK_DURATION) => {
-      window.clearTimeout(exitTimer)
-      exitTimer = window.setTimeout(finish, Math.max(2600, duration))
-    }
-
-    sound.addEventListener('loadedmetadata', () => {
-      if (Number.isFinite(sound.duration) && sound.duration > 0) {
-        armFallback(sound.duration * 1000)
-      }
-    })
-    sound.addEventListener('ended', finish)
-
-    sound.play().catch(() => {
-      armFallback()
-    })
-    armFallback()
+    sound.play().catch(() => {})
 
     return () => {
-      done = true
-      window.clearTimeout(exitTimer)
-      window.clearTimeout(endTimer)
+      clearInterval(progressInterval)
+      clearTimeout(glitchTimer)
+      clearTimeout(holdTimer)
+      clearTimeout(exitTimer)
+      clearTimeout(doneTimer)
       sound.pause()
     }
   }, [onDone])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#080a12]">
-      <div
-        className="absolute inset-[3%] rounded-[18px] border border-white/[0.08] bg-[#080a12]"
-        style={{ animation: 'cipher-shell-in 3.6s ease both' }}
-      />
-      <div
-        className="absolute h-[1px] w-[70%] bg-gradient-to-r from-transparent via-[#80d8ff] to-transparent blur-[1px]"
-        style={{ animation: 'cipher-scan 3.6s cubic-bezier(.2,.8,.2,1) both' }}
-      />
-      <div className="absolute h-64 w-64 rounded-full border border-[#7a5cff]/25" style={{ animation: 'cipher-ring 2.4s ease-out infinite' }} />
-      <div className="absolute h-96 w-96 rounded-full border border-[#4fc3f7]/10" style={{ animation: 'cipher-ring 3s 0.3s ease-out infinite' }} />
+    <>
+      <style>{`
+        @keyframes sp-particle-float {
+          0%, 100% { transform: translateY(0px) scale(1); opacity: var(--op); }
+          50% { transform: translateY(-18px) scale(1.2); opacity: calc(var(--op) * 1.6); }
+        }
+        @keyframes sp-logo-enter {
+          0% { opacity: 0; transform: scale(0.7) translateY(20px); filter: blur(16px); }
+          60% { opacity: 1; transform: scale(1.04) translateY(0); filter: blur(0); }
+          80% { transform: scale(0.98); }
+          100% { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+        @keyframes sp-logo-exit {
+          0% { opacity: 1; transform: scale(1); filter: blur(0); }
+          100% { opacity: 0; transform: scale(1.08) translateY(-12px); filter: blur(8px); }
+        }
+        @keyframes sp-text-enter {
+          0% { opacity: 0; letter-spacing: 0.3em; transform: translateY(12px); }
+          100% { opacity: 1; letter-spacing: 0.08em; transform: translateY(0); }
+        }
+        @keyframes sp-text-exit {
+          0% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-10px); }
+        }
+        @keyframes sp-subtitle-enter {
+          0% { opacity: 0; transform: translateY(8px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes sp-ring-pulse {
+          0% { transform: scale(0.85); opacity: 0; }
+          30% { opacity: 0.5; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+        @keyframes sp-ring-pulse-2 {
+          0% { transform: scale(0.7); opacity: 0; }
+          25% { opacity: 0.3; }
+          100% { transform: scale(1.8); opacity: 0; }
+        }
+        @keyframes sp-scanline {
+          0% { top: -4px; opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.3; }
+          100% { top: 100%; opacity: 0; }
+        }
+        @keyframes sp-glow-pulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.06); }
+        }
+        @keyframes sp-progress {
+          0% { opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes sp-glitch-1 {
+          0%, 100% { clip-path: inset(0 0 100% 0); transform: none; }
+          20% { clip-path: inset(20% 0 60% 0); transform: translateX(-4px); }
+          40% { clip-path: inset(50% 0 30% 0); transform: translateX(4px); }
+          60% { clip-path: inset(70% 0 10% 0); transform: translateX(-2px); }
+          80% { clip-path: inset(10% 0 80% 0); transform: translateX(2px); }
+        }
+        @keyframes sp-bg-exit {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes sp-vignette {
+          0% { opacity: 0; }
+          30% { opacity: 1; }
+          70% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes sp-line-h {
+          0% { transform: scaleX(0); opacity: 0; }
+          40% { opacity: 0.6; }
+          60% { transform: scaleX(1); opacity: 0.6; }
+          100% { transform: scaleX(1); opacity: 0; }
+        }
+      `}</style>
 
-      <div className={`relative flex flex-col items-center transition-opacity duration-500 ${exiting ? 'opacity-0' : 'opacity-100'}`}>
-        <div className="relative flex h-44 w-44 items-center justify-center">
-          <div className="absolute h-36 w-36 rounded-[30px] border border-white/[0.08] bg-[#10131f]/75 shadow-[0_0_70px_rgba(122,92,255,0.26)]" />
-          <img
-            src="./logo.png"
-            alt="Cipher"
-            className="relative h-28 w-28 object-contain drop-shadow-[0_0_22px_rgba(122,92,255,0.85)]"
-            style={{ animation: 'cipher-logo-rise 3.6s cubic-bezier(.2,.8,.2,1) both' }}
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#04050c]"
+        style={phase === 'exit' ? { animation: 'sp-bg-exit 500ms ease forwards' } : {}}
+      >
+        {/* Grid background */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(122,92,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(122,92,255,0.04) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+            animation: 'sp-vignette 3.2s ease both',
+          }}
+        />
+
+        {/* Vignette */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 40%, #04050c 100%)',
+            animation: 'sp-vignette 3.2s ease both',
+          }}
+        />
+
+        {/* Particles */}
+        {PARTICLES.map(p => (
+          <div
+            key={p.id}
+            className="absolute rounded-full"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              backgroundColor: p.color,
+              '--op': p.opacity,
+              opacity: p.opacity,
+              animation: `sp-particle-float ${p.duration}s ${p.delay}s ease-in-out infinite`,
+            } as React.CSSProperties}
+          />
+        ))}
+
+        {/* Scan line */}
+        <div
+          className="pointer-events-none absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#7a5cff] to-transparent"
+          style={{
+            animation: `sp-scanline ${DURATION}ms linear both`,
+            boxShadow: '0 0 8px #7a5cff, 0 0 20px rgba(122,92,255,0.4)',
+          }}
+        />
+
+        {/* Outer rings */}
+        <div className="pointer-events-none absolute flex items-center justify-center">
+          <div
+            className="h-[420px] w-[420px] rounded-full border border-[#7a5cff]/15"
+            style={{ animation: 'sp-ring-pulse 2.4s 0.2s ease-out infinite' }}
+          />
+        </div>
+        <div className="pointer-events-none absolute flex items-center justify-center">
+          <div
+            className="h-[300px] w-[300px] rounded-full border border-[#4fc3f7]/12"
+            style={{ animation: 'sp-ring-pulse-2 3s 0.6s ease-out infinite' }}
           />
         </div>
 
-        <div className="mt-10 text-center">
+        {/* Horizontal accent lines */}
+        <div
+          className="pointer-events-none absolute left-[15%] right-[15%] h-px origin-left bg-gradient-to-r from-transparent via-[#7a5cff]/40 to-transparent"
+          style={{ top: '30%', animation: 'sp-line-h 3.2s 0.3s ease both' }}
+        />
+        <div
+          className="pointer-events-none absolute left-[15%] right-[15%] h-px origin-right bg-gradient-to-r from-transparent via-[#4fc3f7]/30 to-transparent"
+          style={{ top: '70%', animation: 'sp-line-h 3.2s 0.5s ease both' }}
+        />
+
+        {/* Main content */}
+        <div className="relative flex flex-col items-center">
+
+          {/* Glow backdrop */}
           <div
-            className="text-5xl font-semibold tracking-[0.08em] text-[#eef3ff]"
-            style={{ animation: 'cipher-wordmark 3.6s cubic-bezier(.2,.8,.2,1) both' }}
-          >
-            Cipher
+            className="absolute h-64 w-64 rounded-full blur-[60px]"
+            style={{
+              background: 'radial-gradient(circle, rgba(122,92,255,0.25) 0%, rgba(79,195,247,0.1) 50%, transparent 70%)',
+              animation: 'sp-glow-pulse 2s 0.4s ease-in-out infinite',
+            }}
+          />
+
+          {/* Logo container */}
+          <div className="relative flex h-48 w-48 items-center justify-center">
+            {/* Inner glow ring */}
+            <div
+              className="absolute h-36 w-36 rounded-[32px]"
+              style={{
+                background: 'radial-gradient(circle at 50% 40%, rgba(122,92,255,0.18), transparent 70%)',
+                border: '1px solid rgba(122,92,255,0.2)',
+                boxShadow: '0 0 40px rgba(122,92,255,0.15), inset 0 0 20px rgba(122,92,255,0.05)',
+              }}
+            />
+
+            {/* Logo */}
+            <img
+              src="./logo.png"
+              alt="Cipher"
+              className="relative h-28 w-28 object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 18px rgba(122,92,255,0.9)) drop-shadow(0 0 40px rgba(79,195,247,0.4))',
+                animation: phase === 'exit'
+                  ? 'sp-logo-exit 500ms ease forwards'
+                  : 'sp-logo-enter 700ms cubic-bezier(0.16,1,0.3,1) both',
+              }}
+            />
+
+            {/* Glitch layer */}
+            {glitchActive && (
+              <img
+                src="./logo.png"
+                alt=""
+                aria-hidden
+                className="absolute h-28 w-28 object-contain"
+                style={{
+                  filter: 'drop-shadow(0 0 18px rgba(79,195,247,1))',
+                  animation: 'sp-glitch-1 180ms steps(1) both',
+                  mixBlendMode: 'screen',
+                }}
+              />
+            )}
           </div>
+
+          {/* Text */}
+          <div className="mt-8 flex flex-col items-center gap-4">
+            <h1
+              className="text-[52px] font-semibold leading-normal text-[#eef3ff]"
+              style={{
+                textShadow: '0 0 30px rgba(122,92,255,0.5)',
+                animation: phase === 'exit'
+                  ? 'sp-text-exit 500ms ease forwards'
+                  : 'sp-text-enter 600ms 200ms cubic-bezier(0.16,1,0.3,1) both',
+              }}
+            >
+              Cipher
+            </h1>
+            <p
+              className="text-[11px] font-semibold tracking-[0.6em] text-[#9d87ff]"
+              style={{
+                animation: phase === 'exit'
+                  ? 'sp-text-exit 500ms 50ms ease forwards'
+                  : 'sp-subtitle-enter 600ms 420ms cubic-bezier(0.16,1,0.3,1) both',
+              }}
+            >
+              CODE EDITOR
+            </p>
+          </div>
+
+          {/* Progress bar */}
           <div
-            className="mt-6 text-[11px] font-medium tracking-[0.58em] text-[#9d87ff]"
-            style={{ animation: 'cipher-subtitle 3.6s cubic-bezier(.2,.8,.2,1) both' }}
+            className="mt-10 h-[2px] w-48 overflow-hidden rounded-full bg-white/[0.06]"
+            style={{ animation: `sp-progress ${DURATION}ms ease both` }}
           >
-            CODE EDITOR
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${progress}%`,
+                background: 'linear-gradient(90deg, #7a5cff, #4fc3f7)',
+                boxShadow: '0 0 8px rgba(122,92,255,0.8)',
+                transition: 'width 80ms linear',
+              }}
+            />
           </div>
+
+          {/* Version tag */}
+          <p
+            className="mt-5 text-[11px] tracking-[0.15em] text-[#3a4060]"
+            style={{
+              animation: phase === 'exit'
+                ? 'sp-text-exit 500ms 100ms ease forwards'
+                : 'sp-subtitle-enter 600ms 600ms cubic-bezier(0.16,1,0.3,1) both',
+            }}
+          >
+            v0.2.0
+          </p>
         </div>
       </div>
-    </div>
+    </>
   )
 }

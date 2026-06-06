@@ -7,25 +7,62 @@
 
   ![License](https://img.shields.io/badge/license-MIT-blue)
   ![Platform](https://img.shields.io/badge/platform-Windows-blue)
-  ![Status](https://img.shields.io/badge/status-official%20early%20build-orange)
-  ![Version](https://img.shields.io/badge/version-v0.1.0-7c4dff)
+  ![Status](https://img.shields.io/badge/status-experimental%20incomplete-orange)
+  ![Version](https://img.shields.io/badge/version-v0.2.0-7c4dff)
 </div>
 
 Cipher es un editor de codigo open source para Windows, construido con Electron, React, TypeScript, Monaco Editor y un panel de agente IA multi-proveedor.
 
-> Estado: primera version oficial temprana (`v0.1.0`). La build publicada es oficial, pero no esta firmada digitalmente todavia.
+> Estado: version `v0.2.0` experimental e incompleta. Compila, pero todavia requiere pruebas manuales amplias antes de tratarse como release estable.
 
 ## Caracteristicas
 
+### Editor
+
 - Editor Monaco con tema oscuro Cipher, minimapa, ajuste de linea, formato y atajos de guardado.
 - Explorador de archivos, busqueda de proyecto, panel Git y terminal integrada.
-- Panel inferior con `Problems`, `Output`, `Debug Console`, `Terminal`, `Ports` y `Azure`.
+- Iconos SVG de Material Icon Theme para archivos y carpetas, con mapeo por nombre, extension y tipo de carpeta.
+- Vista previa integrada para imagenes, audios y videos sin leer esos archivos como texto.
+- Apertura de archivos Git y configuraciones comunes como `.gitignore`, `.gitattributes`, workflows y locks.
+- Split Editor Down para dividir el editor activo hacia abajo.
+- Boton Ejecutar en la barra superior: detecta el lenguaje del archivo activo y corre el comando correcto en la terminal integrada (`node`, `python`, `go run`, `cargo run`, `bash`, etc.).
+- Panel inferior con `Problems`, `Output`, `Debug Console`, `Terminal`, `Ports` y `Cloud`.
 - `Problems` analiza el archivo activo para detectar conflictos Git, `TODO/FIXME`, `console.log`, lineas largas y JSON invalido.
+- `Ports` escanea puertos locales en escucha y permite abrir o copiar URLs `localhost`.
+- `Cloud` reemplaza el panel exclusivo de Azure por un espacio unico para Azure, GCP y AWS con deteccion de CLI (`az`, `gcloud`, `aws`).
+
+### Historial de cambios
+
+- Cada vez que guardas un archivo (`Ctrl+S`) se crea una entrada en el historial automaticamente.
+- El panel Historial muestra snapshots guardados y permite restaurar versiones anteriores al editor.
+- El historial persiste entre sesiones via `localStorage` con maximo de 30 entradas por archivo.
+
+### Temas
+
+- Nueve temas incorporados de alta calidad: Midnight, Obsidian, Forest, Ocean, Aurora, Nordic Frost (Nord), Cyberpunk Neon, Monokai Retro y Snow Light (tema claro).
+- Previsualización dinámica de temas mediante tarjetas que muestran una representación en miniatura de la interfaz.
+- Soporte inteligente para temas claros y oscuros en Monaco Editor según el tema activo.
+- Los colores se aplican mediante variables CSS al instante, sin recargar la app.
+
+### Agente IA
+
 - Agente IA con modo Chat, Plan y Dev.
-- Soporte para OpenRouter, NVIDIA NIM, Ollama, LM Studio, Anthropic, OpenAI, Google Gemini, DeepSeek y modelos compatibles con OpenAI.
+- Soporte para OpenRouter, NVIDIA NIM, Ollama, LM Studio, Anthropic, OpenAI, Google Gemini, DeepSeek, Kimi y Qwen.
+- Web search integrado para modelos OpenRouter compatibles.
+- Thinking / Razonamiento para modelos compatibles, con acordeon visual de razonamiento.
+- Contexto del archivo activo: el agente puede usar el contenido actual del archivo abierto, incluso si todavia no fue guardado.
 - Compatibilidad inicial con Claude Code y OpenAI Codex CLI.
 - Configuracion de API keys por proveedor y por modelo.
-- Interfaz Electron sin marco, splash screen y controles tipo editor profesional.
+- Los modelos marcados como "pronto" aun no estan disponibles en las APIs de sus proveedores.
+
+### Interfaz
+
+- Interfaz Electron sin marco, splash screen animado y controles tipo editor profesional.
+- Modo enfoque (`Ctrl+K Z`) que oculta toda la UI excepto el editor.
+- Atajos de teclado configurables desde Configuracion.
+- Animaciones de entrada por panel y deteccion de Ollama local.
+- Debugger IA: muestra errores y advertencias accionables del archivo activo y permite pedirle al agente que los corrija.
+- Terminal redisenada con perfiles de shell, nuevo terminal, split terminal, limpiar, matar proceso, worktree, acciones rapidas y renombrado interactivo de terminales haciendo clic derecho (menú contextual) o doble clic sobre la pestaña/encabezado.
 
 ## Descargar
 
@@ -35,21 +72,18 @@ Como esta version aun no esta firmada, Windows SmartScreen puede mostrar una adv
 
 ## Requisitos
 
-- Windows 10 o Windows 11.
-- Node.js 20 o superior.
-- pnpm 11 o superior.
-- Git.
-- Visual Studio 2022 Build Tools o Visual Studio Community con componentes C++ para empaquetar la app.
+- **Sistemas Operativos**: Windows 10/11, macOS 10.15+ o distribuciones modernas de Linux (Debian, Ubuntu, Fedora, Arch, etc.).
+- **Node.js**: versión 20 o superior.
+- **pnpm**: versión 11 o superior.
+- **Git**.
+- **Herramientas de Compilación Nativas (requerido para `node-pty`)**:
+  - **En Windows**: Visual Studio 2022 Build Tools (con C++ build tools, Windows 10/11 SDK y componentes Spectre-mitigated libs si compilas releases finales).
+  - **En macOS**: Herramientas de Línea de Comandos de Xcode (`xcode-select --install`).
+  - **En Linux**: Paquetes de desarrollo básicos (`gcc`, `g++`, `make`, `python3`).
+    - En Ubuntu/Debian: `sudo apt install build-essential python3`
+    - En Fedora/RHEL: `sudo dnf groupinstall "Development Tools" && sudo dnf install python3`
 
-Componentes recomendados de Visual Studio Installer:
-
-```text
-MSVC v143 - VS 2022 C++ x64/x86 build tools
-MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs
-Windows 10 SDK o Windows 11 SDK
-```
-
-La terminal integrada usa `node-pty`, una dependencia nativa que compila partes en C++. Si falta el componente Spectre, `pnpm dist` puede fallar con `MSB8040`.
+La terminal integrada usa `node-pty`, una dependencia nativa que compila partes en C++. Asegúrate de cumplir con los requisitos anteriores antes de instalar las dependencias o el proceso fallará.
 
 ## Compilar desde codigo fuente
 
@@ -64,6 +98,7 @@ Instala dependencias:
 
 ```bash
 pnpm install
+# Solo en Windows (requerido para el empaquetador del instalador):
 pnpm approve-builds electron-winstaller
 ```
 
@@ -79,24 +114,97 @@ Compila el renderer:
 pnpm build
 ```
 
-Empaqueta para Windows:
+Empaqueta para tu sistema actual:
 
 ```bash
+# Empaqueta y distribuye instaladores locales según el sistema actual
 pnpm dist
 ```
 
+O empaqueta específicamente para tu plataforma usando los comandos dedicados:
+
+- **Para Windows** (genera instalador `.exe` NSIS y `.zip` ejecutable):
+  ```bash
+  pnpm dist:win
+  ```
+- **Para macOS** (genera imagen `.dmg` y `.zip` de la app desde un sistema macOS):
+  ```bash
+  pnpm dist:mac
+  ```
+- **Para Linux** (genera paquetes autoejecutables `.AppImage`, instalador `.deb` y archivo comprimido `.tar.gz` desde un sistema Linux):
+  ```bash
+  pnpm dist:linux
+  ```
+
 Los artefactos generados quedan en `release/`. Esa carpeta no se sube al repositorio.
+
+## Compilación en Sistemas UNIX (macOS y Linux)
+
+Para compilar Cipher en sistemas operativos UNIX (macOS, Linux), asegúrate de contar con los compiladores nativos, Node.js y la cadena de herramientas de Rust instalada.
+
+### Prerrequisitos
+
+1. **Rust y Cargo**:
+   Instala Rustup (el instalador oficial de Rust):
+   ```bash
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   ```
+   Asegúrate de tener `cargo` disponible en tu PATH:
+   ```bash
+   rustc --version
+   ```
+
+2. **Compiladores del Sistema**:
+   - **En macOS**: Instala las herramientas de línea de comandos de Xcode ejecutando:
+     ```bash
+     xcode-select --install
+     ```
+   - **En Linux (Debian/Ubuntu)**: Instala las herramientas de desarrollo esenciales:
+     ```bash
+     sudo apt update
+     sudo apt install -y build-essential python3
+     ```
+
+3. **Node.js y pnpm**:
+   Instala Node.js v20+ y habilita/instala `pnpm`:
+   ```bash
+   corepack enable pnpm
+   # O instala pnpm globalmente:
+   npm install -g pnpm
+   ```
+
+### Pasos de compilación e instalación
+
+Una vez configurados los prerrequisitos, ejecuta los siguientes comandos desde la raíz del proyecto para instalar las dependencias y levantar el entorno de compilación nativo:
+
+```bash
+# Instalar dependencias del proyecto (compilará node-pty y enlazará las dependencias nativas)
+pnpm install
+
+# Compilar el frontend (React/TypeScript/Vite)
+pnpm build
+
+# Ejecutar Cipher en modo de desarrollo
+pnpm dev
+
+# Compilar y empaquetar instaladores y binarios específicos según tu sistema operativo
+# En macOS:
+pnpm dist:mac
+
+# En Linux:
+pnpm dist:linux
+```
 
 ## Build sin firma
 
-La build oficial `v0.1.0` se distribuye sin firma digital. Para generar una build ZIP sin firma desde tu maquina puedes usar:
+Esta version experimental se distribuye sin firma digital. Para generar una build ZIP sin firma desde tu maquina puedes usar:
 
 ```bash
 pnpm build
 pnpm exec electron-builder --win zip --x64 --config.directories.output=release-build-nosign --config.win.signAndEditExecutable=false
 ```
 
-Nota: `signAndEditExecutable=false` evita problemas de permisos con `winCodeSign`, pero tambien puede impedir que Electron Builder inserte correctamente el icono del `.exe`. Para un release final con icono embebido y metadata completa, usa `pnpm dist` con Modo de programador activo o una terminal con permisos adecuados.
+Nota: `signAndEditExecutable=false` evita problemas de permisos con `winCodeSign`, pero puede impedir que Electron Builder inserte correctamente el icono del `.exe`. Para un release final con icono embebido usa `pnpm dist`.
 
 ## Firma digital
 
@@ -118,7 +226,10 @@ pnpm dev           # Vite + Electron en modo desarrollo
 pnpm start         # Ejecuta Electron con build existente
 pnpm build         # Compila el renderer de produccion
 pnpm pack          # Genera app desempaquetada con electron-builder
-pnpm dist          # Genera instalador y ZIP de Windows
+pnpm dist          # Genera artefactos segun el sistema actual
+pnpm dist:win      # Genera instalador y ZIP de Windows
+pnpm dist:mac      # Genera DMG/ZIP de macOS desde macOS
+pnpm dist:linux    # Genera AppImage/DEB/tar.gz de Linux desde Linux
 pnpm lint          # Revisa el renderer con ESLint
 pnpm preview       # Preview local del renderer
 ```
@@ -130,10 +241,47 @@ cipher/
   src/
     main/              Proceso principal de Electron e IPC
   renderer/
-    src/               Aplicacion React + TypeScript
-    public/            Assets publicos del renderer
+    src/
+      components/
+        ai/            Agente IA y panel de chat
+        debug/         Debugger IA
+        editor/        Monaco Editor y vista previa multimedia
+        history/       Panel de historial de cambios
+        layout/        Titlebar, Sidebar, Panel y StatusBar
+        memory/        Memoria de proyecto
+        settings/      Configuracion y temas
+        shared/        Componentes reutilizables
+        sidebar/       Explorador, busqueda y Git
+        terminal/      Bottom panel, terminal, ports y cloud
+      store/           Estado global (Zustand)
+      utils/           Utilidades de archivos, lenguaje e iconos
+    public/
+      material-icons/  Iconos SVG de Material Icon Theme
     vite.config.ts     Build del renderer hacia src/renderer-dist
 ```
+
+## Núcleo en Rust (Cipher V2)
+
+Para optimizar el rendimiento y minimizar el consumo de memoria RAM al interactuar con modelos de lenguaje locales (como Ollama y LM Studio), Cipher V2 incorpora una arquitectura híbrida de alto rendimiento.
+
+El núcleo de Rust (gestionado vía `Cargo.toml`) procesa de manera nativa tareas pesadas y de alta latencia en hilos dedicados, liberando al hilo principal de Node/Electron:
+- **Procesamiento de texto pesado**: Lectura, limpieza y chunking optimizado de archivos de gran tamaño.
+- **Tokenización ultrarrápida**: Estimación de tokens y recorte inteligente del contexto del prompt para no exceder los límites del contexto del modelo.
+- **Indexación y Búsqueda Vectorial**: Indexado semántico local en memoria para buscar fragmentos relevantes del proyecto rápidamente.
+### Arquitectura híbrida Rust
+
+Cipher V2 incorpora un módulo nativo escrito en **Rust** (`native/`) que expone una API **Node‑API (N‑API)** a través de `src/lib.rs`. Este módulo se encarga de tareas de alto costo computacional como:
+
+- **Indexación de archivos** y generación de tokens para los modelos de IA locales.
+- **Tokenización y recorte de contexto** ultra‑rápidos.
+- **Búsqueda vectorial** en memoria para encontrar fragmentos relevantes del proyecto.
+
+Los botones del panel **Workflows** ejecutan los comandos de Cargo correspondientes:
+
+* **Cargo Build** – `cargo build` (compila el módulo y genera `cipher_native.dll`/`libcipher_native.so`).
+* **Cargo Check** – `cargo check` (analiza sin generar artefactos).
+
+> **Requisitos**: Tener instalado el toolchain de Rust (`rustup`, `cargo`) y que esté disponible en `PATH`. En entornos UNIX (macOS / Linux) se requiere `rustup` y los compiladores del sistema; en Windows se usa la misma herramienta a través de `cargo`.
 
 ## Configuracion IA
 
@@ -141,8 +289,26 @@ cipher/
 - Ollama requiere el servicio local en `http://localhost:11434`.
 - LM Studio requiere el servidor local compatible con OpenAI en `http://localhost:1234/v1`.
 - Los modelos personalizados permiten guardar proveedor, ID, URL base opcional y API key.
+- Web search solo funciona con modelos de OpenRouter que aceptan herramientas de busqueda.
+- Thinking / Razonamiento depende de que el modelo/proveedor soporte razonamiento extendido.
 - Claude Code se comprueba con `claude --version` y puede ejecutarse en modo Dev con `claude -p`.
 - Codex CLI se comprueba con `codex --version` y puede ejecutarse en modo Dev con `codex exec`.
+
+## Atajos de teclado
+
+| Accion | Atajo por defecto |
+|---|---|
+| Guardar archivo | Ctrl+S |
+| Formatear documento | Ctrl+Shift+F |
+| Paleta de comandos | Ctrl+Shift+P |
+| Abrir agente IA | Ctrl+Shift+A |
+| Abrir memoria | Ctrl+Shift+M |
+| Abrir debugger IA | Ctrl+Shift+D |
+| Abrir explorador | Ctrl+B |
+| Mostrar/ocultar terminal | Ctrl+` |
+| Modo enfoque | Ctrl+K Z |
+
+Todos los atajos son configurables desde Configuracion.
 
 ## Contribuir
 

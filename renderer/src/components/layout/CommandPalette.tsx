@@ -28,7 +28,7 @@ interface Props {
 }
 
 export default function CommandPalette({ onClose }: Props) {
-  const { setCurrentFolder, setSidebarPanel, terminalVisible, setTerminalVisible, setBottomPanel } = useStore()
+  const { setCurrentFolder, setSidebarPanel, terminalVisible, setTerminalVisible, setBottomPanel, setEditorSplitDirection } = useStore()
 
   const openFolder = async () => {
     const folder = await window.cipher.openFolder()
@@ -47,7 +47,7 @@ export default function CommandPalette({ onClose }: Props) {
     onClose()
   }
 
-  const openBottomPanel = (panel: 'problems' | 'output' | 'debug' | 'terminal' | 'ports' | 'azure') => {
+  const openBottomPanel = (panel: 'problems' | 'output' | 'debug' | 'terminal' | 'ports' | 'cloud') => {
     setBottomPanel(panel)
     setTerminalVisible(true)
     onClose()
@@ -66,7 +66,7 @@ export default function CommandPalette({ onClose }: Props) {
     { label: 'Output', hint: 'Ver salida de tareas y extensiones', icon: ListChecks, action: () => openBottomPanel('output') },
     { label: 'Debug Console', hint: 'Abrir consola de depuracion', icon: Command, action: () => openBottomPanel('debug') },
     { label: 'Ports', hint: 'Ver puertos locales', icon: RadioTower, action: () => openBottomPanel('ports') },
-    { label: 'Azure', hint: 'Ver panel de nube', icon: Cloud, action: () => openBottomPanel('azure') },
+    { label: 'Cloud', hint: 'Azure, GCP y AWS en un solo panel', icon: Cloud, action: () => openBottomPanel('cloud') },
     { label: 'Terminal integrada', hint: terminalVisible ? 'Ocultar terminal' : 'Mostrar terminal', icon: Terminal, action: () => { setBottomPanel('terminal'); setTerminalVisible(!terminalVisible); onClose() } },
     { label: 'Nuevo archivo', hint: 'Crear desde el explorador', icon: FilePlus2, action: () => { window.dispatchEvent(new Event('cipher-new-file')); onClose() } },
     { label: 'Instalar dependencias', hint: 'pnpm install', icon: PackageCheck, action: () => runTerminalCommand('pnpm install') },
@@ -75,6 +75,9 @@ export default function CommandPalette({ onClose }: Props) {
     { label: 'Revisar lint', hint: 'pnpm lint', icon: Bug, action: () => runTerminalCommand('pnpm lint') },
     { label: 'Git pull', hint: 'Actualizar rama actual', icon: GitPullRequest, action: () => runTerminalCommand('git pull') },
     { label: 'Git status', hint: 'Ver cambios locales', icon: Command, action: () => runTerminalCommand('git status --short --branch') },
+    { label: 'Worktree', hint: 'git worktree list', icon: GitBranch, action: () => runTerminalCommand('git worktree list') },
+    { label: 'Open Changes', hint: 'Abrir panel Git', icon: GitBranch, action: () => { setSidebarPanel('git'); onClose() } },
+    { label: 'Split Editor Down', hint: 'Dividir editor hacia abajo', icon: Code2, action: () => { setEditorSplitDirection('down'); onClose() } },
     { label: 'Claude Code', hint: 'claude', icon: Sparkles, action: () => runTerminalCommand('claude') },
     { label: 'Codex CLI', hint: 'codex', icon: Sparkles, action: () => runTerminalCommand('codex') },
   ]
@@ -82,17 +85,17 @@ export default function CommandPalette({ onClose }: Props) {
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black/45 pt-24 backdrop-blur-[2px]" onClick={onClose}>
       <div
-        className="cipher-pop-enter w-[700px] overflow-hidden rounded-2xl border border-white/[0.1] bg-[#10131f] shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
+        className="cipher-pop-enter w-[700px] overflow-hidden rounded-2xl border border-[var(--cipher-border)] bg-[var(--cipher-surface)] shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
         onClick={event => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5">
+        <div className="flex items-center justify-between border-b border-[var(--cipher-border)] px-6 py-5">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.24em] text-[#7f8bb0]">Paleta de comandos</p>
-            <p className="mt-1.5 text-[13px] text-[#5f6a8c]">Acciones principales de Cipher</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.24em] text-[var(--cipher-text-muted)]">Paleta de comandos</p>
+            <p className="mt-1.5 text-[13px] text-[var(--cipher-text-muted)]">Acciones principales de Cipher</p>
           </div>
           <button
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-[#7f8bb0] transition-all hover:bg-white/[0.06] hover:text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--cipher-text-muted)] transition-all hover:bg-[var(--cipher-surface-alt)] hover:text-[var(--cipher-text)]"
           >
             <X size={18} />
           </button>
@@ -103,14 +106,14 @@ export default function CommandPalette({ onClose }: Props) {
             <button
               key={label}
               onClick={action}
-              className="flex h-14 w-full items-center gap-4 rounded-xl px-4 text-left transition-all hover:bg-[#7a5cff]/14"
+              className="flex h-14 w-full items-center gap-4 rounded-xl px-4 text-left transition-all hover:bg-[var(--cipher-accent-bg)]"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] text-[#9d87ff]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--cipher-surface-alt)] text-[var(--cipher-accent)]">
                 <Icon size={19} strokeWidth={1.8} />
               </span>
               <span className="flex flex-1 flex-col">
-                <span className="text-[14px] font-medium text-[#dce4ff]">{label}</span>
-                <span className="text-[12px] text-[#6f7a9d]">{hint}</span>
+                <span className="text-[14px] font-medium text-[var(--cipher-text)]">{label}</span>
+                <span className="text-[12px] text-[var(--cipher-text-muted)]">{hint}</span>
               </span>
             </button>
           ))}
