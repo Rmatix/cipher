@@ -449,9 +449,9 @@ export const useStore = create<AppState>((set) => ({
   // AI
   aiMode: 'chat',
   setAiMode: (mode) => set({ aiMode: mode }),
-  aiModel: 'openrouter:deepseek/deepseek-chat',
+  aiModel: 'openrouter:deepseek/deepseek-chat-v4',
   setAiModel: (model) => set({ aiModel: model }),
-  aiDevModel: 'ollama:qwen2.5-coder:7b',
+  aiDevModel: 'ollama:qwen-3.7-coder:7b',
   setAiDevModel: (model) => set({ aiDevModel: model }),
   customModels: JSON.parse(localStorage.getItem('cipher-custom-models') || '[]'),
   addCustomModel: (model) => set((state) => {
