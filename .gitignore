@@ -52,3 +52,7 @@ target/
 # Keep native Rust source files tracked (unignore)
 !native/
 !native/**
+
+# Local agent metadata and experimental release notes
+AGENTS.md
+RELEASE_NOTES_0.2.0_EXPERIMENTAL.md

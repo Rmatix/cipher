@@ -54,6 +54,12 @@ Cipher es un editor de codigo open source para Windows, construido con Electron,
 - Compatibilidad inicial con Claude Code y OpenAI Codex CLI.
 - Configuracion de API keys por proveedor y por modelo.
 - Los modelos marcados como "pronto" aun no estan disponibles en las APIs de sus proveedores.
+  - **Modelos disponibles (6 de junio 2026):**
+    - Gemini 3.5 Flash
+    - Claude 4.8 Opus
+    - GPT 5.5 Pro
+    - DeepSeek V4
+    - Qwen 3.7 Coder
 
 ### Interfaz
 
