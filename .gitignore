@@ -54,5 +54,5 @@ target/
 !native/**
 
 # Local agent metadata and experimental release notes
-/AGENTS.md
-/RELEASE_NOTES_0.2.0_EXPERIMENTAL.md
+AGENTS.md
+RELEASE_NOTES_0.2.0_EXPERIMENTAL.md
