@@ -326,9 +326,8 @@ select {
   cursor: pointer;
   z-index: 10;
 }
-/* Premium Dark Theme Enhancements */
+/* Premium Dark Theme Enhancements — gradient applied via applyTheme() in JS */
 body {
-  background: linear-gradient(135deg, #0b0d16 0%, #080a12 100%);
   background-attachment: fixed;
   overflow-y: overlay;
 }
@@ -378,23 +377,43 @@ button.accent:active {
 
 /* Light theme definitions */
 [data-theme='light'] {
-  --cipher-bg: #f5f7ff;
-  --cipher-surface: #ffffff;
-  --cipher-surface-alt: #f0f2f5;
-  --cipher-border: rgba(0,0,0,0.07);
+  --cipher-bg: #f0ede8;
+  --cipher-surface: #faf8f5;
+  --cipher-surface-alt: #e8e4dd;
+  --cipher-border: rgba(0,0,0,0.09);
   --cipher-border-soft: rgba(0,0,0,0.045);
-  --cipher-accent: #7a5cff;
-  --cipher-accent-alt: #4fc3f7;
-  --cipher-accent-soft: #7a5cff55;
-  --cipher-accent-bg: #7a5cff22;
-  --cipher-text: #1a1a2a;
-  --cipher-text-muted: #6b7089;
+  --cipher-accent: #5b4fcf;
+  --cipher-accent-alt: #0284c7;
+  --cipher-accent-soft: rgba(91, 79, 207, 0.35);
+  --cipher-accent-bg: rgba(91, 79, 207, 0.10);
+  --cipher-text: #1e293b;
+  --cipher-text-muted: #5a6680;
+  /* Code blocks in light mode — need explicit overrides */
+  --cipher-code-bg: #e4e1dc;
+  --cipher-code-text: #1e2030;
+  --cipher-code-inline-bg: rgba(91, 79, 207, 0.10);
+  --cipher-code-inline-text: #4338ca;
+}
+
+/* Dark themes — code block defaults */
+:root {
+  --cipher-code-bg: #070912;
+  --cipher-code-text: #80d8ff;
+  --cipher-code-inline-bg: rgba(0,0,0,0.25);
+  --cipher-code-inline-text: var(--cipher-accent);
 }
 
 /* Transition for theme changes */
 html[data-theme] {
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 0.35s ease, color 0.35s ease;
 }
 
-/* Light theme — gradient is applied via --cipher-bg CSS variable by the theme system in useStore.ts */
-/* The applyTheme() function sets document.body.style.background directly */
+/* Light theme — gradient applied via applyTheme() in useStore.ts */
+
+/* Light theme scrollbar */
+[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: rgba(91, 79, 207, 0.25);
+}
+[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(91, 79, 207, 0.55);
+}

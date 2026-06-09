@@ -10,15 +10,20 @@ export default function ModelSelector() {
 
   // Built‑in models list. Adjust as needed.
   const builtInModels = [
-    { name: 'Claude 4.8 Sonnet (Anthropic)', id: 'claude-sonnet-4-8' },
-    { name: 'Claude 4.8 Opus (Anthropic)', id: 'claude-opus-4-8' },
-    { name: 'GPT-5.5 Pro (OpenAI)', id: 'gpt-5.5-pro' },
-    { name: 'GPT-5.5 Mini (OpenAI)', id: 'gpt-5.5-mini' },
-    { name: 'Gemini 3.5 Flash (Google)', id: 'gemini-3.5-flash' },
-    { name: 'Gemini 3.5 Pro (Google)', id: 'gemini-3.5-pro' },
-    { name: 'DeepSeek V4 (OpenRouter)', id: 'openrouter:deepseek/deepseek-chat-v4' },
-    { name: 'DeepSeek Reasoner V4 (OpenRouter)', id: 'openrouter:deepseek/deepseek-reasoner-v4' },
-    { name: 'Ollama Qwen3.7 Coder (Local)', id: 'ollama:qwen-3.7-coder:7b' },
+    { name: 'Claude 3.5 Sonnet (Anthropic)', id: 'claude-3-5-sonnet' },
+    { name: 'Claude 4.8 Sonnet (Anthropic) (Pronto)', id: 'claude-sonnet-4-8' },
+    { name: 'Claude 4.8 Opus (Anthropic) (Pronto)', id: 'claude-opus-4-8' },
+    { name: 'GPT-4o (OpenAI)', id: 'gpt-4o' },
+    { name: 'GPT-5.5 Pro (OpenAI) (Pronto)', id: 'gpt-5.5-pro' },
+    { name: 'GPT-5.5 Mini (OpenAI) (Pronto)', id: 'gpt-5.5-mini' },
+    { name: 'Gemini 2.0 Flash (Google)', id: 'gemini-2.0-flash' },
+    { name: 'Gemini 3.5 Flash (Google) (Pronto)', id: 'gemini-3.5-flash' },
+    { name: 'Gemini 3.5 Pro (Google) (Pronto)', id: 'gemini-3.5-pro' },
+    { name: 'DeepSeek V3 (OpenRouter)', id: 'openrouter:deepseek/deepseek-chat' },
+    { name: 'DeepSeek R1 (OpenRouter)', id: 'openrouter:deepseek/deepseek-reasoner' },
+    { name: 'DeepSeek V4 (OpenRouter) (Pronto)', id: 'openrouter:deepseek/deepseek-chat-v4' },
+    { name: 'DeepSeek Reasoner V4 (OpenRouter) (Pronto)', id: 'openrouter:deepseek/deepseek-reasoner-v4' },
+    { name: 'Ollama Qwen2.5 Coder (Local)', id: 'ollama:qwen-2.5-coder:7b' },
   ];
 
   const allModels = [...builtInModels, ...customModels.map(m => ({ name: m.name ?? m.provider, id: m.modelId }))];

@@ -142,6 +142,11 @@ function applyTheme(theme: CipherTheme) {
 
   // For light themes (snow), apply a warm gradient; for dark themes use the bg color
   const isLight = theme.id === 'snow'
+  if (isLight) {
+    document.documentElement.setAttribute('data-theme', 'light')
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark')
+  }
   document.body.style.background = isLight
     ? `linear-gradient(135deg, ${theme.surfaceAlt} 0%, ${theme.bg} 40%, ${theme.surface} 100%)`
     : theme.bg

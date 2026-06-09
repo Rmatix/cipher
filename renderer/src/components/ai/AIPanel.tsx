@@ -44,57 +44,83 @@ const STATIC_MODELS: ModelGroup[] = [
   {
     group: 'OpenRouter',
     options: [
-      { value: 'openrouter:google/gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
-      { value: 'openrouter:google/gemini-3.5-pro', label: 'Gemini 3.5 Pro' },
-      { value: 'openrouter:anthropic/claude-opus-4.8', label: 'Claude Opus 4.8' },
-      { value: 'openrouter:anthropic/claude-sonnet-4.8', label: 'Claude Sonnet 4.8' },
-      { value: 'openrouter:openai/gpt-5.5-pro', label: 'GPT-5.5 Pro' },
-      { value: 'openrouter:openai/gpt-5.5-mini', label: 'GPT-5.5 Mini' },
-      { value: 'openrouter:deepseek/deepseek-chat-v4', label: 'DeepSeek Chat (V4)' },
-      { value: 'openrouter:deepseek/deepseek-reasoner-v4', label: 'DeepSeek Reasoner (V4)' },
-      { value: 'openrouter:qwen/qwen-3.7-coder-32b-instruct', label: 'Qwen 3.7 Coder 32B' },
-      { value: 'openrouter:google/gemini-3.5-flash:free', label: 'Gemini 3.5 Flash (Free)' },
+      { value: 'openrouter:google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+      { value: 'openrouter:google/gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+      { value: 'openrouter:anthropic/claude-opus-4-5', label: 'Claude Opus 4.5' },
+      { value: 'openrouter:anthropic/claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
+      { value: 'openrouter:anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku' },
+      { value: 'openrouter:openai/gpt-4o', label: 'GPT-4o' },
+      { value: 'openrouter:openai/gpt-4o-mini', label: 'GPT-4o Mini' },
+      { value: 'openrouter:openai/o3', label: 'o3' },
+      { value: 'openrouter:openai/o4-mini', label: 'o4-mini' },
+      { value: 'openrouter:openai/gpt-4.1', label: 'GPT-4.1' },
+      { value: 'openrouter:openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+      { value: 'openrouter:deepseek/deepseek-chat-v3-0324', label: 'DeepSeek V3 (Mar 2025)' },
+      { value: 'openrouter:deepseek/deepseek-r1', label: 'DeepSeek R1' },
+      { value: 'openrouter:deepseek/deepseek-prover-v2', label: 'DeepSeek Prover V2' },
+      { value: 'openrouter:qwen/qwen-2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
+      { value: 'openrouter:qwen/qwq-32b', label: 'QwQ 32B' },
+      { value: 'openrouter:meta-llama/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
+      { value: 'openrouter:meta-llama/llama-4-scout', label: 'Llama 4 Scout' },
+      { value: 'openrouter:meta-llama/llama-4-maverick', label: 'Llama 4 Maverick' },
+      { value: 'openrouter:mistralai/mistral-large', label: 'Mistral Large' },
+      { value: 'openrouter:mistralai/codestral-2501', label: 'Codestral 2501' },
+      { value: 'openrouter:x-ai/grok-3', label: 'Grok 3' },
+      { value: 'openrouter:x-ai/grok-3-mini', label: 'Grok 3 Mini' },
     ],
   },
   {
     group: 'NVIDIA NIM',
     options: [
       { value: 'nim:meta/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
-      { value: 'nim:deepseek/deepseek-chat-v4', label: 'DeepSeek Chat (V4)' },
-      { value: 'nim:qwen/qwen-3.7-coder-32b-instruct', label: 'Qwen 3.7 Coder 32B' },
+      { value: 'nim:meta/llama-4-scout-17b-16e-instruct', label: 'Llama 4 Scout 17B' },
       { value: 'nim:nvidia/llama-3.1-nemotron-70b-instruct', label: 'Nemotron 70B' },
+      { value: 'nim:nvidia/llama-3.3-nemotron-super-49b-v1', label: 'Nemotron Super 49B' },
+      { value: 'nim:deepseek-ai/deepseek-r1', label: 'DeepSeek R1' },
+      { value: 'nim:qwen/qwen2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
+      { value: 'nim:mistralai/mistral-small-3.1-24b-instruct', label: 'Mistral Small 3.1 24B' },
+      { value: 'nim:microsoft/phi-4-reasoning-plus', label: 'Phi-4 Reasoning Plus' },
     ],
   },
   {
     group: 'Anthropic',
     options: [
-      { value: 'claude-opus-4-8', label: 'Claude Opus 4.8' },
-      { value: 'claude-sonnet-4-8', label: 'Claude Sonnet 4.8' },
-      { value: 'claude-haiku-4-8', label: 'Claude Haiku 4.8' },
+      { value: 'claude-opus-4-5', label: 'Claude Opus 4.5' },
+      { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
+      { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' },
+      { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
+      { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
     ],
   },
   {
     group: 'OpenAI',
     options: [
-      { value: 'gpt-5.5-pro', label: 'GPT-5.5 Pro' },
-      { value: 'gpt-5.5', label: 'GPT-5.5' },
-      { value: 'gpt-5.5-mini', label: 'GPT-5.5 Mini' },
+      { value: 'gpt-4.1', label: 'GPT-4.1' },
+      { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
       { value: 'gpt-4o', label: 'GPT-4o' },
+      { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+      { value: 'o3', label: 'o3' },
+      { value: 'o4-mini', label: 'o4-mini' },
+      { value: 'o3-mini', label: 'o3-mini' },
+      { value: 'gpt-4.5-preview', label: 'GPT-4.5 Preview' },
     ],
   },
   {
     group: 'Google',
     options: [
-      { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro' },
-      { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
-      { value: 'gemini-3.1-pro', label: 'Gemini 3.1 Pro' },
+      { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+      { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+      { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+      { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
+      { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+      { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
     ],
   },
   {
     group: 'DeepSeek',
     options: [
-      { value: 'deepseek:deepseek-chat-v4', label: 'DeepSeek Chat (V4)' },
-      { value: 'deepseek:deepseek-reasoner-v4', label: 'DeepSeek Reasoner (V4)' },
+      { value: 'deepseek-chat', label: 'DeepSeek V3 (Chat)' },
+      { value: 'deepseek-reasoner', label: 'DeepSeek R1 (Reasoner)' },
     ],
   },
   {
@@ -103,16 +129,17 @@ const STATIC_MODELS: ModelGroup[] = [
       { value: 'kimi:moonshot-v1-8k', label: 'Kimi v1 8k' },
       { value: 'kimi:moonshot-v1-32k', label: 'Kimi v1 32k' },
       { value: 'kimi:moonshot-v1-128k', label: 'Kimi v1 128k' },
+      { value: 'kimi:kimi-vl-a3b-thinking', label: 'Kimi VL Thinking' },
     ],
   },
   {
     group: 'Qwen (Alibaba)',
     options: [
-      { value: 'qwen:qwen-3.7-max', label: 'Qwen 3.7 Max' },
-      { value: 'qwen:qwen-3.7-plus', label: 'Qwen 3.7 Plus' },
-      { value: 'qwen:qwen-3.7-turbo', label: 'Qwen 3.7 Turbo' },
-      { value: 'qwen:qwen-3.7-coder-7b-instruct', label: 'Qwen 3.7 Coder 7B' },
-      { value: 'qwen:qwen-3.7-coder-32b-instruct', label: 'Qwen 3.7 Coder 32B' },
+      { value: 'qwen:qwen-plus', label: 'Qwen Plus' },
+      { value: 'qwen:qwen-turbo', label: 'Qwen Turbo' },
+      { value: 'qwen:qwen-max', label: 'Qwen Max' },
+      { value: 'qwen:qwen2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
+      { value: 'qwen:qwq-32b', label: 'QwQ 32B' },
     ],
   },
   {
@@ -876,9 +903,9 @@ export default function AIPanel() {
       </div>
 
       {/* Messages */}
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-5">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-5">
         {messages.length === 0 && (
-          <div className="cipher-fade-up rounded-xl border border-white/[0.07] bg-white/[0.025] p-4 text-[13px] leading-6 text-[#7f8bb0]">
+          <div className="cipher-fade-up rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] p-4 text-[13px] leading-6 text-[var(--cipher-text-muted)]">
             Selecciona un modelo, guarda su key si aplica y usa el boton de prueba para validar la conexion.
             {ollamaModels && (
               <p className="mt-2 text-[12px] text-[#5a7a4a]">
@@ -891,7 +918,7 @@ export default function AIPanel() {
               </p>
             )}
             {projectMemory && (
-              <p className="mt-2 text-[12px] text-[#7a5cff]">
+              <p className="mt-2 text-[12px] text-[var(--cipher-accent)]">
                 ✓ Memoria del proyecto activa — el agente conoce el contexto
               </p>
             )}
@@ -899,12 +926,14 @@ export default function AIPanel() {
         )}
 
         {messages.map((msg, i) => (
-          <div key={i} className="cipher-fade-up flex flex-col gap-2">
+          <div key={i} className={`cipher-fade-up flex flex-col gap-2.5 ${
+            msg.role === 'user' ? 'items-end' : 'items-start'
+          }`}>
             <span className={`text-[11px] font-bold uppercase tracking-wider ${
               msg.role === 'user' ? 'text-[#4fc3f7]' :
               msg.role === 'error' ? 'text-[#ff6b6b]' :
-              msg.role === 'system' ? 'text-[#6b6b8a]' :
-              'text-[#9d87ff]'
+              msg.role === 'system' ? 'text-[var(--cipher-text-muted)]' :
+              'text-[var(--cipher-accent)]'
             }`}>
               {msg.role === 'user' ? 'Tu' :
                msg.role === 'error' ? 'Error' :
@@ -920,11 +949,14 @@ export default function AIPanel() {
                 rows={8}
               />
             ) : (
-              <div className={`break-words rounded-xl border-l-2 p-3 text-[13px] leading-relaxed ${
-                msg.role === 'user' ? 'border-[var(--cipher-accent-alt)] bg-[var(--cipher-surface-alt)]' :
-                msg.role === 'error' ? 'border-[#ff6b6b] bg-[var(--cipher-surface-alt)] text-[#ff9a9a]' :
-                msg.role === 'system' ? 'border-[var(--cipher-text-muted)] bg-transparent text-[var(--cipher-text-muted)]' :
-                'border-[var(--cipher-accent)] bg-[var(--cipher-surface-alt)] text-[var(--cipher-text)]'
+              <div className={`break-words rounded-2xl px-4 py-3.5 text-[13px] leading-[1.72] ${
+                msg.role === 'user'
+                  ? 'max-w-[88%] border border-[var(--cipher-accent-alt)]/40 bg-[var(--cipher-surface-alt)] text-[var(--cipher-text)] rounded-tr-sm'
+                  : msg.role === 'error'
+                  ? 'w-full border-l-2 border-[#ff6b6b] bg-[var(--cipher-surface-alt)] text-[#ff9a9a] pl-4'
+                  : msg.role === 'system'
+                  ? 'w-full border-l-2 border-[var(--cipher-text-muted)] bg-transparent text-[var(--cipher-text-muted)] pl-4 py-2'
+                  : 'w-full border border-[var(--cipher-border)] bg-[var(--cipher-surface)] text-[var(--cipher-text)] shadow-sm'
               }`}>
                 {renderContentWithThinking(msg.content, msg.streaming)}
               </div>
@@ -1280,7 +1312,7 @@ function parseMarkdown(text: string): React.ReactNode {
       if (inCodeBlock) {
         inCodeBlock = false;
         elements.push(
-          <pre key={`code-${idx}`} className="my-2.5 overflow-x-auto rounded-lg bg-[#070912] p-3.5 font-mono text-[12px] text-[#80d8ff] border border-white/[0.05]">
+          <pre key={`code-${idx}`} className="my-3 overflow-x-auto rounded-lg border border-[var(--cipher-border)] p-4 font-mono text-[12px]" style={{ background: 'var(--cipher-code-bg)', color: 'var(--cipher-code-text)' }}>
             <code>{codeBlockContent.join('\n')}</code>
           </pre>
         );
@@ -1298,22 +1330,22 @@ function parseMarkdown(text: string): React.ReactNode {
 
     // Headers
     if (line.startsWith('### ')) {
-      elements.push(<h3 key={`h3-${idx}`} className="mt-4 mb-2 text-[14px] font-bold text-[#e2e8f0]">{renderInlineMarkdown(line.slice(4))}</h3>);
+      elements.push(<h3 key={`h3-${idx}`} className="mt-4 mb-2 text-[14px] font-bold text-[var(--cipher-text)]">{renderInlineMarkdown(line.slice(4))}</h3>);
       return;
     }
     if (line.startsWith('## ')) {
-      elements.push(<h2 key={`h2-${idx}`} className="mt-4 mb-2 text-[15px] font-bold text-[#e2e8f0]">{renderInlineMarkdown(line.slice(3))}</h2>);
+      elements.push(<h2 key={`h2-${idx}`} className="mt-4 mb-2 text-[15px] font-bold text-[var(--cipher-text)]">{renderInlineMarkdown(line.slice(3))}</h2>);
       return;
     }
     if (line.startsWith('# ')) {
-      elements.push(<h1 key={`h1-${idx}`} className="mt-4 mb-2 text-[16px] font-bold text-[#e2e8f0]">{renderInlineMarkdown(line.slice(2))}</h1>);
+      elements.push(<h1 key={`h1-${idx}`} className="mt-4 mb-2 text-[16px] font-bold text-[var(--cipher-text)]">{renderInlineMarkdown(line.slice(2))}</h1>);
       return;
     }
 
     // Lists
     if (line.startsWith('- ') || line.startsWith('* ') || line.startsWith('• ')) {
       elements.push(
-        <li key={`li-${idx}`} className="ml-4 list-disc py-0.5 text-[13px] text-[#dce4ff]">
+        <li key={`li-${idx}`} className="ml-4 list-disc py-0.5 text-[13px] text-[var(--cipher-text)]">
           {renderInlineMarkdown(line.slice(2))}
         </li>
       );
@@ -1323,7 +1355,7 @@ function parseMarkdown(text: string): React.ReactNode {
     const numberedMatch = line.match(/^(\d+)\.\s(.*)/);
     if (numberedMatch) {
       elements.push(
-        <li key={`li-num-${idx}`} className="ml-4 list-decimal py-0.5 text-[13px] text-[#dce4ff]">
+        <li key={`li-num-${idx}`} className="ml-4 list-decimal py-0.5 text-[13px] text-[var(--cipher-text)]">
           {renderInlineMarkdown(numberedMatch[2])}
         </li>
       );
@@ -1338,7 +1370,7 @@ function parseMarkdown(text: string): React.ReactNode {
 
     // Regular paragraphs
     elements.push(
-      <p key={`p-${idx}`} className="mb-1 text-[13px] leading-relaxed text-[#dce4ff]">
+      <p key={`p-${idx}`} className="mb-2.5 text-[13px] leading-relaxed text-[var(--cipher-text)]">
         {renderInlineMarkdown(line)}
       </p>
     );
@@ -1347,26 +1379,26 @@ function parseMarkdown(text: string): React.ReactNode {
   // Handle unclosed code blocks (for streaming responses)
   if (inCodeBlock && codeBlockContent.length > 0) {
     elements.push(
-      <pre key="unclosed-code" className="my-2.5 overflow-x-auto rounded-lg bg-[#070912] p-3.5 font-mono text-[12px] text-[#80d8ff] border border-white/[0.05]">
+      <pre key="unclosed-code" className="my-3 overflow-x-auto rounded-lg border border-[var(--cipher-border)] p-4 font-mono text-[12px]" style={{ background: 'var(--cipher-code-bg)', color: 'var(--cipher-code-text)' }}>
         <code>{codeBlockContent.join('\n')}</code>
       </pre>
     );
   }
 
-  return <div className="space-y-1">{elements}</div>;
+  return <div className="space-y-2">{elements}</div>;
 }
 
 function renderInlineMarkdown(text: string): React.ReactNode[] {
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>;
+      return <strong key={i} className="font-semibold text-[var(--cipher-text)]">{part.slice(2, -2)}</strong>;
     }
     if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={i} className="italic text-[#b7c1de]">{part.slice(1, -1)}</em>;
+      return <em key={i} className="italic text-[var(--cipher-text-muted)]">{part.slice(1, -1)}</em>;
     }
     if (part.startsWith('`') && part.endsWith('`')) {
-      return <code key={i} className="rounded bg-[#070912] px-1.5 py-0.5 font-mono text-[12px] text-[#4fc3f7] border border-white/[0.04]">{part.slice(1, -1)}</code>;
+      return <code key={i} className="rounded-md px-1.5 py-0.5 font-mono text-[12px] border" style={{ background: 'var(--cipher-code-inline-bg)', color: 'var(--cipher-code-inline-text)', borderColor: 'var(--cipher-border)' }}>{part.slice(1, -1)}</code>;
     }
     return part;
   });
@@ -1402,20 +1434,20 @@ function ThinkingAccordion({ content, active }: { content: string; active?: bool
   const expanded = Boolean(active) || open
 
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] overflow-hidden text-[12px]">
+    <div className="rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)]/30 overflow-hidden text-[12px]">
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="flex w-full items-center justify-between px-3 py-2 text-[#7f8bb0] hover:bg-white/[0.04]"
+        className="flex w-full items-center justify-between px-3 py-2 text-[var(--cipher-text-muted)] hover:bg-[var(--cipher-surface-alt)]/60"
       >
         <span className="flex items-center gap-2 font-medium">
-          <Loader2 size={12} className={`text-[#9d87ff] ${active ? 'animate-spin' : ''}`} />
+          <Loader2 size={12} className={`text-[var(--cipher-accent)] ${active ? 'animate-spin' : ''}`} />
           {active ? 'Pensando...' : 'Proceso de pensamiento'}
         </span>
         <ChevronRight size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
       </button>
       {expanded && (
-        <div className="border-t border-white/[0.04] bg-black/15 p-3 font-mono text-[11px] leading-relaxed text-[#8b96b8] whitespace-pre-wrap">
+        <div className="border-t border-[var(--cipher-border)] bg-[var(--cipher-bg)]/40 p-3 font-mono text-[11px] leading-relaxed text-[var(--cipher-text-muted)] whitespace-pre-wrap">
           {content}
         </div>
       )}
