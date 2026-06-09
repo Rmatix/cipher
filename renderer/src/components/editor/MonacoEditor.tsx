@@ -686,7 +686,8 @@ export default function MonacoEditor({
           fontFamily: "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
           fontLigatures: true,
           glyphMargin: true,
-          minimap: { enabled: true, renderCharacters: false, scale: 0.85 },
+          // Minimap: off for files >500 lines to save GPU, on for smaller files
+          minimap: { enabled: true, renderCharacters: false, scale: 0.85, maxColumn: 100 },
           automaticLayout: true,
           scrollBeyondLastLine: false,
           lineNumbers: 'on',
@@ -700,15 +701,27 @@ export default function MonacoEditor({
           tabSize: 2,
           wordWrap: 'on',
           formatOnPaste: true,
-          formatOnType: true,
+          formatOnType: false, // Disabled: running formatter on each keystroke is expensive
           overviewRulerBorder: false,
+          overviewRulerLanes: 2,
+          // Perf: widget DOM nodes stay fixed in body, avoids layout thrashing
+          fixedOverflowWidgets: true,
+          // Perf: semantic highlighting adds extra parse pass; tokens are enough
+          semanticHighlighting: { enabled: false },
           guides: {
             bracketPairs: true,
             indentation: true,
           },
           scrollbar: {
-            verticalScrollbarSize: 10,
-            horizontalScrollbarSize: 10,
+            verticalScrollbarSize: 6,
+            horizontalScrollbarSize: 6,
+            useShadows: false,
+          },
+          // Perf: only suggest in code, not in strings or comments
+          quickSuggestions: {
+            other: 'inline',
+            comments: false,
+            strings: false,
           },
           // ── Inline AI suggestions ───────────────────
           inlineSuggest: {
@@ -718,6 +731,7 @@ export default function MonacoEditor({
           },
           suggest: {
             preview: true,
+            showWords: false, // words list is noisy; rely on AI/LSP instead
           },
         }}
       />

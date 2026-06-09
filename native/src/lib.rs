@@ -3,8 +3,29 @@ use napi_derive::napi;
 use std::fs;
 use std::path::Path;
 
-/// Recursively index files in the given workspace directory, ignoring `node_modules`.
-/// Returns a JavaScript array of absolute file paths.
+/// Directories to skip when indexing a workspace.
+const SKIP_DIRS: &[&str] = &[
+    "node_modules",
+    ".git",
+    "target",      // Rust build output
+    "dist",        // web/JS build output
+    "build",       // common build output
+    "out",         // Next.js / Electron output
+    ".cache",      // various tools
+    "__pycache__", // Python
+    ".venv",       // Python virtual envs
+    "venv",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".next",       // Next.js
+    ".nuxt",       // Nuxt.js
+    ".svelte-kit", // SvelteKit
+    "vendor",      // PHP / Ruby gems
+];
+
+/// Recursively index files in the given workspace directory, skipping
+/// build artifacts and tool caches. Returns a JavaScript array of
+/// absolute file paths.
 #[napi]
 pub fn index_workspace(root: String) -> Result<Vec<String>> {
     let mut files = Vec::new();
@@ -13,8 +34,10 @@ pub fn index_workspace(root: String) -> Result<Vec<String>> {
             let entry = entry?;
             let path = entry.path();
             if path.is_dir() {
-                if let Some(name) = path.file_name() {
-                    if name == "node_modules" { continue; }
+                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    if SKIP_DIRS.contains(&name) {
+                        continue;
+                    }
                 }
                 recurse(&path, files)?;
             } else if path.is_file() {
@@ -34,7 +57,7 @@ pub fn index_workspace(root: String) -> Result<Vec<String>> {
 }
 
 /// Perform lightweight cleaning of source code text.
-/// - Trims leading/trailing whitespace on each line.
+/// - Trims trailing whitespace on each line (preserves leading indentation).
 /// - Collapses multiple consecutive blank lines into a single blank line.
 #[napi]
 pub fn clean_code(input: String) -> Result<String> {
@@ -54,10 +77,4 @@ pub fn clean_code(input: String) -> Result<String> {
         }
     }
     Ok(result)
-}
-
-/// Simple hello function kept for compatibility.
-#[napi]
-pub fn hello() -> String {
-    "Hello from Rust native module!".to_string()
 }

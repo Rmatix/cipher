@@ -103,8 +103,6 @@ function isTrustedAppNavigation(urlString) {
   }
 }
 
-// app.on('ready', createWindow) // removed duplicate window creation
-
 // Handle open-devtools IPC from renderer
 ipcMain.on('open-devtools', () => {
   if (mainWindow) mainWindow.webContents.openDevTools({ mode: 'detach' })

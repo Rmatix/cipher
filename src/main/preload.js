@@ -73,14 +73,7 @@ contextBridge.exposeInMainWorld('cipher', {
   isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
   openDevTools: () => ipcRenderer.send('open-devtools'),
 
-  // ── Theme ────────────────────────────────────────────
-  onThemeToggle: (callback) => {
-    const listener = () => callback()
-    ipcRenderer.on('theme-toggle', listener)
-    return () => ipcRenderer.removeListener('theme-toggle', listener)
-  },
-
-  // ── Git ──────────────────────────────────────────────
+  // ── Git ──────────────────────────────────────────────────────────────────
   gitStatus: (folderPath) => ipcRenderer.invoke('git-status', folderPath),
   gitBranch: (folderPath) => ipcRenderer.invoke('git-branch', folderPath),
   gitCommit: (folderPath, message) => ipcRenderer.invoke('git-commit', folderPath, message),

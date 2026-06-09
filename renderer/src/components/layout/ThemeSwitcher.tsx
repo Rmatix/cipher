@@ -1,51 +1,43 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useStore, BUILT_IN_THEMES } from '../../store/useStore'
+
+const DARK_FALLBACK = 'midnight'
+const LIGHT_THEME = 'snow'
+const LAST_DARK_KEY = 'cipher-last-dark-theme'
 
 /**
- * ThemeSwitcher - toggles between light and dark themes.
- * Persists the user choice in localStorage under 'cipher-theme'.
- * Applies theme by setting a data attribute on the document element.
+ * ThemeSwitcher — toggles between the active dark theme and 'Snow Light'.
+ * Uses the unified theme system in useStore (cipher-theme-id / CSS variables).
+ * Pressing the button when in a dark theme saves it as last-dark, then switches
+ * to Snow Light. Pressing again restores the saved dark theme.
  */
 export default function ThemeSwitcher() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(
-    // Initialize from localStorage or default to dark
-    (() => {
-      const stored = typeof window !== 'undefined' ? localStorage.getItem('cipher-theme') : null;
-      return stored === 'light' ? 'light' : 'dark';
-    })()
-  );
+  const { themeId, setTheme } = useStore()
+  const isLight = themeId === LIGHT_THEME
 
-  // Apply theme to document root
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
+  const toggle = () => {
+    if (isLight) {
+      // Restore last dark theme
+      const lastDark = localStorage.getItem(LAST_DARK_KEY) || DARK_FALLBACK
+      setTheme(lastDark)
+    } else {
+      // Save current dark theme, then switch to light
+      localStorage.setItem(LAST_DARK_KEY, themeId)
+      setTheme(LIGHT_THEME)
     }
-  }, [theme]);
+  }
 
-  const toggle = useCallback(() => {
-    const next = theme === 'light' ? 'dark' : 'light';
-    setTheme(next);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cipher-theme', next);
-    }
-  }, [theme]);
-
-  // Listen for IPC toggle shortcut from main process
-  useEffect(() => {
-    if (window.cipher && typeof window.cipher.onThemeToggle === 'function') {
-      const off = window.cipher.onThemeToggle(() => {
-        toggle();
-      });
-      return off;
-    }
-  }, [toggle]);
+  const title = isLight
+    ? `Tema claro activo — clic para volver a ${BUILT_IN_THEMES.find(t => t.id === (localStorage.getItem(LAST_DARK_KEY) || DARK_FALLBACK))?.name ?? 'Midnight'}`
+    : 'Cambiar a tema claro (Snow Light)'
 
   return (
     <button
       onClick={toggle}
+      title={title}
+      aria-label={isLight ? 'Activar tema oscuro' : 'Activar tema claro'}
       className="flex h-10 w-12 items-center justify-center rounded-md text-[var(--cipher-text-muted)] transition-colors hover:bg-white/[0.06]"
-      title="Toggle light/dark theme"
     >
-      {theme === 'dark' ? '🌙' : '☀️'}
+      {isLight ? '☀️' : '🌙'}
     </button>
-  );
+  )
 }
