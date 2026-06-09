@@ -374,13 +374,7 @@ button.accent:active {
   animation: glass-fade-in 300ms ease-out both;
 }
 
-/* Scrollbar custom */
-::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--cipher-accent) 45%, transparent);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--cipher-accent);
-}
+/* Scrollbar custom — kept above (lines 292-299), this block is intentionally removed */
 
 /* Light theme definitions */
 [data-theme='light'] {
@@ -402,7 +396,5 @@ html[data-theme] {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Light theme body gradient */
-[data-theme='light'] body {
-  background: linear-gradient(135deg, #e0e7ff 0%, #ffffff 100%);
-}
+/* Light theme — gradient is applied via --cipher-bg CSS variable by the theme system in useStore.ts */
+/* The applyTheme() function sets document.body.style.background directly */

@@ -41,7 +41,6 @@ contextBridge.exposeInMainWorld('cipher', {
 
   // ── File system ──────────────────────────────────────
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
-  openDevTools: () => ipcRenderer.send('open-devtools'),
   readDirectory: (path) => ipcRenderer.invoke('read-directory', path),
   readFile: (path) => ipcRenderer.invoke('read-file', path),
   readFileDataUrl: (path) => ipcRenderer.invoke('read-file-data-url', path),

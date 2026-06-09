@@ -30,7 +30,7 @@
       "renderer/public/logo.ico",
       "package.json"
     ],
-    "win": { "target": ["nsis", "zip"] },
+    "win": { "target": ["nsis", "zip"], "forceCodeSigning": false },
     "mac": { "target": ["dmg", "zip"], "icon": "renderer/public/logo.png", "category": "public.app-category.developer-tools" },
     "linux": { "target": ["AppImage", "deb", "tar.gz"], "icon": "renderer/public/logo.png", "category": "Development" },
     "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true },

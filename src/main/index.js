@@ -1184,7 +1184,7 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const tools = openRouterTools(webSearch)
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}[![Version](https://img.shields.io/badge/version-v2.0.0-7c4dff)](https://github.com/Rmatix/cipher/releases)`, 'HTTP-Referer': 'https://github.com/Rmatix/cipher', 'X-Title': 'Cipher Code Editor' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://github.com/Rmatix/cipher', 'X-Title': 'Cipher Code Editor' },
         body: JSON.stringify({
           model: orModel,
           messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, { ...aiOptions, nativeWebSearch: Boolean(webSearch) }) }, ...messages],

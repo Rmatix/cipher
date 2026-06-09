@@ -115,14 +115,14 @@ export const BUILT_IN_THEMES: CipherTheme[] = [
   {
     id: 'snow',
     name: 'Snow Light',
-    bg: '#f5f4ef',
-    surface: '#ffffff',
-    surfaceAlt: '#eae7dc',
-    border: 'rgba(0,0,0,0.08)',
-    accent: '#6366f1',
-    accentAlt: '#0ea5e9',
-    text: '#2d3748',
-    textMuted: '#718096',
+    bg: '#f0ede8',
+    surface: '#faf8f5',
+    surfaceAlt: '#e8e4dd',
+    border: 'rgba(0,0,0,0.09)',
+    accent: '#5b4fcf',
+    accentAlt: '#0284c7',
+    text: '#1e293b',
+    textMuted: '#64748b',
   },
 ];
 
@@ -139,7 +139,12 @@ function applyTheme(theme: CipherTheme) {
   root.style.setProperty('--cipher-accent-bg',   `${theme.accent}22`)
   root.style.setProperty('--cipher-text',        theme.text)
   root.style.setProperty('--cipher-text-muted',  theme.textMuted)
-  document.body.style.background = theme.bg
+
+  // For light themes (snow), apply a warm gradient; for dark themes use the bg color
+  const isLight = theme.id === 'snow'
+  document.body.style.background = isLight
+    ? `linear-gradient(135deg, ${theme.surfaceAlt} 0%, ${theme.bg} 40%, ${theme.surface} 100%)`
+    : theme.bg
   document.body.style.color = theme.text
 }
 
