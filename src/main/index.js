@@ -4,19 +4,62 @@ const fs = require('fs')
 const os = require('os')
 
 let mainWindow = null
+let native = null
+try {
+  native = require('../../index.node')
+} catch (e) {
+  console.error('Failed to load native Rust module:', e)
+}
 const terminals = new Map()
 let terminalIdCounter = 0
 const allowedRoots = new Set()
+
+let pendingOpenPath = null
+
+function parseArgPath(argv) {
+  for (let i = 1; i < argv.length; i++) {
+    const arg = argv[i]
+    if (!arg || arg.startsWith('-')) continue
+    // Skip electron/Vite main process scripts and dot
+    if (arg.includes('index.js') || arg.includes('main') || arg === '.') continue
+    try {
+      if (fs.existsSync(arg)) {
+        const absolutePath = path.resolve(arg)
+        const stat = fs.statSync(absolutePath)
+        if (stat.isDirectory()) {
+          return { folderPath: absolutePath, filePath: null }
+        } else if (stat.isFile()) {
+          return { folderPath: path.dirname(absolutePath), filePath: absolutePath }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  return null
+}
+
+// Parse initial arguments for the first instance
+pendingOpenPath = parseArgPath(process.argv)
+if (pendingOpenPath) {
+  allowedRoots.add(pendingOpenPath.folderPath)
+}
 
 // Single instance lock to prevent multiple windows
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
+  app.on('second-instance', (event, argv) => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore()
       mainWindow.focus()
+      
+      const openPath = parseArgPath(argv)
+      if (openPath) {
+        allowedRoots.add(openPath.folderPath)
+        mainWindow.webContents.send('open-path-request', openPath)
+      }
     }
   })
 }
@@ -296,12 +339,29 @@ ipcMain.handle('window-is-maximized', () => {
   return mainWindow ? mainWindow.isMaximized() : false
 })
 
+ipcMain.handle('get-startup-path', () => {
+  return pendingOpenPath
+})
+
 ipcMain.handle('open-external', async (event, url) => {
   await shell.openExternal(requireHttpUrl(url))
   return true
 })
 
 // ── File system ──────────────────────────────────────────
+
+ipcMain.handle('search-in-files-native', async (event, folderPath, query, caseInsensitive, maxResults) => {
+  if (!native || !native.searchInFiles) {
+    // Note: napi-rs exposes camelCase by default: searchInFiles, countLines, diffStrings, cleanCode
+    // Let's check native/src/lib.rs function names. napi-rs automatically translates snake_case functions to camelCase unless specified!
+    // Wait, let's verify if search_in_files is exposed as searchInFiles or search_in_files.
+    // In Rust, it has `#[napi]` on `pub fn search_in_files`. Yes, napi-rs converts snake_case to camelCase in TS/JS by default!
+    // So the function name is native.searchInFiles.
+    throw new Error('Modulo nativo de Rust no disponible')
+  }
+  const safePath = requireAllowedPath(folderPath)
+  return native.searchInFiles(safePath, query, caseInsensitive || false, maxResults || 500)
+})
 
 ipcMain.handle('open-folder', async () => {
   const result = await dialog.showOpenDialog({

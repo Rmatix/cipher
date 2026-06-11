@@ -177,8 +177,11 @@ export default function Titlebar() {
         </div>
       </div>
 
+      {/* Drag Spacer 1 */}
+      <div className="drag h-full flex-1 min-w-[12px]" />
+
       {/* Search bar */}
-      <div className="no-drag flex max-w-3xl flex-1 items-center justify-center gap-3 px-10">
+      <div className="no-drag flex w-[520px] items-center justify-center gap-3 px-4">
         {/* Run button */}
         {runner && (
           <button
@@ -207,6 +210,9 @@ export default function Titlebar() {
           </span>
         </button>
       </div>
+
+      {/* Drag Spacer 2 */}
+      <div className="drag h-full flex-1 min-w-[12px]" />
 
       {/* Window controls */}
       <div className="no-drag flex h-full items-center">

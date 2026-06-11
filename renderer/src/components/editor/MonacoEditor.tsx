@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { Focus, FolderOpen, Plus, Search, Terminal as TerminalIcon, Zap, ZapOff } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import type { CustomModel } from '../../store/useStore'
 import type { FileDataResult } from '../../types/electron'
 import { getFileKind, type FileKind } from '../../utils/fileUtils'
 
@@ -22,7 +23,7 @@ import { resolveCustomModel, getStoredApiKey } from '../ai/models'
 
 function resolveModel(
   aiModel: string,
-  customModels: any[]
+  customModels: CustomModel[]
 ): { model: string; apiKey: string } {
   const resolved = resolveCustomModel(aiModel, customModels)
   const key = resolved.savedKey ?? getStoredApiKey(resolved.model)

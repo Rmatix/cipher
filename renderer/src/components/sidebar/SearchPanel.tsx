@@ -21,37 +21,30 @@ export default function SearchPanel() {
       return
     }
     setSearching(true)
-    const found = await searchInFolder(currentFolder, value)
-    setResults(found)
-    setSearching(false)
-  }
-
-  async function searchInFolder(folderPath: string, q: string, results: SearchResult[] = []) {
     try {
-      const items = await window.cipher.readDirectory(folderPath)
-      for (const item of items) {
-        if (item.name.startsWith('.')) continue
-        if (item.isDirectory && ['node_modules', '.git', 'dist', 'build'].includes(item.name)) continue
-        if (item.isDirectory) {
-          await searchInFolder(item.path, q, results)
-        } else {
-          try {
-            const content = await window.cipher.readFile(item.path)
-            const lines = content.split('\n')
-            const matches = lines
-              .map((line, idx) => ({ line: idx + 1, text: line.trim() }))
-              .filter(m => m.text.toLowerCase().includes(q.toLowerCase()))
-              .slice(0, 5)
-            if (matches.length > 0) results.push({ file: item.path, matches })
-          } catch {
-            // Silence error when reading file fails
-          }
+      const nativeMatches = await window.cipher.searchInFilesNative(currentFolder, value, true, 200)
+      const grouped: Record<string, { line: number; text: string }[]> = {}
+      
+      nativeMatches.forEach(m => {
+        if (!grouped[m.file]) {
+          grouped[m.file] = []
         }
-      }
-    } catch {
-      // Silence error when reading directory fails
+        if (grouped[m.file].length < 5) {
+          grouped[m.file].push({ line: m.line, text: m.text.trim() })
+        }
+      })
+
+      const found: SearchResult[] = Object.keys(grouped).map(file => ({
+        file,
+        matches: grouped[file]
+      }))
+      setResults(found)
+    } catch (e) {
+      console.error('Native search failed:', e)
+      setResults([])
+    } finally {
+      setSearching(false)
     }
-    return results
   }
 
   return (

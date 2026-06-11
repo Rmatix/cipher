@@ -996,7 +996,7 @@ function ModelApiKeyModal({
 // ── CustomModelModal ─────────────────────────────────────
 
 function CustomModelModal({ onClose }: { onClose: () => void }) {
-  const { addCustomModel, customModels, removeCustomModel } = useStore()
+  const { addCustomModel, customModels, removeCustomModel, setAiModel } = useStore()
   const [provider, setProvider] = useState('openrouter')
   const [endpointName, setEndpointName] = useState('OpenRouter')
   const [endpointUrl, setEndpointUrl] = useState('https://openrouter.ai/api/v1')
@@ -1070,7 +1070,10 @@ function CustomModelModal({ onClose }: { onClose: () => void }) {
       removeCustomModel(idx)
     })
 
-    // 2. Add the models
+    // 2. Add the models and select the first valid added model
+    let newIndex = customModels.length - indicesToRemove.length
+    let selectedSet = false
+
     modelsList.forEach(m => {
       if (!m.modelId.trim()) return
       addCustomModel({
@@ -1082,6 +1085,11 @@ function CustomModelModal({ onClose }: { onClose: () => void }) {
         alias: m.alias.trim() || undefined,
         endpointName: endpointName.trim()
       })
+      if (!selectedSet) {
+        setAiModel(`custom:${newIndex}`)
+        selectedSet = true
+      }
+      newIndex++
     })
 
     onClose()

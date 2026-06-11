@@ -27,6 +27,7 @@ export interface CipherAPI {
 
   // ── File system ──────────────────────────────────────
   openFolder: () => Promise<string | null>
+  searchInFilesNative: (folderPath: string, query: string, caseInsensitive?: boolean, maxResults?: number) => Promise<{ file: string; line: number; column: number; text: string }[]>
   readDirectory: (path: string) => Promise<FileItem[]>
   readFile: (path: string) => Promise<string>
   readFileDataUrl: (path: string) => Promise<FileDataResult>
@@ -60,6 +61,10 @@ export interface CipherAPI {
   gitPush: (folderPath: string) => Promise<GitResult>
   gitPull: (folderPath: string) => Promise<GitResult>
   gitLog: (folderPath: string) => Promise<string>
+
+  // ── Startup & Drag / Drop File Associated Open ──────────────────────────
+  getStartupPath: () => Promise<{ folderPath: string; filePath: string | null } | null>
+  onOpenPathRequest: (callback: (data: { folderPath: string; filePath: string | null }) => void) => () => void
 }
 
 // ── AI types ─────────────────────────────────────────────

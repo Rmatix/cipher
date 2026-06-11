@@ -7,6 +7,7 @@ import SplashScreen from './components/layout/SplashScreen'
 import CommandPalette from './components/layout/CommandPalette'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from './store/useStore'
+import { getLanguage } from './utils/fileUtils'
 
 function parseKeyBinding(keyStr: string) {
   const parts = keyStr.toLowerCase().split('+')
@@ -78,7 +79,41 @@ export default function App() {
     terminalVisible, setTerminalVisible, bottomPanel, setBottomPanel,
     focusMode, toggleFocusMode,
     keyBindings,
+    setCurrentFolder, addTab, setActiveTab
   } = useStore()
+
+  const openPathData = useCallback((data: { folderPath: string; filePath: string | null }) => {
+    if (!data) return
+    setCurrentFolder(data.folderPath)
+    setSidebarPanel('files')
+    if (data.filePath) {
+      const fileName = data.filePath.split('\\').pop()?.split('/').pop() || 'Archivo'
+      addTab({
+        path: data.filePath,
+        name: fileName,
+        language: getLanguage(fileName),
+        modified: false
+      })
+      setActiveTab(data.filePath)
+    }
+  }, [setCurrentFolder, setSidebarPanel, addTab, setActiveTab])
+
+  // Startup path checking and second-instance events
+  useEffect(() => {
+    window.cipher?.getStartupPath?.().then((data) => {
+      if (data) {
+        // Delay slightly to let layout/editor mount
+        setTimeout(() => openPathData(data), 250)
+      }
+    })
+
+    if (window.cipher?.onOpenPathRequest) {
+      const unsubscribe = window.cipher.onOpenPathRequest((data) => {
+        openPathData(data)
+      })
+      return unsubscribe
+    }
+  }, [openPathData])
 
   const stateRef = useRef({ sidebarPanel, terminalVisible, bottomPanel, focusMode })
   useEffect(() => {

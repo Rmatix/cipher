@@ -40,7 +40,10 @@ contextBridge.exposeInMainWorld('cipher', {
   projectScan: (folderPath, maxFiles) => ipcRenderer.invoke('project-scan', folderPath, maxFiles),
 
   // ── File system ──────────────────────────────────────
+  openFolder: () => ipcRenderer.invoke('open-folder'),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  searchInFilesNative: (folderPath, query, caseInsensitive, maxResults) => 
+    ipcRenderer.invoke('search-in-files-native', folderPath, query, caseInsensitive, maxResults),
   readDirectory: (path) => ipcRenderer.invoke('read-directory', path),
   readFile: (path) => ipcRenderer.invoke('read-file', path),
   readFileDataUrl: (path) => ipcRenderer.invoke('read-file-data-url', path),
@@ -80,4 +83,12 @@ contextBridge.exposeInMainWorld('cipher', {
   gitPush: (folderPath) => ipcRenderer.invoke('git-push', folderPath),
   gitPull: (folderPath) => ipcRenderer.invoke('git-pull', folderPath),
   gitLog: (folderPath) => ipcRenderer.invoke('git-log', folderPath),
+
+  // ── Startup & Drag / Drop File Associated Open ──────────────────────────
+  getStartupPath: () => ipcRenderer.invoke('get-startup-path'),
+  onOpenPathRequest: (callback) => {
+    const listener = (event, data) => callback(data)
+    ipcRenderer.on('open-path-request', listener)
+    return () => ipcRenderer.removeListener('open-path-request', listener)
+  },
 })

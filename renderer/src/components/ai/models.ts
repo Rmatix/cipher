@@ -13,47 +13,6 @@ export interface ModelGroup {
 
 export const STATIC_MODELS: ModelGroup[] = [
   {
-    group: 'OpenRouter',
-    options: [
-      { value: 'openrouter:google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-      { value: 'openrouter:google/gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-      { value: 'openrouter:anthropic/claude-opus-4-5', label: 'Claude Opus 4.5' },
-      { value: 'openrouter:anthropic/claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
-      { value: 'openrouter:anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku' },
-      { value: 'openrouter:openai/gpt-4o', label: 'GPT-4o' },
-      { value: 'openrouter:openai/gpt-4o-mini', label: 'GPT-4o Mini' },
-      { value: 'openrouter:openai/o3', label: 'o3' },
-      { value: 'openrouter:openai/o4-mini', label: 'o4-mini' },
-      { value: 'openrouter:openai/gpt-4.1', label: 'GPT-4.1' },
-      { value: 'openrouter:openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
-      { value: 'openrouter:deepseek/deepseek-chat-v3-0324', label: 'DeepSeek V3 (Mar 2025)' },
-      { value: 'openrouter:deepseek/deepseek-r1', label: 'DeepSeek R1' },
-      { value: 'openrouter:deepseek/deepseek-prover-v2', label: 'DeepSeek Prover V2' },
-      { value: 'openrouter:qwen/qwen-2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
-      { value: 'openrouter:qwen/qwq-32b', label: 'QwQ 32B' },
-      { value: 'openrouter:meta-llama/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
-      { value: 'openrouter:meta-llama/llama-4-scout', label: 'Llama 4 Scout', soon: true },
-      { value: 'openrouter:meta-llama/llama-4-maverick', label: 'Llama 4 Maverick', soon: true },
-      { value: 'openrouter:mistralai/mistral-large', label: 'Mistral Large' },
-      { value: 'openrouter:mistralai/codestral-2501', label: 'Codestral 2501' },
-      { value: 'openrouter:x-ai/grok-3', label: 'Grok 3' },
-      { value: 'openrouter:x-ai/grok-3-mini', label: 'Grok 3 Mini' },
-    ],
-  },
-  {
-    group: 'NVIDIA NIM',
-    options: [
-      { value: 'nim:meta/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
-      { value: 'nim:meta/llama-4-scout-17b-16e-instruct', label: 'Llama 4 Scout 17B', soon: true },
-      { value: 'nim:nvidia/llama-3.1-nemotron-70b-instruct', label: 'Nemotron 70B' },
-      { value: 'nim:nvidia/llama-3.3-nemotron-super-49b-v1', label: 'Nemotron Super 49B' },
-      { value: 'nim:deepseek-ai/deepseek-r1', label: 'DeepSeek R1' },
-      { value: 'nim:qwen/qwen2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
-      { value: 'nim:mistralai/mistral-small-3.1-24b-instruct', label: 'Mistral Small 3.1 24B' },
-      { value: 'nim:microsoft/phi-4-reasoning-plus', label: 'Phi-4 Reasoning Plus' },
-    ],
-  },
-  {
     group: 'Anthropic',
     options: [
       { value: 'claude-opus-4-5', label: 'Claude Opus 4.5', soon: true },

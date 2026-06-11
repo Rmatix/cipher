@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import type { CustomModel } from '../../store/useStore'
 
 // ── Types ────────────────────────────────────────────────
 
@@ -30,7 +31,7 @@ import { resolveCustomModel, getStoredApiKey } from '../ai/models'
 
 function resolveModel(
   aiModel: string,
-  customModels: any[]
+  customModels: CustomModel[]
 ): { model: string; apiKey: string } {
   const resolved = resolveCustomModel(aiModel, customModels)
   const key = resolved.savedKey ?? getStoredApiKey(resolved.model)
