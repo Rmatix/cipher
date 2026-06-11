@@ -1,0 +1,11 @@
+Parche 4 sobre la version 2.0 estable de Cipher Code Editor.
+
+## Incluye
+
+- **Logo de Alta Resolucion**: Generado un nuevo `logo.ico` que contiene todas las capas y dimensiones estandar (de 16x16 a 256x256 pixeles) desde el logo PNG original. Resuelve el problema de pixelacion en el sistema y accesos directos.
+- **Integracion con PATH**: El instalador ahora registra automaticamente el directorio de instalacion en la variable de entorno `PATH` del usuario. Esto permite abrir Cipher escribiendo `cipher <archivo>` o `cipher <directorio>` desde cualquier terminal (PowerShell, CMD, Git Bash).
+- **Actualizacion Automatica**: Forzado el comportamiento de instalacion NSIS por usuario (`perMachine: false`). El setup detectara de forma automatica instalaciones anteriores en el registro y reemplazara/actualizara la version existente en su ubicacion original de forma transparente.
+
+## Descargas
+- Cipher Setup 2.0.4.exe: Instalador para Windows.
+- Cipher-2.0.4-win.zip: Build portable.

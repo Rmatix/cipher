@@ -339,6 +339,8 @@ interface AppState {
   // Git
   gitBranch: string
   setGitBranch: (branch: string) => void
+  gitStatusMap: Record<string, string>
+  refreshGitStatus: () => Promise<void>
 
   // Theme
   themeId: string
@@ -363,7 +365,7 @@ interface AppState {
 
 export const SUPPORTED_LANGUAGES = ['python', 'cpp', 'rust'] as const;
 
-export const useStore = create<AppState>((set) => ({
+export const useStore = create<AppState>((set, get) => ({
   // Utility actions for language‑specific workflows
   runBuildCommand: (lang: typeof SUPPORTED_LANGUAGES[number]) => {
     // Dispatch a terminal command appropriate for the language
@@ -390,7 +392,14 @@ export const useStore = create<AppState>((set) => ({
   },
   // Folder
   currentFolder: null,
-  setCurrentFolder: (folder) => set({ currentFolder: folder }),
+  setCurrentFolder: (folder) => {
+    set({ currentFolder: folder });
+    if (folder) {
+      get().refreshGitStatus();
+    } else {
+      set({ gitStatusMap: {} });
+    }
+  },
 
   // Tabs
   tabs: [],
@@ -505,6 +514,23 @@ export const useStore = create<AppState>((set) => ({
   // Git
   gitBranch: 'main',
   setGitBranch: (branch) => set({ gitBranch: branch }),
+  gitStatusMap: {},
+  refreshGitStatus: async () => {
+    const folder = get().currentFolder
+    if (!folder) return
+    try {
+      const statusList = await window.cipher.gitStatus(folder)
+      const map: Record<string, string> = {}
+      for (const item of statusList) {
+        // Normalize slashes to make relative path lookup match renderer path joins
+        const normalizedFile = item.file.replace(/\\/g, '/')
+        map[normalizedFile] = item.status
+      }
+      set({ gitStatusMap: map })
+    } catch (e) {
+      console.error('Failed to refresh git status:', e)
+    }
+  },
 
   // Theme
   themeId: (() => {

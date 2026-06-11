@@ -8,18 +8,24 @@
   ![License](https://img.shields.io/badge/license-MIT-blue)
   ![Platform](https://img.shields.io/badge/platform-Windows-blue)
   ![Status](https://img.shields.io/badge/status-stable%20release-brightgreen)
-  ![Version](https://img.shields.io/badge/version-v2.0.2-7c4dff)
+  ![Version](https://img.shields.io/badge/version-v2.5.1-7c4dff)
 </div>
 
 Cipher es un editor de codigo open source para Windows, construido con Electron, React, TypeScript, Monaco Editor y un panel de agente IA multi-proveedor.
 
-> Estado: version `v2.0.2` estable. Compila y empaqueta nativamente con soporte de icono completo para el instalador y la aplicacion.
+> Estado: version `v2.5.1` estable. Compila y empaqueta nativamente con soporte de icono completo para el instalador y la aplicacion.
 
 ## Caracteristicas
 
 ### Editor
 
 - Editor Monaco con tema oscuro Cipher, minimapa, ajuste de linea, formato y atajos de guardado.
+- Esquinas redondeadas y borde de profundidad flotante: La ventana de la aplicación tiene esquinas redondeadas de `12px` en modo normal, volviéndose rectangulares automáticamente al maximizar.
+- Instalador NSIS Premium: Barra lateral personalizada con degradado del tema Midnight y logotipo flotante proporcional, evitando deformaciones.
+- Logotipo Normalizado 1:1: Se corrigió de raíz la distorsión del icono del acceso directo del escritorio y la barra de tareas.
+- Explorador de archivos interactivo (el encabezado de carpeta abre diálogos del sistema para cambiar de espacio de trabajo).
+- Indicadores Git completos en el árbol de archivos (los archivos modificados se pintan de amarillo/naranja con un badge `M`, los nuevos/untracked de verde con un badge `U` o `A`).
+- Restauración del último proyecto: Cipher recuerda el último directorio de proyecto que tenías abierto al cerrarlo y lo abre automáticamente en el siguiente inicio.
 - Explorador de archivos, busqueda de proyecto, panel Git y terminal integrada.
 - Iconos SVG de Material Icon Theme para archivos y carpetas, con mapeo por nombre, extension y tipo de carpeta.
 - Vista previa integrada para imagenes, audios y videos sin leer esos archivos como texto.

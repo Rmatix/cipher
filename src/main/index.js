@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, globalShortcut } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
@@ -43,6 +43,21 @@ function parseArgPath(argv) {
 pendingOpenPath = parseArgPath(process.argv)
 if (pendingOpenPath) {
   allowedRoots.add(pendingOpenPath.folderPath)
+} else {
+  // Load last opened folder from config
+  try {
+    const configPath = path.join(app.getPath('userData'), 'cipher-config.json')
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+      if (config && config.lastOpenedFolder && fs.existsSync(config.lastOpenedFolder)) {
+        const lastFolder = path.resolve(config.lastOpenedFolder)
+        allowedRoots.add(lastFolder)
+        pendingOpenPath = { folderPath: lastFolder, filePath: null }
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load last workspace config:', e)
+  }
 }
 
 // Single instance lock to prevent multiple windows
@@ -58,6 +73,7 @@ if (!gotLock) {
       const openPath = parseArgPath(argv)
       if (openPath) {
         allowedRoots.add(openPath.folderPath)
+        saveLastFolder(openPath.folderPath)
         mainWindow.webContents.send('open-path-request', openPath)
       }
     }
@@ -70,8 +86,19 @@ function normalizeFsPath(inputPath) {
   return path.resolve(inputPath)
 }
 
+function saveLastFolder(folderPath) {
+  try {
+    const configPath = path.join(app.getPath('userData'), 'cipher-config.json')
+    fs.writeFileSync(configPath, JSON.stringify({ lastOpenedFolder: folderPath }), 'utf-8')
+  } catch (e) {
+    console.error('Failed to save last opened workspace folder:', e)
+  }
+}
+
 function rememberAllowedRoot(folderPath) {
-  allowedRoots.add(normalizeFsPath(folderPath))
+  const norm = normalizeFsPath(folderPath)
+  allowedRoots.add(norm)
+  saveLastFolder(norm)
 }
 
 function isPathInside(parentPath, childPath) {
@@ -169,6 +196,20 @@ function createWindow() {
     ...(isMac ? { titleBarStyle: 'hidden' } : {}),
     title: 'Cipher Code Editor',
     backgroundColor: '#0d0d1a'
+  })
+
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown') {
+      const isControl = process.platform === 'darwin' ? input.meta : input.control
+      if (
+        (isControl && input.shift && input.key.toLowerCase() === 'i') || // Ctrl+Shift+I
+        input.key === 'F12' || // F12
+        input.key === 'F2' // F2
+      ) {
+        mainWindow.webContents.openDevTools({ mode: 'detach' })
+        event.preventDefault()
+      }
+    }
   })
 
   if (process.env.NODE_ENV === 'development') {
@@ -292,30 +333,6 @@ ipcMain.handle('terminal-kill', (event, id) => {
 })
 
 // ── Window controls ──────────────────────────────────────
-
-  // DevTools shortcuts (Ctrl+Shift+I and F12)
-app.whenReady().then(() => {
-  // Unregister any existing shortcuts to avoid duplicate registration errors
-  globalShortcut.unregisterAll();
-  // Ctrl+Shift+I shortcut
-  const ret1 = globalShortcut.register('CommandOrControl+Shift+I', () => {
-    if (mainWindow) mainWindow.webContents.openDevTools({ mode: 'detach' })
-  })
-  // F12 shortcut
-  const ret2 = globalShortcut.register('F12', () => {
-    if (mainWindow) mainWindow.webContents.openDevTools({ mode: 'detach' })
-  })
-  // F2 shortcut - open devtools (instead of theme toggle)
-  const ret3 = globalShortcut.register('F2', () => {
-    if (mainWindow) mainWindow.webContents.openDevTools({ mode: 'detach' })
-  })
-  if (!ret1 || !ret2 || !ret3) console.error('Registration of shortcuts failed')
-})
-
-app.on('will-quit', () => {
-  // Unregister all global shortcuts to avoid conflicts on next launch
-  globalShortcut.unregisterAll();
-});
 
 ipcMain.on('window-minimize', () => {
   if (mainWindow) mainWindow.minimize()
@@ -617,10 +634,10 @@ function formatOpenAIMessages(messages, attachments) {
 
 ipcMain.handle('git-status', async (event, folderPath) => {
   try {
-    const output = execFileSync('git', ['status', '--short'], { cwd: requireAllowedPath(folderPath), encoding: 'utf-8' })
+    const output = execFileSync('git', ['status', '--porcelain', '--ignored'], { cwd: requireAllowedPath(folderPath), encoding: 'utf-8' })
     return output.split('\n').filter(line => line.trim()).map(line => {
       const status = line.substring(0, 2).trim()
-      const file = line.substring(3)
+      const file = line.substring(3).trim()
       return { status, file }
     })
   } catch (e) {

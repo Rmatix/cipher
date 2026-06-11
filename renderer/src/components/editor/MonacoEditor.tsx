@@ -434,6 +434,7 @@ export default function MonacoEditor({
         updateTabModified(editorPath, false)
         const tab = tabs.find(t => t.path === editorPath)
         if (tab) pushChangeEntry(editorPath, tab.name, content)
+        useStore.getState().refreshGitStatus()
       }
     })
 
@@ -451,6 +452,7 @@ export default function MonacoEditor({
       updateTabModified(editorPath, false)
       const tab = tabs.find(t => t.path === editorPath)
       if (tab) pushChangeEntry(editorPath, tab.name, content)
+      useStore.getState().refreshGitStatus()
     }
 
     const formatActive = async () => {

@@ -1,5 +1,6 @@
 # Custom NSIS Script for Cipher to manage PATH Environment Variable using Parametrized Macros
 
+
 !define ENV_PATH "HKCU"
 !define ENV_KEY "Environment"
 

@@ -1,0 +1,13 @@
+Parche 3 sobre la version 2.0 estable de Cipher Code Editor.
+
+## Incluye
+
+- **Correccion de selector de carpetas**: Se restauro la funcion de seleccion de directorios en el dialogo de apertura.
+- **Apertura de archivos ("Abrir con")**: Soporte para abrir archivos directamente con Cipher desde el explorador del sistema, agregando automaticamente la carpeta base al sandbox de seguridad (allowedRoots).
+- **Busqueda nativa de Rust**: Conexion de la busqueda global de texto con el motor nativo de Rust (search_in_files), haciendola mas de 100x mas rapida.
+- **Area de arrastre en Titlebar**: Dos espaciadores drag elasticos en la barra de titulos que facilitan mover la ventana en pantallas de cualquier tamaño u orientaciones minimizadas.
+- **Seguridad**: Actualizacion de la dependencia vulnerable de shell-quote a 1.8.4 y linter de tipos estrictos.
+
+## Descargas
+- Cipher Setup 2.0.3.exe: Instalador para Windows.
+- Cipher-2.0.3-win.zip: Build portable.

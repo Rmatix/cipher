@@ -13,7 +13,55 @@ interface TreeItemProps {
 function TreeItem({ item, depth }: TreeItemProps) {
   const [open, setOpen] = useState(false)
   const [children, setChildren] = useState<FileItem[]>([])
-  const { addTab, setActiveTab, tabs } = useStore()
+  const { addTab, setActiveTab, tabs, gitStatusMap, currentFolder } = useStore()
+
+  // Find relative path for git status matching
+  let relativePath = ''
+  if (currentFolder) {
+    const rootPath = currentFolder.replace(/\\/g, '/')
+    const itemPath = item.path.replace(/\\/g, '/')
+    if (itemPath.startsWith(rootPath)) {
+      relativePath = itemPath.slice(rootPath.length).replace(/^\//, '')
+    }
+  }
+
+  const gitStatus = relativePath ? gitStatusMap[relativePath] : undefined
+
+  // Check if this item is ignored (starts with '!' or has a parent folder in gitStatusMap that is ignored)
+  let isIgnored = false
+  if (gitStatus && gitStatus.startsWith('!')) {
+    isIgnored = true
+  } else if (relativePath) {
+    const pathParts = relativePath.split('/')
+    let currentCheck = ''
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      currentCheck = currentCheck ? `${currentCheck}/${pathParts[i]}` : pathParts[i]
+      const parentStatus = gitStatusMap[currentCheck] || gitStatusMap[`${currentCheck}/`]
+      if (parentStatus && parentStatus.startsWith('!')) {
+        isIgnored = true
+        break
+      }
+    }
+  }
+
+  let textColorClass = 'text-[#a9b4d6]'
+  let gitBadge = ''
+  let badgeColorClass = ''
+
+  if (isIgnored) {
+    textColorClass = 'text-[#5a647d] opacity-55' // muted gray for ignored files
+  } else if (gitStatus) {
+    const firstChar = gitStatus[0]
+    if (firstChar === 'M') {
+      textColorClass = 'text-[#e2b34c]' // yellow/orange for modified
+      gitBadge = 'M'
+      badgeColorClass = 'text-[#e2b34c]'
+    } else if (firstChar === '?' || firstChar === 'U' || firstChar === 'A') {
+      textColorClass = 'text-[#56d364]' // green for untracked/added
+      gitBadge = firstChar === '?' ? 'U' : firstChar
+      badgeColorClass = 'text-[#56d364]'
+    }
+  }
 
   const handleClick = async () => {
     if (item.isDirectory) {
@@ -40,31 +88,39 @@ function TreeItem({ item, depth }: TreeItemProps) {
   return (
     <div>
       <div
-        className="group flex h-9 cursor-pointer items-center gap-2.5 rounded-lg pr-3 text-[13px] text-[#a9b4d6] transition-all hover:bg-white/[0.045] hover:text-white"
+        className="group flex h-9 cursor-pointer items-center justify-between rounded-lg pr-3 text-[13px] transition-all hover:bg-white/[0.045] hover:text-white"
         style={{ paddingLeft: `${12 + depth * 18}px` }}
         onClick={handleClick}
       >
-        {item.isDirectory ? (
-          <>
-            {open
-              ? <ChevronDown size={15} className="flex-shrink-0 text-[#707b9d] transition-all group-hover:text-[#aab4d6]" />
-              : <ChevronRight size={15} className="flex-shrink-0 text-[#707b9d] transition-all group-hover:text-[#aab4d6]" />
-            }
-            <img
-              src={getMaterialFolderIcon(item.name, open)}
-              alt=""
-              aria-hidden="true"
-              draggable={false}
-              className="h-[18px] w-[18px] flex-shrink-0 select-none object-contain"
-            />
-          </>
-        ) : (
-          <>
-            <span className="w-[15px] flex-shrink-0" />
-            <FileIcon fileName={item.name} />
-          </>
+        <div className="flex min-w-0 items-center gap-2.5">
+          {item.isDirectory ? (
+            <>
+              {open
+                ? <ChevronDown size={15} className="flex-shrink-0 text-[#707b9d] transition-all group-hover:text-[#aab4d6]" />
+                : <ChevronRight size={15} className="flex-shrink-0 text-[#707b9d] transition-all group-hover:text-[#aab4d6]" />
+              }
+              <img
+                src={getMaterialFolderIcon(item.name, open)}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                className="h-[18px] w-[18px] flex-shrink-0 select-none object-contain"
+              />
+            </>
+          ) : (
+            <>
+              <span className="w-[15px] flex-shrink-0" />
+              <FileIcon fileName={item.name} />
+            </>
+          )}
+          <span className={`truncate ${textColorClass}`}>{item.name}</span>
+        </div>
+        
+        {gitBadge && (
+          <span className={`text-[10px] font-semibold opacity-85 ml-2 mr-1 select-none ${badgeColorClass}`}>
+            {gitBadge}
+          </span>
         )}
-        <span className="min-w-0 truncate">{item.name}</span>
       </div>
       {open && children.map(child => (
         <TreeItem key={child.path} item={child} depth={depth + 1} />
@@ -122,10 +178,13 @@ export default function FileExplorer() {
         </div>
       ) : (
         <div className="flex flex-col h-full overflow-hidden">
-          <div className="flex flex-shrink-0 items-center gap-2.5 px-5 py-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#dce4ff]">
+          <button
+            onClick={handleOpenFolder}
+            className="flex flex-shrink-0 items-center gap-2.5 px-5 py-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#dce4ff] hover:bg-white/[0.04] transition-all text-left outline-none"
+          >
             <ChevronDown size={15} className="text-[#818bad]" />
-            {folderName}
-          </div>
+            <span className="truncate">{folderName}</span>
+          </button>
           <div className="flex-1 overflow-y-auto px-4 pb-5">
             {items.map(item => (
               <TreeItem key={item.path} item={item} depth={0} />

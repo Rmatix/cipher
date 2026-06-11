@@ -196,7 +196,9 @@ export default function App() {
     <div
       className="flex h-screen w-screen flex-col overflow-hidden bg-[var(--cipher-bg)] text-[var(--cipher-text)]"
       style={{
-        padding: (isMaximized && isWindows) ? '8px' : '0px'
+        padding: (isMaximized && isWindows) ? '8px' : '0px',
+        borderRadius: isMaximized ? '0px' : '12px',
+        border: isMaximized ? 'none' : '1px solid rgba(255, 255, 255, 0.085)',
       }}
     >
       <AppEntrance>

@@ -15,6 +15,10 @@ const RUN_COMMANDS: Record<string, { cmd: (path: string) => string; label: strin
   ruby:        { cmd: (p) => `ruby "${p}"`,         label: 'Ruby'     },
   php:         { cmd: (p) => `php "${p}"`,          label: 'PHP'      },
   shellscript: { cmd: (p) => `bash "${p}"`,         label: 'Bash'     },
+  lua:         { cmd: (p) => `lua "${p}"`,          label: 'Lua'      },
+  perl:        { cmd: (p) => `perl "${p}"`,         label: 'Perl'     },
+  powershell:  { cmd: (p) => `powershell -ExecutionPolicy Bypass -File "${p}"`, label: 'PowerShell' },
+  bat:         { cmd: (p) => `"${p}"`,              label: 'Batch'    },
   c:           { cmd: (p) => `gcc "${p}" -o out && ./out`, label: 'GCC' },
   cpp:         { cmd: (p) => `g++ "${p}" -o out && ./out`, label: 'G++' },
   java:        { cmd: (p) => `java "${p}"`,         label: 'Java'     },
@@ -122,15 +126,15 @@ export default function Titlebar() {
   ]
 
   return (
-    <div className="drag z-50 flex h-14 flex-shrink-0 select-none items-center justify-between border-b border-[var(--cipher-border)] bg-[var(--cipher-surface)]/95">
-      <div className={`no-drag flex h-full items-center gap-6 pr-4 ${isMac ? 'pl-20' : 'pl-5'}`}>
-        <div className="flex items-center gap-2.5">
-          <img src="./logo.png" alt="Cipher Logo" className="h-6 w-6 object-contain transition-transform duration-300 hover:scale-110" />
-          <span className="text-[15px] font-semibold text-[var(--cipher-text)]">Cipher</span>
+    <div className="drag z-50 flex h-14 w-full flex-shrink-0 select-none items-center justify-between border-b border-[var(--cipher-border)] bg-[var(--cipher-surface)]/95">
+      <div className="no-drag flex h-full items-center gap-6 pr-4 pl-5">
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <img src="./logo.png" alt="Cipher Logo" className="h-6 w-6 object-contain flex-shrink-0 transition-transform duration-300 hover:scale-110" />
+          <span className="text-[15px] font-semibold text-[var(--cipher-text)] flex-shrink-0">Cipher</span>
         </div>
 
-        <div className="h-4 w-px bg-white/[0.1]" />
-<ThemeSwitcher />
+        <div className="h-4 w-px bg-white/[0.1] flex-shrink-0" />
+        <ThemeSwitcher />
         <ModelSelector />
         <div className="flex items-center gap-2.5">
           {menuItems.map((menu) => (

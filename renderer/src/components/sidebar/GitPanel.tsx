@@ -3,7 +3,7 @@ import { useStore } from '../../store/useStore'
 import { GitBranch, RefreshCw } from 'lucide-react'
 
 export default function GitPanel() {
-  const { currentFolder, gitBranch, setGitBranch } = useStore()
+  const { currentFolder, gitBranch, setGitBranch, refreshGitStatus } = useStore()
   const [changes, setChanges] = useState<{ status: string; file: string }[]>([])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -16,7 +16,8 @@ export default function GitPanel() {
     ])
     setChanges(status)
     setGitBranch(branch)
-  }, [currentFolder, setGitBranch])
+    refreshGitStatus()
+  }, [currentFolder, setGitBranch, refreshGitStatus])
 
   useEffect(() => {
     if (!currentFolder) return
@@ -29,12 +30,13 @@ export default function GitPanel() {
       if (cancelled) return
       setChanges(status)
       setGitBranch(branch)
+      refreshGitStatus()
     })
 
     return () => {
       cancelled = true
     }
-  }, [currentFolder, setGitBranch])
+  }, [currentFolder, setGitBranch, refreshGitStatus])
 
 
   const handleCommit = async () => {

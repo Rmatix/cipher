@@ -1,4 +1,4 @@
-import { Bot, BookOpen, Bug, Clock, Folder, GitBranch, Search, Settings } from 'lucide-react'
+import { Bot, BookOpen, Bug, Clock, Folder, GitBranch, Search, Settings, Activity, StickyNote } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 
@@ -17,8 +17,8 @@ export default function Sidebar() {
     { id: 'memory',  label: 'Memoria proyecto', icon: BookOpen,  badge: !!projectMemory                         },
     { id: 'debug',   label: 'Debugger IA',      icon: Bug,       badge: errorCount > 0, badgeCount: errorCount  },
     { id: 'history', label: 'Historial',        icon: Clock,     badge: changeHistory.length > 0                },
-    { id: 'notes',   label: 'Notas',            icon: BookOpen                                               },
-    { id: 'workflows', label: 'Workflows (BETA)', icon: GitBranch                                            },
+    { id: 'notes',   label: 'Notas',            icon: StickyNote                                                },
+    { id: 'workflows', label: 'Workflows (BETA)', icon: Activity                                                 },
   ]
 
   const handlePanelClick = (id: PanelId | 'settings') => {
