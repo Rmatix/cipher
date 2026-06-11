@@ -1,6 +1,6 @@
 {
   "name": "cipher",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Open source code editor with multi-model AI agent",
   "main": "src/main/index.js",
   "author": "Rmatix",
@@ -61,7 +61,9 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "installerIcon": "renderer/public/logo.ico",
-      "uninstallerIcon": "renderer/public/logo.ico"
+      "uninstallerIcon": "renderer/public/logo.ico",
+      "include": "build/installer.nsh",
+      "perMachine": false
     },
     "extraResources": [
       "native/*.node"
