@@ -13,21 +13,9 @@ import {
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 
-// ── Helpers ──────────────────────────────────────────────
+import { resolveCustomModel, getStoredApiKey } from '../ai/models'
 
-function getStoredApiKey(model: string): string {
-  const provider = model.startsWith('openrouter:') ? 'openrouter'
-    : model.startsWith('ollama:') ? 'ollama'
-    : model.startsWith('claude') ? 'anthropic'
-    : model.startsWith('gpt') ? 'openai'
-    : model.startsWith('gemini') ? 'google'
-    : 'custom'
-  return (
-    localStorage.getItem(`cipher-api-key-${model}`) ||
-    localStorage.getItem(`cipher-provider-api-key-${provider}`) ||
-    ''
-  )
-}
+// ── Helpers ──────────────────────────────────────────────
 
 const MEMORY_PLACEHOLDER = `# Memoria del Proyecto
 
@@ -208,19 +196,9 @@ export default function MemoryPanel() {
     const prompt = buildGeneratePrompt(files, memoryExists ? content : '')
 
     // 3. Resolve model + key
-    let resolvedModel = aiModel
-    let apiKey = getStoredApiKey(aiModel)
-
-    if (aiModel.startsWith('custom:')) {
-      const index = Number(aiModel.replace('custom:', ''))
-      const custom = customModels[index]
-      if (custom) {
-        resolvedModel = custom.provider === 'openai-compatible' && custom.url
-          ? `openai-compatible|${custom.url}|${custom.modelId}`
-          : `${custom.provider}:${custom.modelId}`
-        apiKey = custom.key || ''
-      }
-    }
+    const resolved = resolveCustomModel(aiModel, customModels)
+    const resolvedModel = resolved.model
+    const apiKey = resolved.savedKey ?? getStoredApiKey(resolved.model)
 
     // 4. Stream response
     const streamId = `memory-gen-${++streamCounter.current}-${Date.now()}`

@@ -259,7 +259,7 @@ interface TerminalInstance {
   profile?: string
 }
 
-interface CustomModel {
+export interface CustomModel {
   name: string
   provider: string
   modelId: string
@@ -267,6 +267,7 @@ interface CustomModel {
   key?: string
   endpoint?: string     // custom API endpoint (for OpenRouter, NIM, etc.)
   alias?: string        // optional display alias
+  endpointName?: string // Custom endpoint group name (e.g. "OpenRouter", "Ollama Nube")
 }
 
 interface AppState {

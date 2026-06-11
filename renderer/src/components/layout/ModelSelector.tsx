@@ -1,52 +1,106 @@
-import React from 'react';
-import { useStore } from '../../store/useStore';
-import { ChevronDown } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react'
+import { useStore } from '../../store/useStore'
+import { ChevronDown } from 'lucide-react'
+import { STATIC_MODELS } from '../ai/models'
+import type { ModelGroup, ModelOption } from '../ai/models'
 
-// Simple dropdown for selecting AI model
+// Dynamic header dropdown for selecting active AI model, fully synchronized with AIPanel
 export default function ModelSelector() {
-  const aiModel = useStore(state => state.aiModel);
-  const setAiModel = useStore(state => state.setAiModel);
-  const customModels = useStore(state => state.customModels);
+  const { aiModel, setAiModel, customModels } = useStore()
+  const [ollamaModels, setOllamaModels] = useState<ModelGroup | null>(null)
+  const [lmstudioModels, setLmstudioModels] = useState<ModelGroup | null>(null)
 
-  // Built‑in models list. Adjust as needed.
-  const builtInModels = [
-    { name: 'Claude 3.5 Sonnet (Anthropic)', id: 'claude-3-5-sonnet' },
-    { name: 'Claude 4.8 Sonnet (Anthropic) (Pronto)', id: 'claude-sonnet-4-8' },
-    { name: 'Claude 4.8 Opus (Anthropic) (Pronto)', id: 'claude-opus-4-8' },
-    { name: 'GPT-4o (OpenAI)', id: 'gpt-4o' },
-    { name: 'GPT-5.5 Pro (OpenAI) (Pronto)', id: 'gpt-5.5-pro' },
-    { name: 'GPT-5.5 Mini (OpenAI) (Pronto)', id: 'gpt-5.5-mini' },
-    { name: 'Gemini 2.0 Flash (Google)', id: 'gemini-2.0-flash' },
-    { name: 'Gemini 3.5 Flash (Google) (Pronto)', id: 'gemini-3.5-flash' },
-    { name: 'Gemini 3.5 Pro (Google) (Pronto)', id: 'gemini-3.5-pro' },
-    { name: 'DeepSeek V3 (OpenRouter)', id: 'openrouter:deepseek/deepseek-chat' },
-    { name: 'DeepSeek R1 (OpenRouter)', id: 'openrouter:deepseek/deepseek-reasoner' },
-    { name: 'DeepSeek V4 (OpenRouter) (Pronto)', id: 'openrouter:deepseek/deepseek-chat-v4' },
-    { name: 'DeepSeek Reasoner V4 (OpenRouter) (Pronto)', id: 'openrouter:deepseek/deepseek-reasoner-v4' },
-    { name: 'Ollama Qwen2.5 Coder (Local)', id: 'ollama:qwen-2.5-coder:7b' },
-  ];
+  // Auto-detect local models just like in AIPanel
+  useEffect(() => {
+    const ollamaUrl = localStorage.getItem('cipher-ollama-url') || 'http://localhost:11434'
+    window.cipher.ollamaList(ollamaUrl).then(models => {
+      if (models.length === 0) return
+      setOllamaModels({
+        group: 'Ollama (local)',
+        options: models.map(m => ({
+          value: `ollama:${m.name}`,
+          label: m.name,
+        })),
+      })
+    }).catch(() => {})
 
-  const allModels = [...builtInModels, ...customModels.map(m => ({ name: m.name ?? m.provider, id: m.modelId }))];
+    const lmstudioUrl = localStorage.getItem('cipher-lmstudio-url') || 'http://localhost:1234'
+    window.cipher.lmstudioList(lmstudioUrl).then(models => {
+      if (models.length === 0) return
+      setLmstudioModels({
+        group: 'LM Studio (local)',
+        options: models.map(m => ({
+          value: `lmstudio:${m.id}`,
+          label: m.id,
+        })),
+      })
+    }).catch(() => {})
+  }, [])
+
+  // Resolve all available model groups, grouping custom endpoints by their name
+  const modelGroups = useMemo<ModelGroup[]>(() => {
+    let base = [...STATIC_MODELS]
+    if (lmstudioModels) {
+      base = base.map(g =>
+        g.group === 'LM Studio (local)' ? lmstudioModels : g
+      )
+    }
+    const merged = ollamaModels ? [...base, ollamaModels] : base
+    if (customModels.length === 0) return merged
+
+    // Group customModels by endpointName
+    const customGroupsMap = new Map<string, ModelOption[]>()
+    customModels.forEach((model, index) => {
+      const groupName = model.endpointName || 'Personalizados'
+      if (!customGroupsMap.has(groupName)) {
+        customGroupsMap.set(groupName, [])
+      }
+      customGroupsMap.get(groupName)!.push({
+        value: `custom:${index}`,
+        label: model.alias || model.name || model.modelId,
+      })
+    })
+
+    const customGroupsList: ModelGroup[] = []
+    customGroupsMap.forEach((options, group) => {
+      customGroupsList.push({ group, options })
+    })
+
+    return [...merged, ...customGroupsList]
+  }, [customModels, ollamaModels, lmstudioModels])
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setAiModel(e.target.value);
-  };
+    setAiModel(e.target.value)
+  }
 
   return (
     <div className="relative inline-block text-left">
       <select
         value={aiModel}
         onChange={handleChange}
-        className="appearance-none rounded-md border border-[var(--cipher-border)] bg-[var(--cipher-surface)] px-2 py-1 text-[var(--cipher-text)] focus:outline-none"
+        className="appearance-none rounded-md border border-[var(--cipher-border)] bg-[var(--cipher-surface)] pl-2.5 pr-8 py-1 text-[13px] text-[var(--cipher-text)] focus:outline-none cursor-pointer transition-all hover:border-[var(--cipher-accent)]"
       >
-        {allModels.map(m => (
-          <option key={m.id} value={m.id}>
-            {m.name}
-          </option>
+        {modelGroups.map(group => (
+          <optgroup
+            key={group.group}
+            label={group.group}
+            className="bg-[var(--cipher-surface)] text-[var(--cipher-text-muted)] font-semibold uppercase text-[11px] tracking-wider"
+          >
+            {group.options.map(option => (
+              <option
+                key={option.value}
+                value={option.value}
+                disabled={option.soon}
+                className="bg-[var(--cipher-surface)] text-[var(--cipher-text)] font-normal normal-case text-[13px]"
+              >
+                {option.label} {option.soon ? '(Pronto)' : ''}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
-      {/* Chevron icon */}
-      <ChevronDown size={12} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--cipher-text-muted)]" />
+      {/* Chevron down icon */}
+      <ChevronDown size={12} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--cipher-text-muted)]" />
     </div>
-  );
+  )
 }

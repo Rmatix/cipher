@@ -24,40 +24,17 @@ interface AIResponse {
   type: 'explain' | 'fix'
 }
 
-// ── Helpers ──────────────────────────────────────────────
+import { resolveCustomModel, getStoredApiKey } from '../ai/models'
 
-function getStoredApiKey(model: string): string {
-  const provider = model.startsWith('openrouter:') ? 'openrouter'
-    : model.startsWith('nim:')       ? 'nim'
-    : model.startsWith('deepseek:')  ? 'deepseek'
-    : model.startsWith('kimi:')      ? 'kimi'
-    : model.startsWith('qwen:')      ? 'qwen'
-    : model.startsWith('claude')     ? 'anthropic'
-    : model.startsWith('gpt')        ? 'openai'
-    : model.startsWith('gemini')     ? 'google'
-    : 'custom'
-  return (
-    localStorage.getItem(`cipher-api-key-${model}`) ||
-    localStorage.getItem(`cipher-provider-api-key-${provider}`) ||
-    ''
-  )
-}
+// ── Helpers ──────────────────────────────────────────────
 
 function resolveModel(
   aiModel: string,
-  customModels: { name: string; provider: string; modelId: string; url?: string; key?: string }[]
+  customModels: any[]
 ): { model: string; apiKey: string } {
-  if (aiModel.startsWith('custom:')) {
-    const index = Number(aiModel.replace('custom:', ''))
-    const custom = customModels[index]
-    if (custom) {
-      const model = custom.provider === 'openai-compatible' && custom.url
-        ? `openai-compatible|${custom.url}|${custom.modelId}`
-        : `${custom.provider}:${custom.modelId}`
-      return { model, apiKey: custom.key || '' }
-    }
-  }
-  return { model: aiModel, apiKey: getStoredApiKey(aiModel) }
+  const resolved = resolveCustomModel(aiModel, customModels)
+  const key = resolved.savedKey ?? getStoredApiKey(resolved.model)
+  return { model: resolved.model, apiKey: key }
 }
 
 function severityLabel(s: number) {

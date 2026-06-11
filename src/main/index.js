@@ -741,9 +741,12 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
 
   try {
 
+    const parsedEndpoint = parseProviderEndpoint(model)
+
     // ── Anthropic ──────────────────────────────────────
-    if (model.startsWith('claude') || model.startsWith('anthropic:')) {
-      const anthropicModel = stripProvider(model, 'anthropic')
+    if (model.startsWith('claude') || model.startsWith('anthropic:') || parsedEndpoint?.provider === 'anthropic') {
+      const anthropicModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'anthropic')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://api.anthropic.com/v1'
       let anthropicMessages = messages
       if (attachments && attachments.length > 0) {
         const lastMsg = messages[messages.length - 1]
@@ -773,7 +776,7 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
           anthropicMessages = [...messages.slice(0, -1), { role: 'user', content }]
         }
       }
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch(`${baseUrl}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -798,12 +801,12 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── OpenAI ─────────────────────────────────────────
-    // Matches: gpt-*, openai:*, o1-*, o3-*, o4-* (NOT ollama: or openrouter:)
-    if (model.startsWith('gpt') || model.startsWith('openai:') || /^o[1-9][-.]/.test(model)) {
-      const openaiModel = stripProvider(model, 'openai')
+    if (model.startsWith('gpt') || model.startsWith('openai:') || /^o[1-9][-.]/.test(model) || parsedEndpoint?.provider === 'openai') {
+      const openaiModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'openai')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://api.openai.com/v1'
       const systemMsg = toSystemPrompt(context, systemPrompt, aiOptions)
       const formattedMsgs = formatOpenAIMessages(messages, attachments)
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -825,8 +828,9 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── Google Gemini ──────────────────────────────────
-    if (model.startsWith('gemini') || model.startsWith('google:')) {
-      const googleModel = stripProvider(model, 'google')
+    if (model.startsWith('gemini') || model.startsWith('google:') || parsedEndpoint?.provider === 'google') {
+      const googleModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'google')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://generativelanguage.googleapis.com'
       const sysPrefix = `${toSystemPrompt(context, systemPrompt, aiOptions)}\n\n`
       const prompt = sysPrefix + messages[messages.length - 1].content
       const parts = [{ text: prompt }]
@@ -842,9 +846,8 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
           }
         })
       }
-      // Gemini SSE usa generateContent con alt=sse
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${googleModel}:streamGenerateContent?alt=sse&key=${apiKey}`,
+        `${baseUrl}/v1beta/models/${googleModel}:streamGenerateContent?alt=sse&key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -867,11 +870,12 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── DeepSeek ───────────────────────────────────────
-    if (model.startsWith('deepseek:')) {
-      const dsModel = stripProvider(model, 'deepseek')
+    if (model.startsWith('deepseek:') || parsedEndpoint?.provider === 'deepseek') {
+      const dsModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'deepseek')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://api.deepseek.com/v1'
       const formattedMsgs = formatOpenAIMessages(messages, attachments)
       const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs]
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
         body: JSON.stringify({ model: dsModel, stream: true, messages: msgs }),
@@ -886,11 +890,12 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── Kimi (Moonshot) ────────────────────────────────
-    if (model.startsWith('kimi:')) {
-      const kimiModel = stripProvider(model, 'kimi')
+    if (model.startsWith('kimi:') || parsedEndpoint?.provider === 'kimi') {
+      const kimiModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'kimi')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://api.moonshot.cn/v1'
       const formattedMsgs = formatOpenAIMessages(messages, attachments)
       const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs]
-      const response = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
         body: JSON.stringify({ model: kimiModel, stream: true, messages: msgs }),
@@ -905,11 +910,12 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── Qwen (Alibaba) ─────────────────────────────────
-    if (model.startsWith('qwen:')) {
-      const qwenModel = stripProvider(model, 'qwen')
+    if (model.startsWith('qwen:') || parsedEndpoint?.provider === 'qwen') {
+      const qwenModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'qwen')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://dashscope.aliyuncs.com/compatible-mode/v1'
       const formattedMsgs = formatOpenAIMessages(messages, attachments)
       const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs]
-      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
         body: JSON.stringify({ model: qwenModel, stream: true, messages: msgs }),
@@ -924,8 +930,8 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── OpenRouter ─────────────────────────────────────
-    if (model.startsWith('openrouter:') || (parseProviderEndpoint(model)?.provider === 'openrouter')) {
-      const pe = parseProviderEndpoint(model)
+    if (model.startsWith('openrouter:') || parsedEndpoint?.provider === 'openrouter') {
+      const pe = parsedEndpoint
       const orModel = pe ? pe.modelId : stripProvider(model, 'openrouter')
       const baseUrl = pe ? pe.baseUrl.replace(/\/$/, '') : 'https://openrouter.ai/api/v1'
       const formattedMsgs = formatOpenAIMessages(messages, attachments)
@@ -956,8 +962,8 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── NVIDIA NIM ─────────────────────────────────────
-    if (model.startsWith('nim:') || (parseProviderEndpoint(model)?.provider === 'nim')) {
-      const pe = parseProviderEndpoint(model)
+    if (model.startsWith('nim:') || parsedEndpoint?.provider === 'nim') {
+      const pe = parsedEndpoint
       const nimModel = pe ? pe.modelId : stripProvider(model, 'nim')
       const baseUrl = pe ? pe.baseUrl.replace(/\/$/, '') : 'https://integrate.api.nvidia.com/v1'
       const formattedMsgs = formatOpenAIMessages(messages, attachments)
@@ -976,11 +982,11 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
       return sendEnd(streamId)
     }
 
-    // ── Ollama (local) ─────────────────────────────────
-    if (model.startsWith('ollama:')) {
-      const ollamaModel = stripProvider(model, 'ollama')
+    // ── Ollama ─────────────────────────────────────────
+    if (model.startsWith('ollama:') || parsedEndpoint?.provider === 'ollama') {
+      const ollamaModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'ollama')
       const systemMsg = toSystemPrompt(context, systemPrompt, aiOptions)
-      const host = ollamaUrl || process.env.OLLAMA_HOST || 'http://localhost:11434'
+      const host = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : (ollamaUrl || process.env.OLLAMA_HOST || 'http://localhost:11434')
       
       let ollamaMessages = [{ role: 'system', content: systemMsg }, ...messages]
       if (attachments && attachments.length > 0) {
@@ -1018,7 +1024,6 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
         }
         return sendError(streamId, errMsg)
       }
-      // Ollama stream: newline-delimited JSON (no SSE)
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
@@ -1042,11 +1047,11 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     }
 
     // ── LM Studio ─────────────────────────────────────
-    if (model.startsWith('lmstudio:')) {
-      const lmModel = stripProvider(model, 'lmstudio')
+    if (model.startsWith('lmstudio:') || parsedEndpoint?.provider === 'lmstudio') {
+      const lmModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'lmstudio')
       const modelId = lmModel === 'local' ? 'local-model' : lmModel
       const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages]
-      const host = lmstudioUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234'
+      const host = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : (lmstudioUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234')
       const response = await fetch(`${host}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer lmstudio' },
@@ -1119,9 +1124,12 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
     }
     const aiOptions = { webSearch: Boolean(webSearch), webSearchResults }
 
-    if (model.startsWith('claude') || model.startsWith('anthropic:')) {
-      const anthropicModel = stripProvider(model, 'anthropic')
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const parsedEndpoint = parseProviderEndpoint(model)
+
+    if (model.startsWith('claude') || model.startsWith('anthropic:') || parsedEndpoint?.provider === 'anthropic') {
+      const anthropicModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'anthropic')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://api.anthropic.com/v1'
+      const response = await fetch(`${baseUrl}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({ model: anthropicModel, max_tokens: 256, system: toSystemPrompt(context, systemPrompt, aiOptions), messages })
@@ -1130,9 +1138,10 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       if (data.error) return { error: data.error.message }
       return { text: data.content[0].text }
     }
-    if (model.startsWith('gpt') || model.startsWith('openai:') || /^o[1-9][-.]/.test(model)) {
-      const openaiModel = stripProvider(model, 'openai')
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    if (model.startsWith('gpt') || model.startsWith('openai:') || /^o[1-9][-.]/.test(model) || parsedEndpoint?.provider === 'openai') {
+      const openaiModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'openai')
+      const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://api.openai.com/v1'
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
         body: JSON.stringify({ model: openaiModel, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages] })
@@ -1141,9 +1150,9 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       if (data.error) return { error: data.error.message }
       return { text: data.choices[0].message.content }
     }
-    if (model.startsWith('ollama:')) {
-      const ollamaModel = stripProvider(model, 'ollama')
-      const host = ollamaUrl || process.env.OLLAMA_HOST || 'http://localhost:11434'
+    if (model.startsWith('ollama:') || parsedEndpoint?.provider === 'ollama') {
+      const ollamaModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'ollama')
+      const host = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : (ollamaUrl || process.env.OLLAMA_HOST || 'http://localhost:11434')
       const response = await fetch(`${host}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1163,10 +1172,10 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const data = await response.json()
       return { text: data.message.content }
     }
-    if (model.startsWith('lmstudio:')) {
-      const lmModel = stripProvider(model, 'lmstudio')
+    if (model.startsWith('lmstudio:') || parsedEndpoint?.provider === 'lmstudio') {
+      const lmModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'lmstudio')
       const modelId = lmModel === 'local' ? 'local-model' : lmModel
-      const host = lmstudioUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234'
+      const host = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : (lmstudioUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234')
       const response = await fetch(`${host}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer lmstudio' },
@@ -1175,8 +1184,8 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const data = await response.json()
       return { text: data.choices[0].message.content }
     }
-    if (model.startsWith('openrouter:') || (parseProviderEndpoint(model)?.provider === 'openrouter')) {
-      const pe = parseProviderEndpoint(model)
+    if (model.startsWith('openrouter:') || parsedEndpoint?.provider === 'openrouter') {
+      const pe = parsedEndpoint
       const orModel = pe ? pe.modelId : stripProvider(model, 'openrouter')
       const baseUrl = pe ? pe.baseUrl.replace(/\/$/, '') : 'https://openrouter.ai/api/v1'
       const tools = openRouterTools(webSearch)
@@ -1193,8 +1202,8 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       if (data.error) return { error: data.error.message }
       return { text: data.choices[0].message.content }
     }
-    if (model.startsWith('nim:') || (parseProviderEndpoint(model)?.provider === 'nim')) {
-      const pe = parseProviderEndpoint(model)
+    if (model.startsWith('nim:') || parsedEndpoint?.provider === 'nim') {
+      const pe = parsedEndpoint
       const nimModel = pe ? pe.modelId : stripProvider(model, 'nim')
       const baseUrl = pe ? pe.baseUrl.replace(/\/$/, '') : 'https://integrate.api.nvidia.com/v1'
       const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -1206,7 +1215,23 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       if (data.error) return { error: data.error.message }
       return { text: data.choices[0].message.content }
     }
-    // Para el resto de providers en test-mode, fallback genérico OpenAI-compatible
+    // Fallback genérico compatible con OpenAI para cualquier otro personalizado que use pipe
+    if (model.includes('|')) {
+      const parts = model.split('|')
+      const provider = parts[0]
+      const baseUrl = parts[1]
+      const modelId = parts.slice(2).join('|')
+      if (baseUrl) {
+        const response = await fetch(`${baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+          body: JSON.stringify({ model: modelId, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages] })
+        })
+        const data = await response.json()
+        if (data.error) return { error: data.error.message }
+        return { text: data.choices[0].message.content }
+      }
+    }
     return { error: 'Test no disponible para este modelo. Usa el chat directamente.' }
   } catch (e) {
     return { error: e.message }

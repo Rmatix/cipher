@@ -18,6 +18,15 @@ import {
   X,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
+import {
+  STATIC_MODELS,
+  PROVIDERS,
+  getProviderFromModel,
+  getStoredApiKey,
+  resolveCustomModel,
+  isLocalModel,
+} from './models'
+import type { ModelGroup, ModelOption } from './models'
 
 // ── Types ────────────────────────────────────────────────
 
@@ -27,198 +36,8 @@ interface Message {
   streaming?: boolean
 }
 
-interface ModelOption {
-  value: string
-  label: string
-  soon?: boolean
-}
-
-interface ModelGroup {
-  group: string
-  options: ModelOption[]
-}
-
-// ── Static model list ────────────────────────────────────
-
-const STATIC_MODELS: ModelGroup[] = [
-  {
-    group: 'OpenRouter',
-    options: [
-      { value: 'openrouter:google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-      { value: 'openrouter:google/gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-      { value: 'openrouter:anthropic/claude-opus-4-5', label: 'Claude Opus 4.5' },
-      { value: 'openrouter:anthropic/claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
-      { value: 'openrouter:anthropic/claude-3-5-haiku', label: 'Claude 3.5 Haiku' },
-      { value: 'openrouter:openai/gpt-4o', label: 'GPT-4o' },
-      { value: 'openrouter:openai/gpt-4o-mini', label: 'GPT-4o Mini' },
-      { value: 'openrouter:openai/o3', label: 'o3' },
-      { value: 'openrouter:openai/o4-mini', label: 'o4-mini' },
-      { value: 'openrouter:openai/gpt-4.1', label: 'GPT-4.1' },
-      { value: 'openrouter:openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
-      { value: 'openrouter:deepseek/deepseek-chat-v3-0324', label: 'DeepSeek V3 (Mar 2025)' },
-      { value: 'openrouter:deepseek/deepseek-r1', label: 'DeepSeek R1' },
-      { value: 'openrouter:deepseek/deepseek-prover-v2', label: 'DeepSeek Prover V2' },
-      { value: 'openrouter:qwen/qwen-2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
-      { value: 'openrouter:qwen/qwq-32b', label: 'QwQ 32B' },
-      { value: 'openrouter:meta-llama/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
-      { value: 'openrouter:meta-llama/llama-4-scout', label: 'Llama 4 Scout' },
-      { value: 'openrouter:meta-llama/llama-4-maverick', label: 'Llama 4 Maverick' },
-      { value: 'openrouter:mistralai/mistral-large', label: 'Mistral Large' },
-      { value: 'openrouter:mistralai/codestral-2501', label: 'Codestral 2501' },
-      { value: 'openrouter:x-ai/grok-3', label: 'Grok 3' },
-      { value: 'openrouter:x-ai/grok-3-mini', label: 'Grok 3 Mini' },
-    ],
-  },
-  {
-    group: 'NVIDIA NIM',
-    options: [
-      { value: 'nim:meta/llama-3.3-70b-instruct', label: 'Llama 3.3 70B' },
-      { value: 'nim:meta/llama-4-scout-17b-16e-instruct', label: 'Llama 4 Scout 17B' },
-      { value: 'nim:nvidia/llama-3.1-nemotron-70b-instruct', label: 'Nemotron 70B' },
-      { value: 'nim:nvidia/llama-3.3-nemotron-super-49b-v1', label: 'Nemotron Super 49B' },
-      { value: 'nim:deepseek-ai/deepseek-r1', label: 'DeepSeek R1' },
-      { value: 'nim:qwen/qwen2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
-      { value: 'nim:mistralai/mistral-small-3.1-24b-instruct', label: 'Mistral Small 3.1 24B' },
-      { value: 'nim:microsoft/phi-4-reasoning-plus', label: 'Phi-4 Reasoning Plus' },
-    ],
-  },
-  {
-    group: 'Anthropic',
-    options: [
-      { value: 'claude-opus-4-5', label: 'Claude Opus 4.5' },
-      { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
-      { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' },
-      { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
-      { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
-    ],
-  },
-  {
-    group: 'OpenAI',
-    options: [
-      { value: 'gpt-4.1', label: 'GPT-4.1' },
-      { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
-      { value: 'gpt-4o', label: 'GPT-4o' },
-      { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-      { value: 'o3', label: 'o3' },
-      { value: 'o4-mini', label: 'o4-mini' },
-      { value: 'o3-mini', label: 'o3-mini' },
-      { value: 'gpt-4.5-preview', label: 'GPT-4.5 Preview' },
-    ],
-  },
-  {
-    group: 'Google',
-    options: [
-      { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-      { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-      { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-      { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
-      { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
-      { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
-    ],
-  },
-  {
-    group: 'DeepSeek',
-    options: [
-      { value: 'deepseek-chat', label: 'DeepSeek V3 (Chat)' },
-      { value: 'deepseek-reasoner', label: 'DeepSeek R1 (Reasoner)' },
-    ],
-  },
-  {
-    group: 'Kimi (Moonshot)',
-    options: [
-      { value: 'kimi:moonshot-v1-8k', label: 'Kimi v1 8k' },
-      { value: 'kimi:moonshot-v1-32k', label: 'Kimi v1 32k' },
-      { value: 'kimi:moonshot-v1-128k', label: 'Kimi v1 128k' },
-      { value: 'kimi:kimi-vl-a3b-thinking', label: 'Kimi VL Thinking' },
-    ],
-  },
-  {
-    group: 'Qwen (Alibaba)',
-    options: [
-      { value: 'qwen:qwen-plus', label: 'Qwen Plus' },
-      { value: 'qwen:qwen-turbo', label: 'Qwen Turbo' },
-      { value: 'qwen:qwen-max', label: 'Qwen Max' },
-      { value: 'qwen:qwen2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
-      { value: 'qwen:qwq-32b', label: 'QwQ 32B' },
-    ],
-  },
-  {
-    group: 'LM Studio (local)',
-    options: [
-      { value: 'lmstudio:local', label: 'Modelo activo' },
-    ],
-  },
-]
-
-const PROVIDERS: ModelGroup[] = [
-  {
-    group: 'Proveedor',
-    options: [
-      { value: 'openrouter', label: 'OpenRouter' },
-      { value: 'nim', label: 'NVIDIA NIM' },
-      { value: 'ollama', label: 'Ollama local' },
-      { value: 'lmstudio', label: 'LM Studio local' },
-      { value: 'openai-compatible', label: 'Compatible OpenAI' },
-      { value: 'openai', label: 'OpenAI' },
-      { value: 'anthropic', label: 'Anthropic' },
-      { value: 'google', label: 'Google' },
-      { value: 'deepseek', label: 'DeepSeek' },
-      { value: 'kimi', label: 'Kimi' },
-      { value: 'qwen', label: 'Qwen' },
-    ],
-  },
-]
-
 // ── Helpers ──────────────────────────────────────────────
 
-const isLocalModel = (model: string) =>
-  model.startsWith('ollama:') || model.startsWith('lmstudio:')
-
-function getProviderFromModel(model: string) {
-  if (model.startsWith('openrouter:')) return 'openrouter'
-  if (model.startsWith('nim:')) return 'nim'
-  if (model.startsWith('deepseek:')) return 'deepseek'
-  if (model.startsWith('kimi:')) return 'kimi'
-  if (model.startsWith('qwen:')) return 'qwen'
-  if (model.startsWith('ollama:')) return 'ollama'
-  if (model.startsWith('lmstudio:')) return 'lmstudio'
-  if (model.startsWith('gpt') || model.startsWith('o') || model.startsWith('openai:')) return 'openai'
-  if (model.startsWith('claude') || model.startsWith('anthropic:')) return 'anthropic'
-  if (model.startsWith('gemini') || model.startsWith('google:')) return 'google'
-  return 'custom'
-}
-
-function getStoredApiKey(model: string, fallback?: string) {
-  const provider = getProviderFromModel(model)
-  const modelId = model.includes(':') ? model.split(':').slice(1).join(':') : model
-  return (
-    localStorage.getItem(`cipher-api-key-${model}`) ||
-    localStorage.getItem(`cipher-model-api-key-${model}`) ||
-    localStorage.getItem(`cipher-model-api-key-${provider}:${modelId}`) ||
-    localStorage.getItem(`cipher-provider-api-key-${provider}`) ||
-    fallback ||
-    ''
-  )
-}
-
-function resolveCustomModel(
-  value: string,
-  customModels: ReturnType<typeof useStore.getState>['customModels']
-): { model: string; savedKey: string | undefined } {
-  if (!value.startsWith('custom:')) return { model: value, savedKey: undefined }
-  const index = Number(value.replace('custom:', ''))
-  const custom = customModels[index]
-  if (!custom) return { model: value, savedKey: undefined }
-  // If custom endpoint is set, pass it to backend via pipe-delimited format
-  if (custom.url) {
-    return { model: `${custom.provider}|${custom.url}|${custom.modelId}`, savedKey: custom.key }
-  }
-  // If openai-compatible without special url, keep legacy format
-  if (custom.provider === 'openai-compatible') {
-    return { model: `openai-compatible||${custom.modelId}`, savedKey: custom.key }
-  }
-  return { model: `${custom.provider}:${custom.modelId}`, savedKey: custom.key }
-}
 
 let streamCounter = 0
 function newStreamId() {
@@ -454,16 +273,25 @@ export default function AIPanel() {
       ? [...base, ollamaModels]
       : base
     if (customModels.length === 0) return merged
-    return [
-      ...merged,
-      {
-        group: 'Personalizados',
-        options: customModels.map((model, index) => ({
-          value: `custom:${index}`,
-          label: model.name,
-        })),
-      },
-    ]
+
+    const customGroupsMap = new Map<string, ModelOption[]>()
+    customModels.forEach((model, index) => {
+      const groupName = model.endpointName || 'Personalizados'
+      if (!customGroupsMap.has(groupName)) {
+        customGroupsMap.set(groupName, [])
+      }
+      customGroupsMap.get(groupName)!.push({
+        value: `custom:${index}`,
+        label: model.alias || model.name || model.modelId,
+      })
+    })
+
+    const customGroupsList: ModelGroup[] = []
+    customGroupsMap.forEach((options, group) => {
+      customGroupsList.push({ group, options })
+    })
+
+    return [...merged, ...customGroupsList]
   }, [customModels, ollamaModels, lmstudioModels])
 
   const selectedModel = resolveCustomModel(aiModel, customModels)
@@ -1170,38 +998,125 @@ function ModelApiKeyModal({
 function CustomModelModal({ onClose }: { onClose: () => void }) {
   const { addCustomModel, customModels, removeCustomModel } = useStore()
   const [provider, setProvider] = useState('openrouter')
-  const [modelId, setModelId] = useState('')
-  const [key, setKey] = useState('')
-  const [alias, setAlias] = useState('')
-
-  // Default endpoints
+  const [endpointName, setEndpointName] = useState('OpenRouter')
   const [endpointUrl, setEndpointUrl] = useState('https://openrouter.ai/api/v1')
+  const [apiKey, setApiKey] = useState('')
+  const [modelsList, setModelsList] = useState<{ modelId: string; alias: string }[]>([
+    { modelId: 'openai/gpt-oss-120b:free', alias: 'GPT OSS' },
+    { modelId: 'google/gemma-4-31b-it:free', alias: 'Gemma 4' },
+  ])
 
-
-  // Derived display name: alias || modelId
-  const displayName = alias.trim() || modelId.trim() || ''
-
-  const save = () => {
-    if (!modelId) return
-    addCustomModel({
-      name: displayName || modelId,
-      provider,
-      modelId: modelId.trim(),
-      url: endpointUrl.trim() || undefined,
-      key: key.trim() || undefined,
-      alias: alias.trim() || undefined,
+  // Extract unique endpoints configured so far
+  const uniqueEndpoints = useMemo(() => {
+    const map = new Map<string, { endpointName: string; url: string; key: string; provider: string; modelsCount: number }>()
+    customModels.forEach(m => {
+      const name = m.endpointName || 'Personalizado'
+      if (!map.has(name)) {
+        map.set(name, {
+          endpointName: name,
+          url: m.url || '',
+          key: m.key || '',
+          provider: m.provider,
+          modelsCount: 0
+        })
+      }
+      map.get(name)!.modelsCount++
     })
-    setModelId('')
-    setKey('')
-    setAlias('')
+    return Array.from(map.values())
+  }, [customModels])
+
+  const loadEndpoint = (ep: typeof uniqueEndpoints[number]) => {
+    setEndpointName(ep.endpointName)
+    setEndpointUrl(ep.url)
+    setApiKey(ep.key)
+    setProvider(ep.provider)
+    const matching = customModels.filter(m => m.endpointName === ep.endpointName)
+    if (matching.length > 0) {
+      setModelsList(matching.map(m => ({ modelId: m.modelId, alias: m.alias || '' })))
+    }
   }
 
-  const isCloudProvider = ['openrouter', 'nim', 'openai', 'anthropic', 'google', 'deepseek', 'kimi', 'qwen'].includes(provider)
+  const addModelRow = () => {
+    setModelsList(prev => [...prev, { modelId: '', alias: '' }])
+  }
+
+  const removeModelRow = (index: number) => {
+    if (modelsList.length === 1) {
+      setModelsList([{ modelId: '', alias: '' }])
+    } else {
+      setModelsList(prev => prev.filter((_, i) => i !== index))
+    }
+  }
+
+  const handleModelChange = (index: number, field: 'modelId' | 'alias', value: string) => {
+    setModelsList(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
+  }
+
+  const save = () => {
+    if (!endpointName.trim()) return
+
+    // 1. Remove existing models for this endpoint name to overwrite
+    const indicesToRemove: number[] = []
+    customModels.forEach((m, idx) => {
+      if (m.endpointName === endpointName.trim()) {
+        indicesToRemove.push(idx)
+      }
+    })
+    indicesToRemove.sort((a, b) => b - a).forEach(idx => {
+      removeCustomModel(idx)
+    })
+
+    // 2. Add the models
+    modelsList.forEach(m => {
+      if (!m.modelId.trim()) return
+      addCustomModel({
+        name: m.alias.trim() || m.modelId.trim(),
+        provider,
+        modelId: m.modelId.trim(),
+        url: endpointUrl.trim() || undefined,
+        key: apiKey.trim() || undefined,
+        alias: m.alias.trim() || undefined,
+        endpointName: endpointName.trim()
+      })
+    })
+
+    onClose()
+  }
+
+  const removeWholeEndpoint = () => {
+    if (!endpointName.trim()) return
+    const indicesToRemove: number[] = []
+    customModels.forEach((m, idx) => {
+      if (m.endpointName === endpointName.trim()) {
+        indicesToRemove.push(idx)
+      }
+    })
+    indicesToRemove.sort((a, b) => b - a).forEach(idx => {
+      removeCustomModel(idx)
+    })
+    setEndpointName('')
+    setEndpointUrl('')
+    setApiKey('')
+    setModelsList([{ modelId: '', alias: '' }])
+  }
+
+
 
   return (
-    <div className="cipher-pop-enter absolute inset-0 z-50 flex flex-col overflow-y-auto bg-[var(--cipher-bg)] p-5">
-      <div className="mb-5 flex items-center justify-between">
-        <span className="text-[14px] font-bold text-white">Agregar modelo</span>
+    <div className="cipher-pop-enter absolute inset-0 z-50 flex flex-col overflow-y-auto bg-[#11141e] p-6 text-[var(--cipher-text)]">
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between border-b border-[var(--cipher-border)] pb-4">
+        <div>
+          <h2 className="text-[15px] font-bold text-white">Edit custom endpoint</h2>
+          <p className="mt-1 text-[11px] text-[var(--cipher-text-muted)] leading-relaxed">
+            Provide your endpoint details below. You can add as many models from the endpoint as you'd
+            like and can also provide aliases for the model picker in your input.
+          </p>
+        </div>
         <button
           onClick={onClose}
           className="rounded-lg p-2 text-[var(--cipher-text-muted)] transition-all hover:bg-white/[0.06] hover:text-white"
@@ -1210,89 +1125,188 @@ function CustomModelModal({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {/* Proveedor */}
-        <ModelSelect
-          label="Proveedor"
-          value={provider}
-          onChange={(newProvider) => {
-            setProvider(newProvider)
-            if (newProvider === 'openrouter') setEndpointUrl('https://openrouter.ai/api/v1')
-            else if (newProvider === 'nim') setEndpointUrl('https://integrate.api.nvidia.com/v1')
-            else if (newProvider === 'openai') setEndpointUrl('https://api.openai.com/v1')
-            else if (newProvider === 'anthropic') setEndpointUrl('https://api.anthropic.com/v1')
-            else if (newProvider === 'google') setEndpointUrl('https://generativelanguage.googleapis.com')
-            else if (newProvider === 'deepseek') setEndpointUrl('https://api.deepseek.com/v1')
-            else if (newProvider === 'kimi') setEndpointUrl('https://api.moonshot.cn/v1')
-            else if (newProvider === 'qwen') setEndpointUrl('https://dashscope.aliyuncs.com/compatible-mode/v1')
-            else if (newProvider === 'openai-compatible') setEndpointUrl('http://localhost:1234/v1')
-            else setEndpointUrl('')
-          }}
-          groups={PROVIDERS}
-        />
+      <div className="flex flex-col gap-4">
+        {/* Provider selector */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase tracking-wider">Provider</label>
+          <ModelSelect
+            label="Select"
+            value={provider}
+            onChange={(newProvider) => {
+              setProvider(newProvider)
+              if (newProvider === 'openrouter') {
+                setEndpointName('OpenRouter')
+                setEndpointUrl('https://openrouter.ai/api/v1')
+              } else if (newProvider === 'nim') {
+                setEndpointName('NVIDIA NIM')
+                setEndpointUrl('https://integrate.api.nvidia.com/v1')
+              } else if (newProvider === 'openai') {
+                setEndpointName('OpenAI Custom')
+                setEndpointUrl('https://api.openai.com/v1')
+              } else if (newProvider === 'anthropic') {
+                setEndpointName('Anthropic Custom')
+                setEndpointUrl('https://api.anthropic.com/v1')
+              } else if (newProvider === 'google') {
+                setEndpointName('Google Custom')
+                setEndpointUrl('https://generativelanguage.googleapis.com')
+              } else if (newProvider === 'deepseek') {
+                setEndpointName('DeepSeek Custom')
+                setEndpointUrl('https://api.deepseek.com/v1')
+              } else if (newProvider === 'kimi') {
+                setEndpointName('Kimi Custom')
+                setEndpointUrl('https://api.moonshot.cn/v1')
+              } else if (newProvider === 'qwen') {
+                setEndpointName('Qwen Custom')
+                setEndpointUrl('https://dashscope.aliyuncs.com/compatible-mode/v1')
+              } else if (newProvider === 'openai-compatible') {
+                setEndpointName('OpenAI Compatible')
+                setEndpointUrl('http://localhost:1234/v1')
+              } else if (newProvider === 'ollama') {
+                setEndpointName('Ollama Cloud')
+                setEndpointUrl('http://localhost:11434')
+              } else {
+                setEndpointName('Custom Endpoint')
+                setEndpointUrl('')
+              }
+            }}
+            groups={PROVIDERS}
+          />
+        </div>
 
-        {/* Endpoint URL - visible for cloud providers AND openai-compatible */}
-        {(isCloudProvider || provider === 'openai-compatible') && (
+        {/* Endpoint Name */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase tracking-wider">Endpoint name</label>
+          <input
+            value={endpointName}
+            onChange={e => setEndpointName(e.target.value)}
+            placeholder="e.g. OpenRouter"
+            className="rounded-lg border border-[var(--cipher-border)] bg-[#0c1018] px-3.5 py-2.5 text-[13px] text-white outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
+          />
+        </div>
+
+        {/* Endpoint URL */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase tracking-wider">Endpoint URL</label>
           <input
             value={endpointUrl}
             onChange={e => setEndpointUrl(e.target.value)}
-            placeholder="Endpoint URL"
-            className="rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-4 py-3 text-[13px] text-[var(--cipher-text)] outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
+            placeholder="https://..."
+            className="rounded-lg border border-[var(--cipher-border)] bg-[#0c1018] px-3.5 py-2.5 text-[13px] text-white outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
           />
-        )}
+        </div>
 
         {/* API Key */}
-        {(provider !== 'ollama' && provider !== 'lmstudio') && (
-          <input
-            type="password"
-            value={key}
-            onChange={e => setKey(e.target.value)}
-            placeholder="API key"
-            className="rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-4 py-3 text-[13px] text-[var(--cipher-text)] outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
-          />
+        {provider !== 'lmstudio' && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase tracking-wider">API key</label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={e => setApiKey(e.target.value)}
+              placeholder="••••••••••••••••••••••••"
+              className="rounded-lg border border-[var(--cipher-border)] bg-[#0c1018] px-3.5 py-2.5 text-[13px] text-white outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
+            />
+          </div>
         )}
 
-        {/* Model Name */}
-        <input
-          value={modelId}
-          onChange={e => setModelId(e.target.value)}
-          placeholder="Model name, ej: google/gemma-2-9b-it:free"
-          className="rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-4 py-3 text-[13px] text-[var(--cipher-text)] outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
-        />
-
-        {/* Model Alias (opcional) */}
-        <input
-          value={alias}
-          onChange={e => setAlias(e.target.value)}
-          placeholder="Alias (opcional), ej: Mi modelo favorito"
-          className="rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-4 py-3 text-[13px] text-[var(--cipher-text)] outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
-        />
-
-        <button
-          onClick={save}
-          className="rounded-xl bg-[var(--cipher-accent)] py-3 text-[13px] text-white transition-all hover:opacity-80"
-        >
-          Guardar modelo
-        </button>
-      </div>
-
-      <div className="mt-5">
-        <p className="mb-3 text-[12px] text-[var(--cipher-text-muted)]">Modelos guardados</p>
-        {customModels.map((m, i) => (
-          <div key={i} className="flex items-center justify-between border-b border-[var(--cipher-border)] py-2.5">
-            <span className="text-[13px] text-[var(--cipher-text)]">
-              {m.alias || m.name}{' '}
-              <span className="text-[var(--cipher-text-muted)]">({m.provider})</span>
-            </span>
-            <button
-              onClick={() => removeCustomModel(i)}
-              className="rounded-lg p-1.5 text-[#ff6b6b] transition-all hover:bg-[#ff6b6b]/12 hover:text-red-400"
-            >
-              <X size={14} />
-            </button>
+        {/* Dynamic Models list */}
+        <div className="mt-2 flex flex-col gap-2.5">
+          <div className="grid grid-cols-12 gap-2 text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase tracking-wider">
+            <div className="col-span-6">Model name</div>
+            <div className="col-span-5">Model alias (optional)</div>
+            <div className="col-span-1"></div>
           </div>
-        ))}
+
+          <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-1">
+            {modelsList.map((m, idx) => (
+              <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                <input
+                  value={m.modelId}
+                  onChange={e => handleModelChange(idx, 'modelId', e.target.value)}
+                  placeholder="e.g. openai/gpt-oss-120b:free"
+                  className="col-span-6 rounded-lg border border-[var(--cipher-border)] bg-[#0c1018] px-3 py-2 text-[13px] text-white outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
+                />
+                <input
+                  value={m.alias}
+                  onChange={e => handleModelChange(idx, 'alias', e.target.value)}
+                  placeholder="e.g. GPT OSS"
+                  className="col-span-5 rounded-lg border border-[var(--cipher-border)] bg-[#0c1018] px-3 py-2 text-[13px] text-white outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)]"
+                />
+                <button
+                  onClick={() => removeModelRow(idx)}
+                  className="col-span-1 flex justify-center items-center rounded-lg p-2 text-[var(--cipher-text-muted)] transition-all hover:bg-white/[0.06] hover:text-red-400"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={addModelRow}
+            className="self-start mt-1 flex items-center gap-1.5 rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-3 py-1.5 text-[12px] text-white transition-all hover:bg-white/[0.05]"
+          >
+            <Plus size={13} />
+            Add model
+          </button>
+        </div>
       </div>
+
+      {/* Footer / Buttons */}
+      <div className="mt-8 flex items-center justify-between border-t border-[var(--cipher-border)] pt-4">
+        <button
+          onClick={removeWholeEndpoint}
+          disabled={!endpointName.trim()}
+          className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-950/20 px-4 py-2 text-[13px] font-medium text-red-400 transition-all hover:bg-red-900/30 disabled:opacity-30 disabled:pointer-events-none"
+        >
+          <Trash2 size={15} />
+          Remove
+        </button>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-bg)] px-4 py-2 text-[13px] font-medium text-[var(--cipher-text)] transition-all hover:bg-white/[0.03]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            className="rounded-lg bg-[var(--cipher-accent)] px-4 py-2 text-[13px] font-medium text-white transition-all hover:opacity-85"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+
+      {/* Existing endpoints list */}
+      {uniqueEndpoints.length > 0 && (
+        <div className="mt-6 border-t border-[var(--cipher-border)] pt-4">
+          <h3 className="text-[12px] font-bold text-white uppercase tracking-wider mb-2.5">Configured endpoints</h3>
+          <div className="flex flex-col gap-1.5">
+            {uniqueEndpoints.map((ep, i) => (
+              <div
+                key={i}
+                onClick={() => loadEndpoint(ep)}
+                className="flex items-center justify-between rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)]/35 p-3 cursor-pointer transition-all hover:border-[var(--cipher-accent)] hover:bg-[var(--cipher-surface-alt)]/60"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[13px] font-bold text-white">{ep.endpointName}</span>
+                  <span className="text-[11px] text-[var(--cipher-text-muted)] truncate max-w-[240px]">{ep.url}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-[var(--cipher-accent-bg)] px-2 py-0.5 text-[10px] text-[var(--cipher-accent)] font-semibold border border-[var(--cipher-accent-soft)]">
+                    {ep.modelsCount} {ep.modelsCount === 1 ? 'model' : 'models'}
+                  </span>
+                  <span className="text-[11px] text-[var(--cipher-text-muted)] uppercase tracking-wider font-semibold">
+                    {ep.provider}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

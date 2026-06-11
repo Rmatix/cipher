@@ -7,13 +7,13 @@
 
   ![License](https://img.shields.io/badge/license-MIT-blue)
   ![Platform](https://img.shields.io/badge/platform-Windows-blue)
-  ![Status](https://img.shields.io/badge/status-experimental%20incomplete-orange)
-  ![Version](https://img.shields.io/badge/version-v0.2.0-7c4dff)
+  ![Status](https://img.shields.io/badge/status-stable%20release-brightgreen)
+  ![Version](https://img.shields.io/badge/version-v2.0.2-7c4dff)
 </div>
 
 Cipher es un editor de codigo open source para Windows, construido con Electron, React, TypeScript, Monaco Editor y un panel de agente IA multi-proveedor.
 
-> Estado: version `v0.2.0` experimental e incompleta. Compila, pero todavia requiere pruebas manuales amplias antes de tratarse como release estable.
+> Estado: version `v2.0.2` estable. Compila y empaqueta nativamente con soporte de icono completo para el instalador y la aplicacion.
 
 ## Caracteristicas
 
@@ -53,13 +53,12 @@ Cipher es un editor de codigo open source para Windows, construido con Electron,
 - Contexto del archivo activo: el agente puede usar el contenido actual del archivo abierto, incluso si todavia no fue guardado.
 - Compatibilidad inicial con Claude Code y OpenAI Codex CLI.
 - Configuracion de API keys por proveedor y por modelo.
-- Los modelos marcados como "pronto" aun no estan disponibles en las APIs de sus proveedores.
-  - **Modelos disponibles (6 de junio 2026):**
-    - Gemini 3.5 Flash
-    - Claude 4.8 Opus
-    - GPT 5.5 Pro
-    - DeepSeek V4
-    - Qwen 3.7 Coder
+- **Configuración avanzada de Endpoints Personalizados:** Permite crear y agrupar múltiples modelos (cada uno con su nombre técnico y un alias opcional legible) bajo endpoints personalizados con URLs específicas para OpenRouter, NVIDIA NIM, Ollama (tanto servidores locales como remotos en la nube) u otros proveedores compatibles con OpenAI.
+- **Sincronización de Modelos en tiempo real:** El selector rápido de modelos de la barra superior (header) y el selector del panel lateral de IA están sincronizados al 100%. Comparten los mismos estados de autodetección (Ollama/LM Studio) y los modelos de "Pronto" (indisponibles temporalmente en la API) aparecen correctamente deshabilitados en ambos.
+- Los modelos marcados como "pronto" aun no estan disponibles en todas las APIs de sus proveedores (verificado al 9 de junio 2026). Entre los modelos que estarán disponibles próximamente:
+  - Claude Opus 4.5, Claude Sonnet 4.5 y Claude Haiku 4.5 (Anthropic)
+  - GPT-4.1, GPT-4.1 Mini, o4-mini (OpenAI)
+  - Llama 4 Scout y Llama 4 Maverick (vía OpenRouter y NVIDIA NIM)
 
 ### Interfaz
 
