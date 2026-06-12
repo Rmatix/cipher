@@ -94,7 +94,7 @@ function ModelSelect({
           <div className="cipher-pop-enter absolute left-20 right-0 top-12 z-40 max-h-80 overflow-y-auto rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface)] p-2 shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
             {groups.map(group => (
               <div key={group.group} className="py-1">
-                <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--cipher-text-muted)]">
+                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#ff8a8a] border-b border-white/[0.04] mb-1">
                   {group.group}
                 </div>
                 {group.options.map(option => {
@@ -758,12 +758,12 @@ export default function AIPanel() {
             msg.role === 'user' ? 'items-end' : 'items-start'
           }`}>
             <span className={`text-[11px] font-bold uppercase tracking-wider ${
-              msg.role === 'user' ? 'text-[#4fc3f7]' :
-              msg.role === 'error' ? 'text-[#ff6b6b]' :
-              msg.role === 'system' ? 'text-[var(--cipher-text-muted)]' :
-              'text-[var(--cipher-accent)]'
+              msg.role === 'user' ? 'text-[#a78bfa]' : // Lavender/Purple for User
+              msg.role === 'error' ? 'text-[#ef4444]' : // Red for errors
+              msg.role === 'system' ? 'text-[#38bdf8]' : // Light blue for System messages
+              'text-[#f43f5e]' // Rose for Cipher AI replies
             }`}>
-              {msg.role === 'user' ? 'Tu' :
+              {msg.role === 'user' ? 'Tú' :
                msg.role === 'error' ? 'Error' :
                msg.role === 'system' ? 'Sistema' :
                'Cipher IA'}
@@ -773,18 +773,18 @@ export default function AIPanel() {
               <textarea
                 defaultValue={msg.content}
                 onChange={e => setCurrentPlan(e.target.value)}
-                className="w-full resize-y rounded-xl border border-[var(--cipher-accent)] bg-[var(--cipher-bg)] p-4 font-mono text-[12px] text-[var(--cipher-text)] outline-none"
-                rows={8}
+                className="w-full resize-y rounded-xl border border-[var(--cipher-accent)] bg-[var(--cipher-bg)] p-5 font-mono text-[13px] text-[var(--cipher-text)] outline-none leading-relaxed"
+                rows={10}
               />
             ) : (
-              <div className={`break-words rounded-2xl px-4 py-3.5 text-[13px] leading-[1.72] ${
+              <div className={`break-words rounded-2xl px-5 py-4 text-[13.5px] leading-[1.8] ${
                 msg.role === 'user'
-                  ? 'max-w-[88%] border border-[var(--cipher-accent-alt)]/40 bg-[var(--cipher-surface-alt)] text-[var(--cipher-text)] rounded-tr-sm'
+                  ? 'max-w-[88%] border border-[var(--cipher-accent-alt)]/40 bg-[var(--cipher-surface-alt)] text-[var(--cipher-text)] rounded-tr-sm shadow-md'
                   : msg.role === 'error'
-                  ? 'w-full border-l-2 border-[#ff6b6b] bg-[var(--cipher-surface-alt)] text-[#ff9a9a] pl-4'
+                  ? 'w-full border-l-3 border-[#ff6b6b] bg-[var(--cipher-surface-alt)] text-[#ff9a9a] pl-5 py-3'
                   : msg.role === 'system'
-                  ? 'w-full border-l-2 border-[var(--cipher-text-muted)] bg-transparent text-[var(--cipher-text-muted)] pl-4 py-2'
-                  : 'w-full border border-[var(--cipher-border)] bg-[var(--cipher-surface)] text-[var(--cipher-text)] shadow-sm'
+                  ? 'w-full border-l-3 border-[#38bdf8] bg-[var(--cipher-surface-alt)]/80 text-[#38bdf8]/90 pl-5 py-3'
+                  : 'w-full border border-[var(--cipher-border)] bg-[var(--cipher-surface)] text-[var(--cipher-text)] shadow-md'
               }`}>
                 {renderContentWithThinking(msg.content, msg.streaming)}
               </div>

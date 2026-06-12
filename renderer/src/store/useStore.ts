@@ -396,8 +396,23 @@ export const useStore = create<AppState>((set, get) => ({
     set({ currentFolder: folder });
     if (folder) {
       get().refreshGitStatus();
+      
+      // Restore previously open tabs for this folder
+      try {
+        const stored = localStorage.getItem(`cipher-tabs-${folder}`)
+        if (stored) {
+          const { tabs, activeTabPath } = JSON.parse(stored)
+          if (Array.isArray(tabs)) {
+            set({ tabs, activeTabPath })
+          }
+        } else {
+          set({ tabs: [], activeTabPath: null })
+        }
+      } catch (e) {
+        console.error('Failed to restore tabs:', e)
+      }
     } else {
-      set({ gitStatusMap: {} });
+      set({ gitStatusMap: {}, tabs: [], activeTabPath: null });
     }
   },
 
@@ -405,20 +420,44 @@ export const useStore = create<AppState>((set, get) => ({
   tabs: [],
   activeTabPath: null,
   activeFileContent: null,
-  addTab: (tab) => set((state) => ({
-    tabs: state.tabs.find(t => t.path === tab.path)
+  addTab: (tab) => set((state) => {
+    const nextTabs = state.tabs.find(t => t.path === tab.path)
       ? state.tabs
-      : [...state.tabs, tab],
-    activeTabPath: tab.path
-  })),
+      : [...state.tabs, tab]
+    
+    if (state.currentFolder) {
+      localStorage.setItem(
+        `cipher-tabs-${state.currentFolder}`,
+        JSON.stringify({ tabs: nextTabs, activeTabPath: tab.path })
+      )
+    }
+    return {
+      tabs: nextTabs,
+      activeTabPath: tab.path
+    }
+  }),
   removeTab: (path) => set((state) => {
     const newTabs = state.tabs.filter(t => t.path !== path)
     const newActive = state.activeTabPath === path
       ? newTabs.length > 0 ? newTabs[newTabs.length - 1].path : null
       : state.activeTabPath
+    if (state.currentFolder) {
+      localStorage.setItem(
+        `cipher-tabs-${state.currentFolder}`,
+        JSON.stringify({ tabs: newTabs, activeTabPath: newActive })
+      )
+    }
     return { tabs: newTabs, activeTabPath: newActive, activeFileContent: null }
   }),
-  setActiveTab: (path) => set({ activeTabPath: path }),
+  setActiveTab: (path) => set((state) => {
+    if (state.currentFolder) {
+      localStorage.setItem(
+        `cipher-tabs-${state.currentFolder}`,
+        JSON.stringify({ tabs: state.tabs, activeTabPath: path })
+      )
+    }
+    return { activeTabPath: path }
+  }),
   setActiveFileContent: (content) => set({ activeFileContent: content }),
   updateTabModified: (path, modified) => set((state) => ({
     tabs: state.tabs.map(t => t.path === path ? { ...t, modified } : t)

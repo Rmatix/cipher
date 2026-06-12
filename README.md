@@ -8,12 +8,13 @@
   ![License](https://img.shields.io/badge/license-MIT-blue)
   ![Platform](https://img.shields.io/badge/platform-Windows-blue)
   ![Status](https://img.shields.io/badge/status-stable%20release-brightgreen)
-  ![Version](https://img.shields.io/badge/version-v2.5.1-7c4dff)
+  ![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean%20%E2%9C%93-brightgreen)
+  ![Version](https://img.shields.io/badge/version-v2.8.0-7c4dff)
 </div>
 
 Cipher es un editor de codigo open source para Windows, construido con Electron, React, TypeScript, Monaco Editor y un panel de agente IA multi-proveedor.
 
-> Estado: version `v2.5.1` estable. Compila y empaqueta nativamente con soporte de icono completo para el instalador y la aplicacion.
+> Estado: version `v2.8.0` estable. Verificado 100% libre de malware con VirusTotal. Compila y empaqueta nativamente con soporte de icono completo para el instalador y la aplicacion.
 
 ## Caracteristicas
 

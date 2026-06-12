@@ -26,8 +26,8 @@ export default function Sidebar() {
   }
 
   return (
-    <div className="flex w-20 flex-shrink-0 select-none flex-col items-center justify-between border-r border-[var(--cipher-border)] bg-[var(--cipher-surface)] py-5">
-      <div className="flex w-full flex-col items-center gap-4">
+    <div className="flex w-24 flex-shrink-0 select-none flex-col items-center justify-between border-r border-[var(--cipher-border)] bg-[var(--cipher-surface)] py-6">
+      <div className="flex w-full flex-col items-center gap-5">
         {panels.map((panel) => {
           const Icon = panel.icon
           const isActive = sidebarPanel === panel.id
@@ -36,7 +36,7 @@ export default function Sidebar() {
             <button
               key={panel.id}
               onClick={() => handlePanelClick(panel.id)}
-              className={`group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all ${
+              className={`group relative flex h-14 w-14 items-center justify-center rounded-2xl transition-all ${
                 isActive
                   ? 'bg-[var(--cipher-accent-bg)] text-[var(--cipher-text)] shadow-[0_0_0_1px_var(--cipher-accent-soft)_inset]'
                   : 'text-[var(--cipher-text-muted)] hover:bg-white/[0.05] hover:text-[var(--cipher-text)]'
@@ -44,9 +44,9 @@ export default function Sidebar() {
               title={panel.label}
             >
               {isActive && (
-                <div className="absolute -left-2.5 h-8 w-1 rounded-full bg-[var(--cipher-accent)] transition-all" />
+                <div className="absolute -left-3.5 h-9 w-1.5 rounded-full bg-[var(--cipher-accent)] transition-all" />
               )}
-              <Icon size={22} strokeWidth={1.7} />
+              <Icon size={24} strokeWidth={1.7} />
 
               {/* Badge dot or count */}
               {panel.badge && !isActive && (
@@ -69,7 +69,7 @@ export default function Sidebar() {
 
       <button
         onClick={() => handlePanelClick('settings')}
-        className={`group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all ${
+        className={`group relative flex h-14 w-14 items-center justify-center rounded-2xl transition-all ${
           sidebarPanel === 'settings'
             ? 'bg-[var(--cipher-accent-bg)] text-[var(--cipher-text)] shadow-[0_0_0_1px_var(--cipher-accent-soft)_inset]'
             : 'text-[var(--cipher-text-muted)] hover:bg-white/[0.05] hover:text-[var(--cipher-text)]'
@@ -77,9 +77,9 @@ export default function Sidebar() {
         title="Configuracion"
       >
         {sidebarPanel === 'settings' && (
-          <div className="absolute -left-2.5 h-8 w-1 rounded-full bg-[var(--cipher-accent)] transition-all" />
+          <div className="absolute -left-3.5 h-9 w-1.5 rounded-full bg-[var(--cipher-accent)] transition-all" />
         )}
-        <Settings size={22} strokeWidth={1.7} />
+        <Settings size={24} strokeWidth={1.7} />
         <div className="cipher-pop-enter pointer-events-none absolute left-16 z-50 hidden rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface)] px-3 py-2 text-[12px] text-[var(--cipher-text)] shadow-xl group-hover:block">
           Configuracion
         </div>

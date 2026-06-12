@@ -19,8 +19,15 @@ const RUN_COMMANDS: Record<string, { cmd: (path: string) => string; label: strin
   perl:        { cmd: (p) => `perl "${p}"`,         label: 'Perl'     },
   powershell:  { cmd: (p) => `powershell -ExecutionPolicy Bypass -File "${p}"`, label: 'PowerShell' },
   bat:         { cmd: (p) => `"${p}"`,              label: 'Batch'    },
-  c:           { cmd: (p) => `gcc "${p}" -o out && ./out`, label: 'GCC' },
-  cpp:         { cmd: (p) => `g++ "${p}" -o out && ./out`, label: 'G++' },
+  c:           { cmd: (p) => {
+    const output = p.replace(/\.[^/.]+$/, '');
+    return `gcc "${p}" -o "${output}" && "${output}"`;
+  }, label: 'GCC' },
+  cpp:         { cmd: (p) => {
+    const output = p.replace(/\.[^/.]+$/, '');
+    return `g++ "${p}" -o "${output}" && "${output}"`;
+  }, label: 'G++' },
+  csharp:      { cmd: () => `dotnet run`,           label: 'C# (.NET)' },
   java:        { cmd: (p) => `java "${p}"`,         label: 'Java'     },
 }
 
