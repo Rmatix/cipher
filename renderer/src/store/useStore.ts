@@ -518,18 +518,21 @@ export const useStore = create<AppState>((set, get) => ({
   refreshGitStatus: async () => {
     const folder = get().currentFolder
     if (!folder) return
-    try {
-      const statusList = await window.cipher.gitStatus(folder)
-      const map: Record<string, string> = {}
-      for (const item of statusList) {
-        // Normalize slashes to make relative path lookup match renderer path joins
-        const normalizedFile = item.file.replace(/\\/g, '/')
-        map[normalizedFile] = item.status
+    // Perf: run git-status fetching in a non-blocking macrotask callback
+    setTimeout(async () => {
+      try {
+        const statusList = await window.cipher.gitStatus(folder)
+        const map: Record<string, string> = {}
+        for (const item of statusList) {
+          // Normalize slashes to make relative path lookup match renderer path joins
+          const normalizedFile = item.file.replace(/\\/g, '/')
+          map[normalizedFile] = item.status
+        }
+        set({ gitStatusMap: map })
+      } catch (e) {
+        console.error('Failed to refresh git status:', e)
       }
-      set({ gitStatusMap: map })
-    } catch (e) {
-      console.error('Failed to refresh git status:', e)
-    }
+    }, 50)
   },
 
   // Theme

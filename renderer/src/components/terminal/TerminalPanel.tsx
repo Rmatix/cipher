@@ -206,7 +206,7 @@ function TerminalPane({
       className={`min-h-0 flex-1 overflow-hidden border-l border-[var(--cipher-border-soft)] first:border-l-0 ${active ? 'bg-[var(--cipher-bg)]' : 'bg-[var(--cipher-surface)]'}`}
       onMouseDown={onFocus}
     >
-      <div ref={terminalRef} className="h-full overflow-hidden px-1 py-1" />
+      <div ref={terminalRef} className="h-full overflow-hidden px-4 py-3 bg-[var(--cipher-bg)]/80 backdrop-blur-md rounded-xl m-2 border border-white/[0.03]" />
     </div>
   )
 }
