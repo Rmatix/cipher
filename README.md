@@ -16,6 +16,39 @@ Cipher es un editor de codigo open source para Windows, construido con Electron,
 
 > Estado: version `v2.8.0` estable. Verificado 100% libre de malware con VirusTotal. Compila y empaqueta nativamente con soporte de icono completo para el instalador y la aplicacion.
 
+## Qué hay de nuevo en v2.8.0
+
+### ✨ Instalador Multi-Perfil
+- El instalador de Windows ahora muestra **3 ediciones** para elegir:
+  - **Cipher Usuario** — Editor ligero sin servicios de IA en primer plano, ideal para edición rápida.
+  - **Cipher Developer** — Agente IA completo (Chat / Plan / Dev), terminal avanzada, Git integrado y compiladores nativos.
+  - **Cipher Completo** — Todo lo de Developer + Composer multi-archivo, Workflows avanzados, Debug IA y Memory de proyecto.
+- El perfil elegido se guarda en el registro de Windows y la app lo detecta al iniciar.
+
+### 🎼 Composer Multi-archivo
+- Nuevo modo **Composer** en el panel de IA: el agente propone cambios en múltiples archivos a la vez.
+- Cada bloque de código incluye la ruta del archivo para que puedas copiarlo y aplicarlo fácilmente.
+- Ideal para refactorizaciones, cambios transversales y actualizaciones de API.
+
+### 💾 Session Persistence
+- Cipher recuerda qué archivos tenías abiertos al cerrar.
+- Al reabrir con el mismo proyecto, las pestañas se restauran automáticamente.
+- Solo restaura archivos que aún existen en disco.
+
+### ⚙️ Panel de Ajustes Rework
+- El panel de configuración ahora tiene **5 pestañas** con iconos en la barra lateral:
+  - 🎨 **Apariencia** — Temas y modo enfoque
+  - 🔑 **API Keys** — Claves por proveedor y por modelo
+  - ⌨️ **Atajos** — Atajos de teclado reconfigurables
+  - ⚙️ **Editor** — Preferencias base del editor
+  - 🤖 **Agentes** — Claude Code, Codex CLI, Ollama y LM Studio
+- Cada sección tiene su propio espacio, sin scroll interminable.
+
+### 🎨 Mejoras de UI
+- Nombres de proveedores en el selector de modelos con **color cyan diferenciado** para distinguirlos de los modelos individuales.
+- Área de mensajes del panel IA más amplia con mayor espaciado entre burbujas.
+- Input del agente ampliado a 3 líneas por defecto para más comodidad.
+
 ## Caracteristicas
 
 ### Editor

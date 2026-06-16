@@ -6,6 +6,7 @@ import {
   Code2,
   FileText,
   KeyRound,
+  Layers,
   Loader2,
   MessageSquare,
   Paperclip,
@@ -94,7 +95,8 @@ function ModelSelect({
           <div className="cipher-pop-enter absolute left-20 right-0 top-12 z-40 max-h-80 overflow-y-auto rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface)] p-2 shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
             {groups.map(group => (
               <div key={group.group} className="py-1">
-                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#ff8a8a] border-b border-white/[0.04] mb-1">
+                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#38bdf8] border-b border-[#38bdf8]/20 mb-1 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#38bdf8]/60" />
                   {group.group}
                 </div>
                 {group.options.map(option => {
@@ -373,6 +375,7 @@ export default function AIPanel() {
     { id: 'chat' as const, icon: MessageSquare, label: 'Chat' },
     { id: 'plan' as const, icon: FileText, label: 'Plan' },
     { id: 'dev' as const, icon: Code2, label: 'Dev' },
+    { id: 'composer' as const, icon: Layers, label: 'Composer' },
   ]
 
   const getSystemPrompt = useCallback(() => {
@@ -385,6 +388,9 @@ export default function AIPanel() {
     }
     if (aiMode === 'dev') {
       return `Eres un desarrollador experto. Responde con codigo real, concreto y listo para integrar cuando el usuario lo pida.${memorySection}`
+    }
+    if (aiMode === 'composer') {
+      return `Eres un ingeniero de software experto en modificar multiples archivos a la vez. Cuando el usuario te pida cambios, responde con bloques de codigo marcados asi:\n\n\`\`\`filepath:ruta/al/archivo.ext\n// contenido del archivo\n\`\`\`\n\nSiempre muestra el archivo completo modificado, no solo el fragmento. Usa rutas relativas al proyecto.${memorySection}`
     }
     return `Eres un asistente de codigo experto.${memorySection}`
   }, [aiMode, projectMemory])
@@ -731,7 +737,7 @@ export default function AIPanel() {
       </div>
 
       {/* Messages */}
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-5">
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 py-4">
         {messages.length === 0 && (
           <div className="cipher-fade-up rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] p-4 text-[13px] leading-6 text-[var(--cipher-text-muted)]">
             Selecciona un modelo, guarda su key si aplica y usa el boton de prueba para validar la conexion.
@@ -777,7 +783,7 @@ export default function AIPanel() {
                 rows={10}
               />
             ) : (
-              <div className={`break-words rounded-2xl px-5 py-4 text-[13.5px] leading-[1.8] ${
+              <div className={`break-words rounded-2xl px-6 py-4 text-[13.5px] leading-[1.9] ${
                 msg.role === 'user'
                   ? 'max-w-[88%] border border-[var(--cipher-accent-alt)]/40 bg-[var(--cipher-surface-alt)] text-[var(--cipher-text)] rounded-tr-sm shadow-md'
                   : msg.role === 'error'
@@ -865,7 +871,7 @@ export default function AIPanel() {
               'Escribele al asistente o adjunta imágenes/archivos...'
             }
             className="flex-1 resize-none rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-bg)] px-4 py-3 text-[14px] text-[var(--cipher-text)] outline-none transition-all placeholder-[var(--cipher-text-muted)] focus:border-[var(--cipher-accent)] focus:bg-[var(--cipher-surface-alt)]"
-            rows={2}
+            rows={3}
           />
           <div className="flex flex-col gap-1">
             {loading ? (
@@ -906,6 +912,18 @@ export default function AIPanel() {
           >
             Ejecutar con Codex CLI
           </button>
+        </div>
+      )}
+
+      {/* Composer mode hint */}
+      {aiMode === 'composer' && (
+        <div className="flex-shrink-0 border-t border-[var(--cipher-border)] px-5 pb-4 pt-3">
+          <div className="rounded-xl border border-[#7c4dff]/30 bg-[#7c4dff]/10 p-3 text-[12px] text-[var(--cipher-text-muted)] leading-5">
+            <p className="font-semibold text-[#c5b8ff] mb-1">Modo Composer activo</p>
+            El agente propondrá cambios en múltiples archivos con bloques marcados como
+            <code className="mx-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-[11px] text-[#c5b8ff]">```filepath:ruta</code>.
+            Copia y aplica cada bloque al archivo correspondiente.
+          </div>
         </div>
       )}
 

@@ -86,9 +86,20 @@ contextBridge.exposeInMainWorld('cipher', {
 
   // ── Startup & Drag / Drop File Associated Open ──────────────────────────
   getStartupPath: () => ipcRenderer.invoke('get-startup-path'),
+  getAppProfile: () => ipcRenderer.invoke('get-app-profile'),
   onOpenPathRequest: (callback) => {
     const listener = (event, data) => callback(data)
     ipcRenderer.on('open-path-request', listener)
     return () => ipcRenderer.removeListener('open-path-request', listener)
   },
+
+  // ── Database (SQL Viewer) ─────────────────────────────────────────────────
+  dbConnect:    (params)                    => ipcRenderer.invoke('db:connect',     params),
+  dbDisconnect: (params)                    => ipcRenderer.invoke('db:disconnect',  params),
+  dbSchema:     (params)                    => ipcRenderer.invoke('db:schema',      params),
+  dbQuery:      (params)                    => ipcRenderer.invoke('db:query',       params),
+  dbUpdateRow:  (params)                    => ipcRenderer.invoke('db:update-row',  params),
+  dbInsertRow:  (params)                    => ipcRenderer.invoke('db:insert-row',  params),
+  dbDeleteRow:  (params)                    => ipcRenderer.invoke('db:delete-row',  params),
 })
+

@@ -1,15 +1,15 @@
-import { Bot, BookOpen, Bug, Clock, Folder, GitBranch, Search, Settings, Activity, StickyNote } from 'lucide-react'
+import { Bot, BookOpen, Bug, Clock, Database, Folder, GitBranch, Search, Settings, Activity, StickyNote } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 
-type PanelId = 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'settings'
+type PanelId = 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings'
 
 export default function Sidebar() {
-  const { sidebarPanel, setSidebarPanel, projectMemory, editorMarkers, changeHistory } = useStore()
+  const { sidebarPanel, setSidebarPanel, projectMemory, editorMarkers, changeHistory, appProfile } = useStore()
 
   const errorCount = editorMarkers.filter(m => m.severity === 8).length
 
-  const panels: { id: PanelId; label: string; icon: LucideIcon; badge?: boolean; badgeCount?: number }[] = [
+  let panels: { id: PanelId; label: string; icon: LucideIcon; badge?: boolean; badgeCount?: number }[] = [
     { id: 'files',   label: 'Explorador',      icon: Folder                                                    },
     { id: 'search',  label: 'Busqueda',         icon: Search                                                    },
     { id: 'git',     label: 'Git',              icon: GitBranch                                                 },
@@ -17,9 +17,15 @@ export default function Sidebar() {
     { id: 'memory',  label: 'Memoria proyecto', icon: BookOpen,  badge: !!projectMemory                         },
     { id: 'debug',   label: 'Debugger IA',      icon: Bug,       badge: errorCount > 0, badgeCount: errorCount  },
     { id: 'history', label: 'Historial',        icon: Clock,     badge: changeHistory.length > 0                },
-    { id: 'notes',   label: 'Notas',            icon: StickyNote                                                },
-    { id: 'workflows', label: 'Workflows (BETA)', icon: Activity                                                 },
+    { id: 'notes',     label: 'Notas',             icon: StickyNote                                                },
+    { id: 'workflows', label: 'Workflows (BETA)',  icon: Activity                                                  },
+    { id: 'database',  label: 'SQL Viewer',        icon: Database                                                  },
   ]
+
+  // Filter out developer features if profile is common user
+  if (appProfile === 'common') {
+    panels = panels.filter(p => ['files', 'search', 'notes', 'history'].includes(p.id))
+  }
 
   const handlePanelClick = (id: PanelId | 'settings') => {
     setSidebarPanel(sidebarPanel === id ? null : id)

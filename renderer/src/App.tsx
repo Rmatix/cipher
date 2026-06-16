@@ -98,8 +98,15 @@ export default function App() {
     }
   }, [setCurrentFolder, setSidebarPanel, addTab, setActiveTab])
 
-  // Startup path checking and second-instance events
+  // Startup path checking, profile query, and second-instance events
+  const { setAppProfile } = useStore()
+
   useEffect(() => {
+    // Query installer registry profile
+    window.cipher?.getAppProfile?.().then((profile) => {
+      if (profile) setAppProfile(profile)
+    })
+
     window.cipher?.getStartupPath?.().then((data) => {
       if (data) {
         // Delay slightly to let layout/editor mount
@@ -113,7 +120,7 @@ export default function App() {
       })
       return unsubscribe
     }
-  }, [openPathData])
+  }, [openPathData, setAppProfile])
 
   const stateRef = useRef({ sidebarPanel, terminalVisible, bottomPanel, focusMode })
   useEffect(() => {

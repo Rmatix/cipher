@@ -10,6 +10,7 @@ import HistoryPanel from '../history/HistoryPanel'
 import NotesPanel from '../notes/NotesPanel'
 import WorkflowsPanel from '../workflows/WorkflowsPanel'
 import SettingsPanel from '../settings/SettingsPanel'
+import DatabasePanel from '../database/DatabasePanel'
 
 export default function Panel() {
   const { sidebarPanel } = useStore()
@@ -17,6 +18,9 @@ export default function Panel() {
     const saved = localStorage.getItem('cipher-panel-width')
     return saved ? parseInt(saved, 10) : 384
   })
+
+  // Database panel gets more space
+  const panelWidth = sidebarPanel === 'database' ? Math.max(width, 700) : width
 
   const isResizing = useRef(false)
   const widthRef = useRef(width)
@@ -68,6 +72,7 @@ export default function Panel() {
     history:  'HISTORIAL DE CAMBIOS',
     notes:    'NOTAS',
     workflows:'WORKFLOWS (BETA)',
+    database: 'SQL VIEWER',
     settings: 'CONFIGURACION',
   }
 
@@ -75,7 +80,7 @@ export default function Panel() {
     <div 
       className="cipher-panel-enter relative flex flex-shrink-0 flex-col overflow-hidden border-r border-[var(--cipher-border)] bg-[var(--cipher-surface)]"
       style={{ 
-        width: sidebarPanel ? `${width}px` : '0px',
+        width: sidebarPanel ? `${panelWidth}px` : '0px',
         display: sidebarPanel ? 'flex' : 'none'
       }}
     >
@@ -109,6 +114,9 @@ export default function Panel() {
         </div>
         <div style={{ display: sidebarPanel === 'workflows' ? 'block' : 'none', height: '100%', width: '100%' }}>
           <WorkflowsPanel />
+        </div>
+        <div style={{ display: sidebarPanel === 'database' ? 'block' : 'none', height: '100%', width: '100%' }}>
+          <DatabasePanel />
         </div>
         <div style={{ display: sidebarPanel === 'settings' ? 'block' : 'none', height: '100%', width: '100%' }}>
           <SettingsPanel />

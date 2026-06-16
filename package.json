@@ -72,7 +72,8 @@
       "native/*.node"
     ],
     "asarUnpack": [
-      "**/*.node"
+      "**/*.node",
+      "**/better-sqlite3/**"
     ]
   },
   "devDependencies": {

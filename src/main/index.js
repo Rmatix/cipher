@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
+const { registerDbHandlers } = require('./db-bridge')
 
 let mainWindow = null
 let native = null
@@ -363,6 +364,19 @@ ipcMain.handle('get-startup-path', () => {
 ipcMain.handle('open-external', async (event, url) => {
   await shell.openExternal(requireHttpUrl(url))
   return true
+})
+
+ipcMain.handle('get-app-profile', async () => {
+  if (os.platform() !== 'win32') return 'developer' // Non-windows runs full dev
+  try {
+    const { execSync } = require('child_process')
+    // Read the Software\Cipher:Profile value from registry
+    const output = execSync('reg query "HKCU\\Software\\Cipher" /v Profile', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] })
+    if (output.includes('0x0') || output.includes('0')) return 'common'
+    return 'developer'
+  } catch (e) {
+    return 'developer' // Default fallback
+  }
 })
 
 // ── File system ──────────────────────────────────────────
@@ -1605,11 +1619,13 @@ ipcMain.handle('project-scan', (event, folderPath, maxFiles = 40) => {
 // ── App lifecycle ────────────────────────────────────────
 
 app.whenReady().then(() => {
+  registerDbHandlers()
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
 
 app.on('window-all-closed', () => {
   for (const [id, proc] of terminals) {

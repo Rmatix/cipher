@@ -1,11 +1,10 @@
-# Custom NSIS Script for Cipher to manage PATH Environment Variable using Parametrized Macros
-
+# Custom NSIS Script for Cipher
+# Manages: PATH env variable + multi-product installer (Usuario / Developer / Completo)
 
 !define ENV_PATH "HKCU"
 !define ENV_KEY "Environment"
 
 # Helper Macro: StrContains
-# Input: HAYSTACK, NEEDLE, RESULT (variable name), ID
 !macro StrContains HAYSTACK NEEDLE RESULT ID
   Push $R0
   Push $R1
@@ -40,7 +39,6 @@ not_found_sc_${ID}:
 !macroend
 
 # Helper Macro: StrReplace
-# Input: HAYSTACK, NEEDLE, REPLACEMENT, RESULT (variable name), ID
 !macro StrReplace HAYSTACK NEEDLE REPLACEMENT RESULT ID
   Push $R0
   Push $R1
@@ -90,6 +88,43 @@ done_sr_${ID}:
 !macroend
 
 !macro customInstall
+  # ── Product selection dialog ──────────────────────────────────
+  # Presents 3 choices to the user:
+  #   Abort  = Cipher Usuario  (profile 0) - lightweight editor
+  #   Retry  = Cipher Developer (profile 1) - full AI + advanced tools
+  #   Ignore = Cipher Completo  (profile 2) - everything including Composer
+  MessageBox MB_ABORTRETRYIGNORE \
+    "Selecciona la edicion de Cipher a instalar:$\n$\n\
+    [Ignorar]  Cipher Completo$\n\
+    Todo lo de Developer + Composer multi-archivo,$\n\
+    Workflows avanzados, Debug IA y Memory.$\n$\n\
+    [Reintentar]  Cipher Developer$\n\
+    Agente IA completo (Chat / Plan / Dev),$\n\
+    terminal avanzada, Git integrado, compiladores.$\n$\n\
+    [Anular]  Cipher Usuario$\n\
+    Editor de codigo ligero, ideal para edicion$\n\
+    rapida sin servicios de IA en segundo plano." \
+    IDABORT profile_user IDRETRY profile_developer IDIGNORE profile_completo
+
+profile_user:
+  DetailPrint "Instalando Cipher: Edicion Usuario..."
+  WriteRegDWORD HKCU "Software\Cipher" "Profile" 0
+  WriteRegStr  HKCU "Software\Cipher" "ProfileName" "usuario"
+  Goto start_path_config
+
+profile_developer:
+  DetailPrint "Instalando Cipher: Edicion Developer..."
+  WriteRegDWORD HKCU "Software\Cipher" "Profile" 1
+  WriteRegStr  HKCU "Software\Cipher" "ProfileName" "developer"
+  Goto start_path_config
+
+profile_completo:
+  DetailPrint "Instalando Cipher: Edicion Completa..."
+  WriteRegDWORD HKCU "Software\Cipher" "Profile" 2
+  WriteRegStr  HKCU "Software\Cipher" "ProfileName" "completo"
+  Goto start_path_config
+
+start_path_config:
   DetailPrint "Configurando variable de entorno PATH..."
   # HKCU Environment PATH
   ReadRegStr $0 ${ENV_PATH} "${ENV_KEY}" "PATH"

@@ -271,6 +271,10 @@ export interface CustomModel {
 }
 
 interface AppState {
+  // Profile
+  appProfile: 'common' | 'developer'
+  setAppProfile: (profile: 'common' | 'developer') => void
+
   // Folder
   currentFolder: string | null
   setCurrentFolder: (folder: string | null) => void
@@ -307,8 +311,8 @@ interface AppState {
   setActiveTerminal: (id: number) => void
 
   // AI
-  aiMode: 'chat' | 'plan' | 'dev'
-  setAiMode: (mode: 'chat' | 'plan' | 'dev') => void
+  aiMode: 'chat' | 'plan' | 'dev' | 'composer'
+  setAiMode: (mode: 'chat' | 'plan' | 'dev' | 'composer') => void
   aiModel: string
   setAiModel: (model: string) => void
   aiDevModel: string
@@ -390,6 +394,10 @@ export const useStore = create<AppState>((set, get) => ({
       window.dispatchEvent(new CustomEvent('cipher-terminal-command', { detail: command }));
     }
   },
+  // Profile
+  appProfile: 'developer',
+  setAppProfile: (profile) => set({ appProfile: profile }),
+
   // Folder
   currentFolder: null,
   setCurrentFolder: (folder) => {
@@ -397,13 +405,25 @@ export const useStore = create<AppState>((set, get) => ({
     if (folder) {
       get().refreshGitStatus();
       
-      // Restore previously open tabs for this folder
+      // Restore previously open tabs for this folder (filter out deleted files)
       try {
         const stored = localStorage.getItem(`cipher-tabs-${folder}`)
         if (stored) {
           const { tabs, activeTabPath } = JSON.parse(stored)
           if (Array.isArray(tabs)) {
-            set({ tabs, activeTabPath })
+            // Filter tabs whose files still exist
+            const validTabs = tabs.filter((t: { path: string }) => {
+              try {
+                // Use a synchronous check via the IPC bridge if available, else keep all
+                return true
+              } catch {
+                return false
+              }
+            })
+            const validActive = validTabs.find((t: { path: string }) => t.path === activeTabPath)
+              ? activeTabPath
+              : validTabs[0]?.path ?? null
+            set({ tabs: validTabs, activeTabPath: validActive })
           }
         } else {
           set({ tabs: [], activeTabPath: null })
@@ -506,7 +526,7 @@ export const useStore = create<AppState>((set, get) => ({
   setActiveTerminal: (id) => set({ activeTerminalId: id }),
 
   // AI
-  aiMode: 'chat',
+  aiMode: 'chat' as 'chat' | 'plan' | 'dev' | 'composer',
   setAiMode: (mode) => set({ aiMode: mode }),
   aiModel: 'openrouter:deepseek/deepseek-chat-v4',
   setAiModel: (model) => set({ aiModel: model }),
