@@ -88,15 +88,25 @@
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/addon-web-links": "^0.12.0",
     "@xterm/xterm": "^6.0.0",
+    "better-sqlite3": "^12.11.1",
     "file-icons-js": "^1.1.0",
     "monaco-editor": "^0.55.1",
+    "mssql": "^12.5.5",
+    "mysql2": "^3.22.5",
     "node-fetch": "^2.7.0",
-    "node-pty": "^1.1.0"
+    "node-pty": "^1.1.0",
+    "pg": "^8.21.0"
   },
   "overrides": {
     "shell-quote": "^1.8.4"
   },
   "resolutions": {
     "shell-quote": "^1.8.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
   }
 }
+

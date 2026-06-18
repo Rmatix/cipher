@@ -65,6 +65,13 @@ export interface CipherAPI {
   // ── Startup & Drag / Drop File Associated Open ──────────────────────────
   getStartupPath: () => Promise<{ folderPath: string; filePath: string | null } | null>
   onOpenPathRequest: (callback: (data: { folderPath: string; filePath: string | null }) => void) => () => void
+  getAppProfile: () => Promise<'common' | 'developer' | null>
+
+  // ── Database (SQL Viewer) ─────────────────────────────
+  dbConnect: (params: any) => Promise<{ connId: string; error?: string }>
+  dbDisconnect: (connId: string) => Promise<{ error?: string }>
+  dbSchema: (connId: string) => Promise<{ schema: any[]; error?: string }>
+  dbQuery: (connId: string, sql: string) => Promise<{ rows: any[]; error?: string }>
 }
 
 // ── AI types ─────────────────────────────────────────────

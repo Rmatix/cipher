@@ -63,7 +63,7 @@ export default function SchemaTree({
           </div>
         )}
 
-        {schema.map(({ table, columns, fks, indexes }) => {
+        {schema.map(({ table, columns, fks }) => {
           const isExpanded = expanded.has(table)
           const isSelected = selectedTable === table
 

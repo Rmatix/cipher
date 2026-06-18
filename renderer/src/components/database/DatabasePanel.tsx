@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import {
   Database, Plus, Power, PowerOff, History,
-  LayoutPanelLeft, LayoutRows, AlertCircle,
+  LayoutPanelLeft, Rows, AlertCircle,
   ChevronDown
 } from 'lucide-react'
 import SchemaTree, { type DBTable } from './SchemaTree'
@@ -19,10 +19,10 @@ interface Connection {
 type ViewMode = 'split-h' | 'split-v' | 'editor' | 'results'
 
 const VIEW_MODES: { id: ViewMode; label: string; icon: typeof LayoutPanelLeft }[] = [
-  { id: 'split-h',  label: 'Horizontal',  icon: LayoutRows     },
+  { id: 'split-h',  label: 'Horizontal',  icon: Rows     },
   { id: 'split-v',  label: 'Vertical',    icon: LayoutPanelLeft },
   { id: 'editor',   label: 'Solo editor', icon: LayoutPanelLeft },
-  { id: 'results',  label: 'Solo tabla',  icon: LayoutRows     },
+  { id: 'results',  label: 'Solo tabla',  icon: Rows     },
 ]
 
 export default function DatabasePanel() {
@@ -266,7 +266,7 @@ export default function DatabasePanel() {
               onClick={() => setShowViewMenu(!showViewMenu)}
               className="flex items-center gap-1.5 rounded-lg border border-[var(--cipher-border)] px-2.5 py-1 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:text-[var(--cipher-text)]"
             >
-              <LayoutRows size={12} />
+              <Rows size={12} />
               Vista
               <ChevronDown size={10} className={showViewMenu ? 'rotate-180' : ''} />
             </button>

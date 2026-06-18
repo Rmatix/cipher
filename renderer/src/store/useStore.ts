@@ -290,8 +290,8 @@ interface AppState {
   updateTabModified: (path: string, modified: boolean) => void
 
   // Sidebar
-  sidebarPanel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'settings' | null
-  setSidebarPanel: (panel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'settings' | null) => void
+  sidebarPanel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings' | null
+  setSidebarPanel: (panel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings' | null) => void
 
   // Terminal
   terminalVisible: boolean
@@ -410,21 +410,11 @@ export const useStore = create<AppState>((set, get) => ({
         const stored = localStorage.getItem(`cipher-tabs-${folder}`)
         if (stored) {
           const { tabs, activeTabPath } = JSON.parse(stored)
-          if (Array.isArray(tabs)) {
-            // Filter tabs whose files still exist
-            const validTabs = tabs.filter((t: { path: string }) => {
-              try {
-                // Use a synchronous check via the IPC bridge if available, else keep all
-                return true
-              } catch {
-                return false
-              }
-            })
-            const validActive = validTabs.find((t: { path: string }) => t.path === activeTabPath)
-              ? activeTabPath
-              : validTabs[0]?.path ?? null
-            set({ tabs: validTabs, activeTabPath: validActive })
-          }
+          const validTabs = tabs
+          const validActive = validTabs.find((t: { path: string }) => t.path === activeTabPath)
+            ? activeTabPath
+            : validTabs[0]?.path ?? null
+          set({ tabs: validTabs, activeTabPath: validActive })
         } else {
           set({ tabs: [], activeTabPath: null })
         }

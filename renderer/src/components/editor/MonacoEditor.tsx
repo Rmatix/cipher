@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import Editor, { useMonaco } from '@monaco-editor/react'
+import Editor, { useMonaco, loader } from '@monaco-editor/react'
 import { Focus, FolderOpen, Plus, Search, Terminal as TerminalIcon, Zap, ZapOff } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import type { CustomModel } from '../../store/useStore'
+
+// Configure Monaco Editor loader path
+loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs' } })
 import type { FileDataResult } from '../../types/electron'
 import { getFileKind, type FileKind } from '../../utils/fileUtils'
 
@@ -660,7 +663,6 @@ export default function MonacoEditor({
         defaultValue={content}
         onMount={handleMount}
         onChange={handleChange}
-        loader={{ paths: { vs: '../../node_modules/monaco-editor/min/vs' } }}
         options={{
           fontSize: 15,
           fontFamily: "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
@@ -686,8 +688,6 @@ export default function MonacoEditor({
           overviewRulerLanes: 2,
           // Perf: widget DOM nodes stay fixed in body, avoids layout thrashing
           fixedOverflowWidgets: true,
-          // Perf: semantic highlighting adds extra parse pass; tokens are enough
-          semanticHighlighting: { enabled: false },
           guides: {
             bracketPairs: true,
             indentation: true,

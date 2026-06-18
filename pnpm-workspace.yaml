@@ -1,4 +1,10 @@
+packages:
+  - '.'
+  - 'renderer'
+
 allowBuilds:
+  better-sqlite3: true
+  core-js: true
   electron-winstaller: true
   node-pty: true
 overrides:
