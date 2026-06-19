@@ -1625,9 +1625,7 @@ ipcMain.handle('project-scan', (event, folderPath, maxFiles = 40) => {
 // ── App lifecycle ────────────────────────────────────────
 
 app.whenReady().then(() => {
-  if (cipherProduct === 'studio') {
-    registerDbHandlers()
-  }
+  registerDbHandlers()
   createWindow()
   initUpdater(mainWindow)
   app.on('activate', () => {
