@@ -90,21 +90,12 @@ done_sr_${ID}:
 !macro customInstall
   # ── Product selection dialog ──────────────────────────────────
   # Presents 3 choices to the user:
-  #   Abort  = Cipher Usuario  (profile 0) - lightweight editor
-  #   Retry  = Cipher Developer (profile 1) - full AI + advanced tools
-  #   Ignore = Cipher Completo  (profile 2) - everything including Composer
-  MessageBox MB_ABORTRETRYIGNORE \
-    "Selecciona la edicion de Cipher a instalar:$\n$\n\
-    [Ignorar]  Cipher Completo$\n\
-    Todo lo de Developer + Composer multi-archivo,$\n\
-    Workflows avanzados, Debug IA y Memory.$\n$\n\
-    [Reintentar]  Cipher Developer$\n\
-    Agente IA completo (Chat / Plan / Dev),$\n\
-    terminal avanzada, Git integrado, compiladores.$\n$\n\
-    [Anular]  Cipher Usuario$\n\
-    Editor de codigo ligero, ideal para edicion$\n\
-    rapida sin servicios de IA en segundo plano." \
-    IDABORT profile_user IDRETRY profile_developer IDIGNORE profile_completo
+  # NSIS MessageBox supports up to 2 target branches (goto labels) after the text.
+  # We will chain two YESNO MessageBoxes to select between 3 products cleanly.
+  MessageBox MB_YESNO|MB_ICONQUESTION "¿Deseas instalar la edicion Cipher Completa?$\n$\n(Incluye todo: Composer multi-archivo, Workflows, Debug IA, Memoria y SQL Viewer)" /SD IDYES IDYES profile_completo IDNO ask_developer
+
+ask_developer:
+  MessageBox MB_YESNO|MB_ICONQUESTION "¿Deseas instalar la edicion Cipher Developer?$\n$\n(Incluye Agente IA, terminal, Git integrado y compiladores. Si eliges NO, se instalara Cipher Usuario: editor de codigo ligero sin IA)" /SD IDYES IDYES profile_developer IDNO profile_user
 
 profile_user:
   DetailPrint "Instalando Cipher: Edicion Usuario..."
