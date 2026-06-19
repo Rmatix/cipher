@@ -39,8 +39,8 @@ export default function Panel() {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing.current) return
-      // The Sidebar is 80px (w-20) wide, so panel width is clientX - 80px
-      const newWidth = Math.max(260, Math.min(600, e.clientX - 80))
+      // The Sidebar is 64px (w-16) wide, so panel width is clientX - 64px
+      const newWidth = Math.max(260, Math.min(600, e.clientX - 64))
       setWidth(newWidth)
     }
 

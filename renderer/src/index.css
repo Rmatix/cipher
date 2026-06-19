@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --cipher-bg: #080a12;
-  --cipher-surface: #0b0d16;
-  --cipher-surface-alt: #0d1020;
-  --cipher-border: rgba(255,255,255,0.07);
-  --cipher-border-soft: rgba(255,255,255,0.045);
-  --cipher-accent: #7a5cff;
-  --cipher-accent-alt: #4fc3f7;
-  --cipher-accent-soft: #7a5cff55;
-  --cipher-accent-bg: #7a5cff22;
-  --cipher-text: #dce4ff;
-  --cipher-text-muted: #7884aa;
+  --cipher-bg: #0f111a;
+  --cipher-surface: #131723;
+  --cipher-surface-alt: #171c2c;
+  --cipher-border: rgba(255,255,255,0.06);
+  --cipher-border-soft: rgba(255,255,255,0.035);
+  --cipher-accent: #6366f1;
+  --cipher-accent-alt: #38bdf8;
+  --cipher-accent-soft: rgba(99, 102, 241, 0.3);
+  --cipher-accent-bg: rgba(99, 102, 241, 0.08);
+  --cipher-text: #e2e8f0;
+  --cipher-text-muted: #94a3b8;
 }
 
 * {
@@ -23,12 +23,13 @@
 body {
   background: var(--cipher-bg);
   color: var(--cipher-text);
-  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   overflow: hidden;
   height: 100vh;
   width: 100vw;
-  font-size: 14px;
-  text-rendering: geometricPrecision;
+  font-size: 13px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
@@ -39,7 +40,8 @@ select {
 }
 
 button {
-  transform: translateZ(0);
+  transform: none !important;
+  cursor: pointer;
 }
 
 button,
@@ -48,56 +50,51 @@ input,
 textarea,
 select,
 .motion-surface {
-  transition-duration: 180ms;
-  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
 }
 
 button:hover {
-  transform: translateY(-1px);
+  transform: none !important;
 }
 
 button:active {
-  transform: translateY(0) scale(0.985);
+  transform: none !important;
 }
 
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid rgba(122, 92, 255, 0.62);
-  outline-offset: 2px;
+  outline: 1.5px solid var(--cipher-accent);
+  outline-offset: 1px;
 }
 
 @keyframes cipher-panel-enter {
   from {
     opacity: 0;
-    transform: translateX(-14px);
-    filter: blur(6px);
+    transform: translateX(-4px);
   }
   to {
     opacity: 1;
     transform: translateX(0);
-    filter: blur(0);
   }
 }
 
 @keyframes cipher-pop-enter {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-    filter: blur(4px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes cipher-tab-enter {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
   }
   to {
     opacity: 1;
@@ -108,7 +105,7 @@ select:focus-visible {
 @keyframes cipher-fade-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -119,7 +116,7 @@ select:focus-visible {
 @keyframes cipher-terminal-enter {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -128,79 +125,70 @@ select:focus-visible {
 }
 
 .cipher-panel-enter {
-  animation: cipher-panel-enter 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: cipher-panel-enter 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .cipher-pop-enter {
-  animation: cipher-pop-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: cipher-pop-enter 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .cipher-tab-enter {
-  animation: cipher-tab-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: cipher-tab-enter 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .cipher-fade-up {
-  animation: cipher-fade-up 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: cipher-fade-up 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .cipher-terminal-enter {
-  animation: cipher-terminal-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: cipher-terminal-enter 150ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes cipher-shell-in {
   0% {
     opacity: 0;
-    transform: scale(0.96);
   }
   18% {
     opacity: 1;
-    transform: scale(1);
   }
   82% {
     opacity: 1;
-    transform: scale(1);
   }
   100% {
     opacity: 0;
-    transform: scale(1.01);
   }
 }
 
 @keyframes cipher-logo-rise {
   0% {
     opacity: 0;
-    transform: translateY(18px) scale(0.86);
-    filter: blur(10px);
+    transform: translateY(8px);
   }
   28% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translateY(0);
   }
   72% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   100% {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    transform: translateY(-4px);
   }
 }
 
 @keyframes cipher-wordmark {
   0% {
     opacity: 0;
-    letter-spacing: 0.22em;
-    transform: translateY(10px);
+    transform: translateY(5px);
   }
   34% {
     opacity: 0;
-    letter-spacing: 0.22em;
-    transform: translateY(10px);
+    transform: translateY(5px);
   }
   52% {
     opacity: 1;
-    letter-spacing: 0.08em;
     transform: translateY(0);
   }
   84% {
@@ -208,18 +196,18 @@ select:focus-visible {
   }
   100% {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-3px);
   }
 }
 
 @keyframes cipher-subtitle {
   0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   48% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   62% {
     opacity: 1;
@@ -230,7 +218,7 @@ select:focus-visible {
   }
   100% {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-2px);
   }
 }
 
@@ -243,10 +231,10 @@ select:focus-visible {
     opacity: 0;
   }
   42% {
-    opacity: 0.85;
+    opacity: 0.5;
   }
   70% {
-    opacity: 0.25;
+    opacity: 0.15;
   }
   100% {
     transform: translateX(45%);
@@ -257,14 +245,14 @@ select:focus-visible {
 @keyframes cipher-ring {
   0% {
     opacity: 0;
-    transform: scale(0.72);
+    transform: scale(0.85);
   }
   20% {
-    opacity: 0.65;
+    opacity: 0.3;
   }
   100% {
     opacity: 0;
-    transform: scale(1.5);
+    transform: scale(1.2);
   }
 }
 
@@ -281,8 +269,8 @@ select {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -290,12 +278,12 @@ select {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--cipher-accent) 35%, transparent);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--cipher-accent);
+  background: rgba(255, 255, 255, 0.24);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -309,37 +297,34 @@ select {
   }
 }
 
-/* Glow line note decoration in Monaco gutter */
+/* Decoration in Monaco gutter */
 .cipher-line-note-decor {
   position: relative;
 }
 .cipher-line-note-decor::after {
   content: '';
   position: absolute;
-  left: 5px;
-  top: 4px;
-  width: 8px;
-  height: 8px;
+  left: 6px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
   background-color: var(--cipher-accent);
   border-radius: 9999px;
-  box-shadow: 0 0 8px var(--cipher-accent);
   cursor: pointer;
   z-index: 10;
 }
-/* Premium Dark Theme Enhancements — gradient applied via applyTheme() in JS */
+
 body {
   background-attachment: fixed;
   overflow-y: overlay;
 }
 
-/* Glassmorphism container */
+/* Glassmorphism container simplified for seriousness */
 .glass {
-  background: rgba(13, 16, 32, 0.48);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--cipher-surface);
   border: 1px solid var(--cipher-border-soft);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.48);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 /* Accent button */
@@ -347,73 +332,67 @@ button.accent {
   background: var(--cipher-accent);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  transition: background 0.2s, transform 0.1s;
+  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  transition: opacity 150ms ease, background-color 150ms ease;
 }
 button.accent:hover {
-  background: var(--cipher-accent-alt);
-  transform: translateY(-2px);
+  opacity: 0.92;
 }
 button.accent:active {
-  transform: translateY(0) scale(0.97);
+  opacity: 0.85;
 }
 
-/* Hover glow for icons */
+/* Hover effects for icons simplified (no glowing shadow) */
 .icon:hover {
-  filter: drop-shadow(0 0 6px var(--cipher-accent));
+  color: var(--cipher-accent);
 }
 
 /* Fade-in animation for panels */
 @keyframes glass-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(3px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .glass {
-  animation: glass-fade-in 300ms ease-out both;
+  animation: glass-fade-in 150ms ease-out both;
 }
-
-/* Scrollbar custom — kept above (lines 292-299), this block is intentionally removed */
 
 /* Light theme definitions */
 [data-theme='light'] {
-  --cipher-bg: #f0ede8;
-  --cipher-surface: #faf8f5;
-  --cipher-surface-alt: #e8e4dd;
-  --cipher-border: rgba(0,0,0,0.09);
-  --cipher-border-soft: rgba(0,0,0,0.045);
-  --cipher-accent: #5b4fcf;
+  --cipher-bg: #f3f4f6;
+  --cipher-surface: #ffffff;
+  --cipher-surface-alt: #f9fafb;
+  --cipher-border: rgba(0,0,0,0.08);
+  --cipher-border-soft: rgba(0,0,0,0.04);
+  --cipher-accent: #4f46e5;
   --cipher-accent-alt: #0284c7;
-  --cipher-accent-soft: rgba(91, 79, 207, 0.35);
-  --cipher-accent-bg: rgba(91, 79, 207, 0.10);
-  --cipher-text: #1e293b;
-  --cipher-text-muted: #5a6680;
-  /* Code blocks in light mode — need explicit overrides */
-  --cipher-code-bg: #e4e1dc;
-  --cipher-code-text: #1e2030;
-  --cipher-code-inline-bg: rgba(91, 79, 207, 0.10);
+  --cipher-accent-soft: rgba(79, 70, 229, 0.2);
+  --cipher-accent-bg: rgba(79, 70, 229, 0.05);
+  --cipher-text: #1f2937;
+  --cipher-text-muted: #6b7280;
+  --cipher-code-bg: #f3f4f6;
+  --cipher-code-text: #111827;
+  --cipher-code-inline-bg: rgba(79, 70, 229, 0.08);
   --cipher-code-inline-text: #4338ca;
 }
 
 /* Dark themes — code block defaults */
 :root {
-  --cipher-code-bg: #070912;
-  --cipher-code-text: #80d8ff;
-  --cipher-code-inline-bg: rgba(0,0,0,0.25);
+  --cipher-code-bg: #0f111a;
+  --cipher-code-text: #e2e8f0;
+  --cipher-code-inline-bg: rgba(255,255,255,0.06);
   --cipher-code-inline-text: var(--cipher-accent);
 }
 
 /* Transition for theme changes */
 html[data-theme] {
-  transition: background 0.35s ease, color 0.35s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-
-/* Light theme — gradient applied via applyTheme() in useStore.ts */
 
 /* Light theme scrollbar */
 [data-theme='light'] ::-webkit-scrollbar-thumb {
-  background: rgba(91, 79, 207, 0.25);
+  background: rgba(0, 0, 0, 0.12);
 }
 [data-theme='light'] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(91, 79, 207, 0.55);
+  background: rgba(0, 0, 0, 0.24);
 }
