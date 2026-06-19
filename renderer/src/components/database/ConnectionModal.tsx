@@ -34,6 +34,8 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
   const [user, setUser] = useState('')
   const [password, setPassword] = useState('')
   const [showTypeMenu, setShowTypeMenu] = useState(false)
+  const [createNew, setCreateNew] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
   const currentType = DB_TYPES.find(t => t.value === type)!
 
@@ -44,6 +46,19 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
   }
 
   const handleConnect = async () => {
+    setLocalError(null)
+    if (type === 'sqlite' && createNew) {
+      try {
+        const res = await (window as any).cipher.dbCreateSqlite({ filePath })
+        if (!res || !res.ok) {
+          setLocalError(res?.error || 'No se pudo crear la base de datos SQLite')
+          return
+        }
+      } catch (err: any) {
+        setLocalError(err.message || 'Error al intentar crear el archivo de base de datos')
+        return
+      }
+    }
     const params: ConnectionParams = type === 'sqlite'
       ? { type, filePath }
       : { type, host, port: port ? parseInt(port) : undefined, database, user, password }
@@ -51,6 +66,7 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
   }
 
   const inputCls = 'w-full rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-3 py-2 text-[13px] text-[var(--cipher-text)] outline-none transition-all focus:border-[var(--cipher-accent)] focus:ring-1 focus:ring-[var(--cipher-accent)]/20 placeholder:text-[var(--cipher-text-muted)]/60'
+  const displayError = localError || error
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -117,24 +133,35 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
 
           {/* SQLite fields */}
           {type === 'sqlite' && (
-            <div>
-              <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-[var(--cipher-text-muted)]">
-                Archivo de Base de Datos
-              </label>
-              <div className="flex gap-2">
-                <input
-                  className={`${inputCls} flex-1`}
-                  placeholder="/ruta/al/archivo.db"
-                  value={filePath}
-                  onChange={e => setFilePath(e.target.value)}
-                />
-                <button
-                  onClick={handleBrowse}
-                  className="rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-3 py-2 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-accent)]/50 hover:text-[var(--cipher-text)]"
-                >
-                  Buscar
-                </button>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-[var(--cipher-text-muted)]">
+                  Archivo de Base de Datos
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    className={`${inputCls} flex-1`}
+                    placeholder="/ruta/al/archivo.db"
+                    value={filePath}
+                    onChange={e => setFilePath(e.target.value)}
+                  />
+                  <button
+                    onClick={handleBrowse}
+                    className="rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-3 py-2 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-accent)]/50 hover:text-[var(--cipher-text)]"
+                  >
+                    Buscar
+                  </button>
+                </div>
               </div>
+              <label className="flex cursor-pointer items-center gap-2 text-[12px] text-[var(--cipher-text-muted)] hover:text-[var(--cipher-text)]">
+                <input
+                  type="checkbox"
+                  checked={createNew}
+                  onChange={e => setCreateNew(e.target.checked)}
+                  className="accent-[var(--cipher-accent)] rounded"
+                />
+                <span>Crear nueva base de datos física (.db) si no existe</span>
+              </label>
             </div>
           )}
 
@@ -174,9 +201,9 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
           )}
 
           {/* Error */}
-          {error && (
-            <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-[12px] text-red-400">
-              ⚠️ {error}
+          {displayError && (
+            <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-[12px] text-red-400 font-medium">
+              ⚠️ {displayError}
             </div>
           )}
 

@@ -50,6 +50,13 @@ Thumbs.db
 *.pfx
 *.key
 *.crt
+*.token
+*.credentials
+credentials.json
+config.local.json
+client_secret*.json
+secrets*.json
+session*.json
 
 # Logs and captures
 *.log

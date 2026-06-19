@@ -12,19 +12,11 @@
     "build": "cd renderer && pnpm build",
     "pack": "pnpm build && electron-builder --dir",
     "dist": "pnpm build && electron-builder",
-    "dist:lite": "node scripts/build-all.js lite",
-    "dist:dev": "node scripts/build-all.js dev",
-    "dist:studio": "node scripts/build-all.js studio",
-    "dist:all": "node scripts/build-all.js all",
-    "dist:win": "node scripts/build-all.js all",
-    "dist:mac": "pnpm build && electron-builder --mac",
-    "dist:linux": "pnpm build && electron-builder --linux",
-    "lint": "cd renderer && pnpm lint",
-    "preview": "cd renderer && pnpm preview"
+    "dist:win": "pnpm build && electron-builder --win --x64"
   },
   "build": {
-    "appId": "com.rmatix.cipher",
-    "productName": "Cipher",
+    "appId": "com.rmatix.cipher.studio",
+    "productName": "Cipher Studio",
     "directories": {
       "output": "release"
     },

@@ -767,136 +767,6 @@ export default function AIPanel() {
         </div>
       </div>
 
-      {/* Ecosistema Agéntico (MCP & Sub-agents) Accordion */}
-      <div className="flex flex-col flex-shrink-0 border-b border-[var(--cipher-border)] px-5 py-4">
-        <button
-          type="button"
-          onClick={() => setShowAgenticEcosystem(!showAgenticEcosystem)}
-          className="flex w-full items-center justify-between text-[13px] font-semibold text-[var(--cipher-text)] hover:text-[var(--cipher-accent)] transition-colors animate-fade-in"
-        >
-          <span className="flex items-center gap-2">
-            <Cpu size={15} className="text-[var(--cipher-accent)]" />
-            Ecosistema Agéntico (MCP & Sub-agentes)
-          </span>
-          <ChevronRight size={14} className={`text-[var(--cipher-text-muted)] transition-transform ${showAgenticEcosystem ? 'rotate-90' : ''}`} />
-        </button>
-
-        {showAgenticEcosystem && (
-          <div className="mt-4 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)]/40 p-3.5 space-y-4">
-            {/* Tabs */}
-            <div className="flex gap-1.5 border-b border-[var(--cipher-border)] pb-2.5">
-              {[
-                { id: 'mcp' as const, label: 'MCP', icon: Cpu },
-                { id: 'skills' as const, label: 'Skills', icon: Wrench },
-                { id: 'subagents' as const, label: 'Sub-agentes', icon: Users },
-                { id: 'prompts' as const, label: 'Directrices', icon: BookOpen },
-              ].map(t => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setActiveAgenticTab(t.id)}
-                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all ${
-                    activeAgenticTab === t.id
-                      ? 'bg-[var(--cipher-accent-bg)] text-[var(--cipher-accent)] border border-[var(--cipher-accent-soft)]'
-                      : 'text-[var(--cipher-text-muted)] hover:bg-[var(--cipher-bg)] hover:text-[var(--cipher-text)]'
-                  }`}
-                >
-                  <t.icon size={12} />
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab Contents */}
-            <div className="text-[12px] space-y-3">
-              {activeAgenticTab === 'mcp' && (
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-white">Model Context Protocol</span>
-                    <button className="text-[10px] text-[var(--cipher-accent)] hover:underline">+ Conectar Servidor</button>
-                  </div>
-                  <div className="space-y-1.5">
-                    {mcpServers.map(server => (
-                      <div key={server.id} className="flex items-center justify-between rounded-lg border border-white/[0.04] bg-black/15 p-2">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-white">{server.name}</span>
-                          <span className="text-[10px] text-[var(--cipher-text-muted)]">{server.url}</span>
-                        </div>
-                        <span className="rounded-md bg-[#2ea043]/10 border border-[#2ea043]/20 px-2 py-0.5 text-[9px] font-bold text-[#56d364] uppercase">
-                          {server.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeAgenticTab === 'skills' && (
-                <div className="space-y-2.5">
-                  <span className="font-semibold text-white">Habilidades del Agente</span>
-                  <div className="space-y-2">
-                    {skills.map(skill => (
-                      <label key={skill.id} className="flex cursor-pointer items-center justify-between rounded-lg border border-white/[0.04] bg-black/15 p-2 hover:bg-black/25 transition-colors">
-                        <span className="text-[11.5px] text-[var(--cipher-text)]">{skill.name}</span>
-                        <input
-                          type="checkbox"
-                          checked={skill.enabled}
-                          onChange={e => {
-                            setSkills(s => s.map(x => x.id === skill.id ? { ...x, enabled: e.target.checked } : x))
-                          }}
-                          className="accent-[var(--cipher-accent)]"
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeAgenticTab === 'subagents' && (
-                <div className="space-y-2.5">
-                  <span className="font-semibold text-white">Sub-agentes en Segundo Plano</span>
-                  <div className="space-y-1.5">
-                    {subagents.map(agent => (
-                      <div key={agent.id} className="flex items-center justify-between rounded-lg border border-white/[0.04] bg-black/15 p-2">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-white">{agent.name}</span>
-                          <span className="text-[10px] text-[var(--cipher-text-muted)]">{agent.task}</span>
-                        </div>
-                        <span className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase ${
-                          agent.status === 'active'
-                            ? 'bg-[var(--cipher-accent-bg)] border border-[var(--cipher-accent-soft)] text-[var(--cipher-accent)] animate-pulse'
-                            : 'bg-white/5 border border-white/10 text-[var(--cipher-text-muted)]'
-                        }`}>
-                          {agent.status === 'active' ? 'Ejecutando' : 'Idle'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeAgenticTab === 'prompts' && (
-                <div className="space-y-2">
-                  <span className="font-semibold text-white">Directrices de Contexto Activas</span>
-                  <div className="rounded-lg border border-white/[0.04] bg-black/15 p-2.5 space-y-1.5 leading-relaxed text-[11px] text-[var(--cipher-text-muted)]">
-                    <div className="flex items-center gap-1.5 font-medium text-[var(--cipher-accent)]">
-                      <BookOpen size={10} />
-                      Reglas del Workspace
-                    </div>
-                    <p>• Inyección automática de directrices según archivo abierto.</p>
-                    {activeTabPath ? (
-                      <p className="text-[#56d364]">✓ Detectado: .{activeTabPath.split('.').pop()} (Reglas de lenguaje cargadas en Prompt de sistema)</p>
-                    ) : (
-                      <p>• Abre un archivo para cargar directrices específicas del lenguaje.</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Messages */}
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 py-4">
         {messages.length === 0 && (
@@ -924,34 +794,34 @@ export default function AIPanel() {
           <div key={i} className={`cipher-fade-up flex flex-col gap-2.5 ${
             msg.role === 'user' ? 'items-end' : 'items-start'
           }`}>
-            <span className={`text-[11px] font-bold uppercase tracking-wider ${
-              msg.role === 'user' ? 'text-[#a78bfa]' : // Lavender/Purple for User
-              msg.role === 'error' ? 'text-[#ef4444]' : // Red for errors
-              msg.role === 'system' ? 'text-[#38bdf8]' : // Light blue for System messages
-              'text-[#f43f5e]' // Rose for Cipher AI replies
+            <span className={`text-[11px] font-semibold uppercase tracking-wider ${
+              msg.role === 'user' ? 'text-[var(--cipher-accent)]' :
+              msg.role === 'error' ? 'text-[#ef4444]' :
+              msg.role === 'system' ? 'text-[#38bdf8]' :
+              'text-[var(--cipher-text)]'
             }`}>
               {msg.role === 'user' ? 'Tú' :
                msg.role === 'error' ? 'Error' :
                msg.role === 'system' ? 'Sistema' :
-               'Cipher IA'}
+               'Agente Autónomo'}
             </span>
 
             {msg.role === 'assistant' && aiMode === 'plan' && currentPlan === msg.content ? (
               <textarea
                 defaultValue={msg.content}
                 onChange={e => setCurrentPlan(e.target.value)}
-                className="w-full resize-y rounded-xl border border-[var(--cipher-accent)] bg-[var(--cipher-bg)] p-5 font-mono text-[13px] text-[var(--cipher-text)] outline-none leading-relaxed"
+                className="w-full resize-y rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] p-4 font-mono text-[12px] text-[var(--cipher-text)] outline-none leading-relaxed"
                 rows={10}
               />
             ) : (
-              <div className={`break-words rounded-2xl px-6 py-4 text-[13.5px] leading-[1.9] ${
+              <div className={`break-words rounded-xl px-4 py-3 text-[13px] leading-[1.65] ${
                 msg.role === 'user'
-                  ? 'max-w-[88%] border border-[var(--cipher-accent-alt)]/40 bg-[var(--cipher-surface-alt)] text-[var(--cipher-text)] rounded-tr-sm shadow-md'
+                  ? 'max-w-[85%] border border-[var(--cipher-accent-soft)] bg-[var(--cipher-accent-bg)] text-[var(--cipher-text)] rounded-tr-none'
                   : msg.role === 'error'
-                  ? 'w-full border-l-3 border-[#ff6b6b] bg-[var(--cipher-surface-alt)] text-[#ff9a9a] pl-5 py-3'
+                  ? 'w-full border-l-2 border-red-500 bg-red-500/5 text-red-400 pl-4'
                   : msg.role === 'system'
-                  ? 'w-full border-l-3 border-[#38bdf8] bg-[var(--cipher-surface-alt)]/80 text-[#38bdf8]/90 pl-5 py-3'
-                  : 'w-full border border-[var(--cipher-border)] bg-[var(--cipher-surface)] text-[var(--cipher-text)] shadow-md'
+                  ? 'w-full border-l-2 border-[#38bdf8] bg-[#38bdf8]/5 text-[#38bdf8]/90 pl-4'
+                  : 'w-full border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)]/35 text-[var(--cipher-text)]'
               }`}>
                 {renderContentWithThinking(msg.content, msg.streaming)}
               </div>

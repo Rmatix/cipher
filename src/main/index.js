@@ -5,44 +5,6 @@ const os = require('os')
 const { registerDbHandlers } = require('./db-bridge')
 const { initUpdater } = require('./updater')
 
-let cipherProduct = 'studio';
-try {
-  const pkgPath = path.join(app.getAppPath(), 'package.json');
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-  cipherProduct = pkg.cipherProduct || 'studio';
-} catch (e) {
-  cipherProduct = process.env.CIPHER_PRODUCT || 'studio';
-}
-
-if (cipherProduct === 'lite') {
-  const originalHandle = ipcMain.handle;
-  ipcMain.handle = function (channel, listener) {
-    if (
-      channel.startsWith('ai-') ||
-      channel.startsWith('memory-') ||
-      channel.startsWith('terminal-') ||
-      channel === 'project-scan'
-    ) {
-      return originalHandle.call(ipcMain, channel, async () => {
-        throw new Error('This feature is disabled in Cipher Lite.');
-      });
-    }
-    return originalHandle.apply(ipcMain, arguments);
-  };
-
-  const originalOn = ipcMain.on;
-  ipcMain.on = function (channel, listener) {
-    if (
-      channel.startsWith('ai-') ||
-      channel.startsWith('memory-') ||
-      channel.startsWith('terminal-') ||
-      channel === 'project-scan'
-    ) {
-      return;
-    }
-    return originalOn.apply(ipcMain, arguments);
-  };
-}
 
 let mainWindow = null
 let native = null
@@ -352,36 +314,34 @@ function createTerminal(options = {}) {
   return id
 }
 
-if (cipherProduct !== 'lite') {
-  ipcMain.handle('terminal-create', (event, options) => {
-    return createTerminal(options)
-  })
+ipcMain.handle('terminal-create', (event, options) => {
+  return createTerminal(options)
+})
 
-  ipcMain.on('terminal-input', (event, id, data) => {
-    const proc = terminals.get(id)
-    if (proc) proc.write(data)
-  })
+ipcMain.on('terminal-input', (event, id, data) => {
+  const proc = terminals.get(id)
+  if (proc) proc.write(data)
+})
 
-  ipcMain.on('terminal-resize', (event, id, cols, rows) => {
-    const proc = terminals.get(id)
-    if (proc) {
-      try {
-        proc.resize(cols, rows)
-      } catch (e) {
-        // ignore resize errors on dead terminals
-      }
+ipcMain.on('terminal-resize', (event, id, cols, rows) => {
+  const proc = terminals.get(id)
+  if (proc) {
+    try {
+      proc.resize(cols, rows)
+    } catch (e) {
+      // ignore resize errors on dead terminals
     }
-  })
+  }
+})
 
-  ipcMain.handle('terminal-kill', (event, id) => {
-    const proc = terminals.get(id)
-    if (proc) {
-      proc.kill()
-      terminals.delete(id)
-    }
-    return true
-  })
-}
+ipcMain.handle('terminal-kill', (event, id) => {
+  const proc = terminals.get(id)
+  if (proc) {
+    proc.kill()
+    terminals.delete(id)
+  }
+  return true
+})
 
 // ── Window controls ──────────────────────────────────────
 
@@ -418,27 +378,11 @@ ipcMain.handle('open-external', async (event, url) => {
 })
 
 ipcMain.handle('get-app-profile', async () => {
-  if (cipherProduct === 'lite') return 'common';
-  if (os.platform() !== 'win32') return 'developer' // Non-windows runs full dev
-  return new Promise((resolve) => {
-    const { exec } = require('child_process')
-    // Read the Software\Cipher:Profile value from registry asynchronously
-    exec('reg query "HKCU\\Software\\Cipher" /v Profile', { stdio: ['ignore', 'pipe', 'pipe'] }, (error, stdout) => {
-      if (error) {
-        resolve('developer') // Default fallback
-        return
-      }
-      if (stdout.includes('0x0') || stdout.includes('0')) {
-        resolve('common')
-      } else {
-        resolve('developer')
-      }
-    })
-  })
+  return 'developer' // Cipher Studio — always full feature set
 })
 
 ipcMain.handle('get-cipher-product', async () => {
-  return cipherProduct;
+  return 'studio'
 })
 
 // ── File system ──────────────────────────────────────────

@@ -15,7 +15,12 @@ let connIdCounter = 0
 
 // ── SQLite (better-sqlite3) ───────────────────────────────────────────────────
 
-function openSQLite(filePath) {
+function openSQLite(filePath, createNew = false) {
+  const fs = require('fs')
+  const dir = path.dirname(filePath)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
   const Database = require('better-sqlite3')
   const db = new Database(filePath, { readonly: false })
   db.pragma('journal_mode = WAL')
@@ -275,6 +280,17 @@ function registerDbHandlers() {
       const whereClauses = Object.keys(rowKey).map((k, i) => `${quote(k, conn.type)} = ${placeholder(conn.type, i + 1)}`)
       const sql = `DELETE FROM ${quoteTable(table, conn.type)} WHERE ${whereClauses.join(' AND ')}`
       await executeWrite(conn, sql, Object.values(rowKey))
+      return { ok: true }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+
+  // ── db:create-sqlite ────────────────────────────────────
+  ipcMain.handle('db:create-sqlite', async (_event, { filePath }) => {
+    try {
+      const db = openSQLite(filePath, true)
+      db.close()
       return { ok: true }
     } catch (err) {
       return { ok: false, error: err.message }

@@ -11,6 +11,7 @@ import NotesPanel from '../notes/NotesPanel'
 import WorkflowsPanel from '../workflows/WorkflowsPanel'
 import SettingsPanel from '../settings/SettingsPanel'
 import DatabasePanel from '../database/DatabasePanel'
+import McpPanel from '../mcp/McpPanel'
 
 export default function Panel() {
   const { sidebarPanel } = useStore()
@@ -74,6 +75,7 @@ export default function Panel() {
     workflows:'WORKFLOWS (BETA)',
     database: 'SQL VIEWER',
     settings: 'CONFIGURACION',
+    mcp:      'INFRAESTRUCTURA MCP',
   }
 
   return (
@@ -99,6 +101,9 @@ export default function Panel() {
         </div>
         <div style={{ display: sidebarPanel === 'ai' ? 'block' : 'none', height: '100%', width: '100%' }}>
           <AIPanel />
+        </div>
+        <div style={{ display: sidebarPanel === 'mcp' ? 'block' : 'none', height: '100%', width: '100%' }}>
+          <McpPanel />
         </div>
         <div style={{ display: sidebarPanel === 'memory' ? 'block' : 'none', height: '100%', width: '100%' }}>
           <MemoryPanel />

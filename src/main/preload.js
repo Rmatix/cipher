@@ -102,5 +102,6 @@ contextBridge.exposeInMainWorld('cipher', {
   dbUpdateRow:  (params)                    => ipcRenderer.invoke('db:update-row',  params),
   dbInsertRow:  (params)                    => ipcRenderer.invoke('db:insert-row',  params),
   dbDeleteRow:  (params)                    => ipcRenderer.invoke('db:delete-row',  params),
+  dbCreateSqlite:(params)                    => ipcRenderer.invoke('db:create-sqlite',params),
 })
 

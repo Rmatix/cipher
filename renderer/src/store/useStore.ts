@@ -292,8 +292,8 @@ interface AppState {
   updateTabModified: (path: string, modified: boolean) => void
 
   // Sidebar
-  sidebarPanel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings' | null
-  setSidebarPanel: (panel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings' | null) => void
+  sidebarPanel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings' | 'mcp' | null
+  setSidebarPanel: (panel: 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings' | 'mcp' | null) => void
 
   // Terminal
   terminalVisible: boolean

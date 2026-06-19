@@ -13,6 +13,12 @@
       "skillPath": "changelog-generator/SKILL.md",
       "computedHash": "f84bcb773a67ade28878d63103e3d4dc1f5031d6103be5107ff99c15b8d4a992"
     },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "93f53fd1c0352d3d7ec17b8f73d7351bf76f4821e55d123c9d2abc2c53ba48e4"
+    },
     "impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",

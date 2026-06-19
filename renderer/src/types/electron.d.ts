@@ -68,11 +68,11 @@ export interface CipherAPI {
   getAppProfile: () => Promise<'common' | 'developer' | null>
   getCipherProduct: () => Promise<'lite' | 'dev' | 'studio' | null>
 
-  // ── Database (SQL Viewer) ─────────────────────────────
-  dbConnect: (params: any) => Promise<{ connId: string; error?: string }>
-  dbDisconnect: (connId: string) => Promise<{ error?: string }>
-  dbSchema: (connId: string) => Promise<{ schema: any[]; error?: string }>
-  dbQuery: (connId: string, sql: string) => Promise<{ rows: any[]; error?: string }>
+  dbQuery: (params: { connId: string; sql: string }) => Promise<any>
+  dbUpdateRow: (params: { connId: string; table: string; rowKey: any; changes: any }) => Promise<any>
+  dbInsertRow: (params: { connId: string; table: string; row: any }) => Promise<any>
+  dbDeleteRow: (params: { connId: string; table: string; rowKey: any }) => Promise<any>
+  dbCreateSqlite: (params: { filePath: string }) => Promise<{ ok: boolean; error?: string }>
 }
 
 // ── AI types ─────────────────────────────────────────────

@@ -1,8 +1,8 @@
-import { Bot, BookOpen, Bug, Clock, Database, Folder, GitBranch, Search, Settings, Activity, StickyNote } from 'lucide-react'
+import { Bot, BookOpen, Bug, Clock, Database, Folder, GitBranch, Search, Settings, Activity, StickyNote, Cpu } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 
-type PanelId = 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings'
+type PanelId = 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings' | 'mcp'
 
 export default function Sidebar() {
   const { sidebarPanel, setSidebarPanel, projectMemory, editorMarkers, changeHistory, appProfile, cipherProduct } = useStore()
@@ -14,6 +14,7 @@ export default function Sidebar() {
     { id: 'search',  label: 'Busqueda',         icon: Search                                                    },
     { id: 'git',     label: 'Git',              icon: GitBranch                                                 },
     { id: 'ai',      label: 'Agente IA',        icon: Bot                                                       },
+    { id: 'mcp',     label: 'Infraestructura MCP', icon: Cpu                                                   },
     { id: 'memory',  label: 'Memoria proyecto', icon: BookOpen,  badge: !!projectMemory                         },
     { id: 'debug',   label: 'Debugger IA',      icon: Bug,       badge: errorCount > 0, badgeCount: errorCount  },
     { id: 'history', label: 'Historial',        icon: Clock,     badge: changeHistory.length > 0                },

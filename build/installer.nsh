@@ -92,31 +92,12 @@ cipher_done_sr_${ID}:
 !macro customInstall
 
   # ── Step 1: Profile Registration ───────────────────────────
-  StrCmp "$(^Name)" "Cipher Lite" cipher_is_lite
-  StrCmp "$(^Name)" "Cipher Dev" cipher_is_dev
-  
-  # Default fallback is Studio
   DetailPrint "Perfil: Cipher Studio"
   WriteRegDWORD HKCU "Software\Cipher" "Profile" 2
   WriteRegStr   HKCU "Software\Cipher" "ProfileName" "studio"
-  Goto cipher_profile_done
-
-cipher_is_lite:
-  DetailPrint "Perfil: Cipher Lite"
-  WriteRegDWORD HKCU "Software\Cipher" "Profile" 0
-  WriteRegStr   HKCU "Software\Cipher" "ProfileName" "lite"
-  Goto cipher_profile_done
-
-cipher_is_dev:
-  DetailPrint "Perfil: Cipher Dev"
-  WriteRegDWORD HKCU "Software\Cipher" "Profile" 1
-  WriteRegStr   HKCU "Software\Cipher" "ProfileName" "dev"
-  Goto cipher_profile_done
-
-cipher_profile_done:
 
   # ── Step 2: Add to PATH ────────────────────────────────────
-  DetailPrint "Agregando Cipher al PATH..."
+  DetailPrint "Agregando Cipher Studio al PATH..."
   ReadRegStr $R0 ${ENV_PATH} "${ENV_KEY}" "PATH"
   StrCmp $R0 "" cipher_path_empty
   !insertmacro StrContains "$R0" "$INSTDIR" $R1 "inst"
@@ -139,22 +120,22 @@ cipher_skip_path:
 
   # ── Step 3: Context Menu ───────────────────────────────────
   DetailPrint "Registrando menu contextual..."
-  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher"                    "" "Abrir con Cipher"
-  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher"                    "Icon" "$INSTDIR\$(^Name).exe"
-  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher\command"            "" '"$INSTDIR\$(^Name).exe" "%1"'
-  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher"            "" "Abrir carpeta con Cipher"
-  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher"            "Icon" "$INSTDIR\$(^Name).exe"
-  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher\command"    "" '"$INSTDIR\$(^Name).exe" "%1"'
-  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher" "" "Abrir con Cipher"
-  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher" "Icon" "$INSTDIR\$(^Name).exe"
-  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher\command" "" '"$INSTDIR\$(^Name).exe" "%V"'
+  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher"                    "" "Abrir con Cipher Studio"
+  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher"                    "Icon" "$INSTDIR\Cipher Studio.exe"
+  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher\command"            "" '"$INSTDIR\Cipher Studio.exe" "%1"'
+  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher"            "" "Abrir carpeta con Cipher Studio"
+  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher"            "Icon" "$INSTDIR\Cipher Studio.exe"
+  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher\command"    "" '"$INSTDIR\Cipher Studio.exe" "%1"'
+  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher" "" "Abrir con Cipher Studio"
+  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher" "Icon" "$INSTDIR\Cipher Studio.exe"
+  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher\command" "" '"$INSTDIR\Cipher Studio.exe" "%V"'
 
 !macroend
 
 # ── customUninstall ─────────────────────────────────────────────
 !macro customUninstall
 
-  DetailPrint "Removiendo Cipher del PATH..."
+  DetailPrint "Removiendo Cipher Studio del PATH..."
   ReadRegStr $R0 ${ENV_PATH} "${ENV_KEY}" "PATH"
   StrCmp $R0 "" cipher_uninstall_path_done
   !insertmacro StrReplace "$R0" "$INSTDIR;" "" $R0 "un1"
@@ -166,7 +147,7 @@ cipher_skip_path:
 cipher_uninstall_path_done:
 
   DetailPrint "Removiendo accesos directos y registro..."
-  Delete "$DESKTOP\$(^Name).lnk"
+  Delete "$DESKTOP\Cipher Studio.lnk"
   DeleteRegKey HKCU "Software\Classes\*\shell\OpenWithCipher"
   DeleteRegKey HKCU "Software\Classes\Directory\shell\OpenWithCipher"
   DeleteRegKey HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher"

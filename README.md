@@ -1,9 +1,9 @@
 <div align="center">
   <img src="renderer/public/logo.png" alt="Cipher logo" width="120" />
 
-  # Cipher Code Editor
+  # Cipher Studio
 
-  **Open source code editor with multi-model AI agent**
+  **Editor de código open source con Agente de IA Autónomo y soporte MCP nativo**
 
   ![License](https://img.shields.io/badge/license-MIT-blue)
   ![Platform](https://img.shields.io/badge/platform-Windows-blue)
@@ -12,42 +12,36 @@
   ![Version](https://img.shields.io/badge/version-v2.8.0-7c4dff)
 </div>
 
-Cipher es un editor de codigo open source para Windows, construido con Electron, React, TypeScript, Monaco Editor y un panel de agente IA multi-proveedor.
+Cipher Studio es un editor de código open source para Windows, construido con Electron, React, TypeScript, Monaco Editor, Rust y Node.js. Incluye un Agente de IA Autónomo multi-proveedor, soporte nativo al Model Context Protocol (MCP), un Explorador SQL con creación de bases de datos físicas, terminal integrada y Git.
 
-> Estado: version `v2.8.0` estable. Verificado 100% libre de malware con VirusTotal. Compila y empaqueta nativamente con soporte de icono completo para el instalador y la aplicacion.
+> Estado: versión `v2.8.0` estable. Verificado 100% libre de malware con VirusTotal. Producto único — no hay ediciones reducidas, solo Cipher Studio completo.
 
 ## Qué hay de nuevo en v2.8.0
 
-### ✨ Instalador Multi-Perfil (Estilo VS Code / Antigravity)
-El instalador NSIS nativo rediseñado permite seleccionar entre 3 perfiles de instalación:
-- **Cipher Usuario (Usuario):** Edición ultraligera sin agentes de IA en segundo plano ni consumo de recursos para modelos. Ideal para ediciones rápidas.
-- **Cipher Developer (Developer):** Ecosistema IA completo (Chat / Plan / Dev), terminal integrada, soporte para Git y compiladores nativos.
-- **Cipher Completo (Completo):** Todo lo de Developer + el nuevo modo Composer multi-archivo, ejecución de workflows, depurador de IA y el Explorador/Visualizador SQL integrado.
+### 🤖 Agente Autónomo (Reemplaza el Chat de IA)
+- El panel de IA ahora actúa como un **Agente Autónomo** moderno, capaz de planificar, ejecutar y componer cambios en múltiples archivos simultáneamente.
+- Burbujas de diálogo limpias, sin ruido visual. Espaciado consistente y estructura clara de respuestas.
+- Soporte a **Composer**: modificación paralela de archivos con un panel de revisión de cambios antes de aplicar.
 
-### 🤖 Arquitectura Agéntica & Model Context Protocol (MCP)
-- **Model Context Protocol (MCP):** Soporte nativo para conectar el agente a herramientas externas (sistemas de archivos, terminales, bases de datos relacionales).
-- **Habilidades del Agente (Skills):** Panel de control interactivo para activar o desactivar habilidades (ejecutar comandos, buscar en la web, lectura y modificación de archivos).
-- **Delegación de Sub-agentes:** Arquitectura asíncrona donde el agente principal "Composer" delega tareas (linter, análisis de logs, testing) a sub-agentes en segundo plano.
-- **Directrices Dinámicas de Contexto:** Inyección en caliente de reglas del prompt de sistema según la extensión del archivo activo (TypeScript, SQL, Python, etc.).
+### 🔌 Panel de MCP Independiente (Model Context Protocol)
+- Panel de control dedicado en el sidebar para gestionar conexiones MCP.
+- Registra y monitoriza servidores Stdio (locales) y SSE (HTTP remotos) de manera visual.
+- Completamente desvinculado del chat del agente para mantener la arquitectura limpia.
 
-### 💾 Session Persistence
-- Cipher recuerda qué archivos tenías abiertos al cerrar.
-- Al reabrir con el mismo proyecto, las pestañas se restauran automáticamente.
-- Solo restaura archivos que aún existen en disco.
+### 💾 SQL Explorer — Creación de SQLite Físico
+- Ahora puedes **crear nuevas bases de datos SQLite (.db)** directamente desde Cipher Studio.
+- En el modal de Nueva Conexión, marca "Crear nueva base de datos física (.db)" y el archivo se inicializa en disco de inmediato.
+- Soporte completo para PostgreSQL, MySQL/MariaDB y SQL Server además de SQLite.
 
 ### ⚙️ Panel de Ajustes Rework
-- El panel de configuración ahora tiene **5 pestañas** con iconos en la barra lateral:
-  - 🎨 **Apariencia** — Temas y modo enfoque
-  - 🔑 **API Keys** — Claves por proveedor y por modelo
-  - ⌨️ **Atajos** — Atajos de teclado reconfigurables
-  - ⚙️ **Editor** — Preferencias base del editor
-  - 🤖 **Agentes** — Claude Code, Codex CLI, Ollama y LM Studio
+- 5 pestañas con iconos en la barra lateral: Apariencia, API Keys, Atajos, Editor y Agentes.
 - Cada sección tiene su propio espacio, sin scroll interminable.
+- API keys configurables por proveedor y por modelo individual.
 
-### 🎨 Mejoras de UI
-- Nombres de proveedores en el selector de modelos con **color cyan diferenciado** para distinguirlos de los modelos individuales.
-- Área de mensajes del panel IA más amplia con mayor espaciado entre burbujas.
-- Input del agente ampliado a 3 líneas por defecto para más comodidad.
+### 🎨 Rediseño Estético Global
+- Interfaz más técnica y profesional: paleta desaturada, tipografía limpia, sin animaciones excesivas.
+- Sidebar compacto de 16rem. Micro-animaciones sutiles en hover.
+- Iconos de lenguajes nativos SVG: Go, Rust, Python, Ruby, C/C++, SQL, Docker, GitHub Actions y más.
 
 ## Caracteristicas
 
