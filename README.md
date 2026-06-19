@@ -48,9 +48,8 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 ### Editor
 
 - Editor Monaco con tema oscuro Cipher, minimapa, ajuste de linea, formato y atajos de guardado.
-- Esquinas redondeadas y borde de profundidad flotante: La ventana de la aplicación tiene esquinas redondeadas de `12px` en modo normal, volviéndose rectangulares automáticamente al maximizar.
-- Instalador NSIS Premium: Barra lateral personalizada con degradado del tema Midnight y logotipo flotante proporcional, evitando deformaciones.
-- Logotipo Normalizado 1:1: Se corrigió de raíz la distorsión del icono del acceso directo del escritorio y la barra de tareas.
+- Ventana sin marco con esquinas redondeadas de `12px` en modo normal, rectangulares al maximizar.
+- Logotipo e icono nativos de Cipher Studio en barra de tareas, acceso directo y menú de inicio.
 - Explorador de archivos interactivo (el encabezado de carpeta abre diálogos del sistema para cambiar de espacio de trabajo).
 - Indicadores Git completos en el árbol de archivos (los archivos modificados se pintan de amarillo/naranja con un badge `M`, los nuevos/untracked de verde con un badge `U` o `A`).
 - Restauración del último proyecto: Cipher recuerda el último directorio de proyecto que tenías abierto al cerrarlo y lo abre automáticamente en el siguiente inicio.
@@ -78,9 +77,9 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 - Soporte inteligente para temas claros y oscuros en Monaco Editor según el tema activo.
 - Los colores se aplican mediante variables CSS al instante, sin recargar la app.
 
-### Agente IA
+### Agente Autónomo
 
-- Agente IA con modo Chat, Plan y Dev.
+- Agente Autónomo con modos Chat, Composer y Dev.
 - Soporte para OpenRouter, NVIDIA NIM, Ollama, LM Studio, Anthropic, OpenAI, Google Gemini, DeepSeek, Kimi y Qwen.
 - Web search integrado para modelos OpenRouter compatibles.
 - Thinking / Razonamiento para modelos compatibles, con acordeon visual de razonamiento.
@@ -105,9 +104,9 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 
 ## Descargar
 
-La primera build oficial se publica como ZIP para Windows en la seccion de GitHub Releases.
+La build oficial se publica como instalador NSIS y ZIP para Windows en la sección de GitHub Releases.
 
-Como esta version aun no esta firmada, Windows SmartScreen puede mostrar una advertencia al ejecutar `Cipher.exe`. Esto no significa automaticamente que el archivo sea peligroso; significa que el ejecutable no tiene certificado de firma de codigo ni reputacion publica acumulada. Puedes revisar y compilar el codigo fuente de este repositorio si prefieres verificarlo por tu cuenta.
+Como la versión actual no está firmada con certificado de código, Windows SmartScreen puede mostrar una advertencia al ejecutar el instalador. Esto no significa que el archivo sea peligroso — puedes revisar y compilar el código fuente de este repositorio para verificarlo por tu cuenta.
 
 ## Requisitos
 
