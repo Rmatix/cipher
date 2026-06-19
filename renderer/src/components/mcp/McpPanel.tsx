@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Cpu, Plus, Power, PowerOff, Shield, RefreshCw, Layers } from 'lucide-react'
+import { Plus, Power, PowerOff, Shield, RefreshCw } from 'lucide-react'
 
 interface McpServer {
   id: string

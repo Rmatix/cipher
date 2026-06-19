@@ -17,10 +17,6 @@ import {
   TestTube2,
   Trash2,
   X,
-  Cpu,
-  Wrench,
-  Users,
-  BookOpen,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import {
@@ -177,23 +173,7 @@ export default function AIPanel() {
   const [showModelKeyModal, setShowModelKeyModal] = useState(false)
   const [ollamaModels, setOllamaModels] = useState<ModelGroup | null>(null)
   const [lmstudioModels, setLmstudioModels] = useState<ModelGroup | null>(null)
-  const [showAgenticEcosystem, setShowAgenticEcosystem] = useState(false)
-  const [activeAgenticTab, setActiveAgenticTab] = useState<'mcp' | 'skills' | 'subagents' | 'prompts'>('mcp')
-  const [mcpServers, _setMcpServers] = useState([
-    { id: 'fs-server', name: 'File System Server', status: 'connected', url: 'localhost:8011' },
-    { id: 'db-server', name: 'SQL Database Server', status: 'connected', url: 'localhost:8012' },
-    { id: 'term-server', name: 'Terminal Execution Server', status: 'connected', url: 'localhost:8013' }
-  ])
-  const [skills, setSkills] = useState([
-    { id: 'exec-cmd', name: 'Ejecutar comandos en Terminal (Bash/PowerShell)', enabled: true },
-    { id: 'web-search', name: 'Búsqueda en Internet (DuckDuckGo)', enabled: true },
-    { id: 'sql-crud', name: 'Modificar base de datos (SQL Explorer)', enabled: true },
-    { id: 'file-io', name: 'Leer y escribir archivos del workspace', enabled: true }
-  ])
-  const [subagents, _setSubagents] = useState([
-    { id: 'lint-sub', name: 'Sub-agente Linter', task: 'Analizando sintaxis en tiempo real', status: 'active' },
-    { id: 'test-sub', name: 'Sub-agente Tester', task: 'Validando cobertura de código', status: 'idle' }
-  ])
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const activeStreamId = useRef<string | null>(null)
 
