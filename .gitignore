@@ -1,3 +1,13 @@
+# Caches, databases and prompt logs
+.eslintcache
+.turbo
+*.db
+*.sqlite
+*prompt*.log
+prompt-logs/
+.gemini/
+agent-logs/
+
 node_modules/
 .pnpm-store/
 dist/
@@ -8,6 +18,7 @@ release-build/
 release-build-nosign/
 *.zip
 *.7z
+*.rar
 *.exe
 *.msi
 *.blockmap
@@ -59,61 +70,5 @@ RELEASE_NOTES_0.2.0_EXPERIMENTAL.md
 
 # Configuration file containing last opened folder path
 cipher-config.json
-*.zip
-*.rar
-*.exe
-release/
-build/nsis/
-build/*.nsh
 package-lock.json
 pnpm-lock.yaml
-node_modules/
-.pnpm-store/
-dist/
-out/
-release-build/
-release-build-nosign/
-*.7z
-*.msi
-*.blockmap
-native/
-*.node
-builder-debug.yml
-builder-effective-config.yaml
-docs/
-
-# Generated renderer builds
-src/renderer-dist/
-renderer/dist/
-
-# Local editor/agent state
-.agents/
-.claude/
-.vscode/
-.idea/
-CLAUDE.md
-.DS_Store
-Thumbs.db
-
-# Secrets and local config
-.env
-.env.*
-!.env.example
-*.pem
-*.p12
-*.pfx
-*.key
-*.crt
-
-# Logs and captures
-*.log
-npm-debug.log*
-pnpm-debug.log*
-Captura de pantalla*.png
-Screenshots/
-
-# Rust build artifacts (ignore compiled output)
-target/
-# Keep native Rust source files tracked (unignore)
-!native/
-!native/**

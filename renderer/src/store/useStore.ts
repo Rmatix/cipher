@@ -274,6 +274,8 @@ interface AppState {
   // Profile
   appProfile: 'common' | 'developer'
   setAppProfile: (profile: 'common' | 'developer') => void
+  cipherProduct: 'lite' | 'dev' | 'studio'
+  setCipherProduct: (product: 'lite' | 'dev' | 'studio') => void
 
   // Folder
   currentFolder: string | null
@@ -397,6 +399,8 @@ export const useStore = create<AppState>((set, get) => ({
   // Profile
   appProfile: 'developer',
   setAppProfile: (profile) => set({ appProfile: profile }),
+  cipherProduct: 'studio',
+  setCipherProduct: (product) => set({ cipherProduct: product }),
 
   // Folder
   currentFolder: null,

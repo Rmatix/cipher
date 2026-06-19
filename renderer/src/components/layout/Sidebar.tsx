@@ -5,7 +5,7 @@ import { useStore } from '../../store/useStore'
 type PanelId = 'files' | 'search' | 'git' | 'ai' | 'memory' | 'debug' | 'history' | 'notes' | 'workflows' | 'database' | 'settings'
 
 export default function Sidebar() {
-  const { sidebarPanel, setSidebarPanel, projectMemory, editorMarkers, changeHistory, appProfile } = useStore()
+  const { sidebarPanel, setSidebarPanel, projectMemory, editorMarkers, changeHistory, appProfile, cipherProduct } = useStore()
 
   const errorCount = editorMarkers.filter(m => m.severity === 8).length
 
@@ -25,6 +25,11 @@ export default function Sidebar() {
   // Filter out developer features if profile is common user
   if (appProfile === 'common') {
     panels = panels.filter(p => ['files', 'search', 'notes', 'history'].includes(p.id))
+  }
+
+  // Dev edition keeps AI chat and CLI, but hides SQL Viewer (database)
+  if (cipherProduct === 'dev') {
+    panels = panels.filter(p => p.id !== 'database')
   }
 
   const handlePanelClick = (id: PanelId | 'settings') => {

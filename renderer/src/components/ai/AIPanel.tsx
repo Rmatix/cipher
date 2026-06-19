@@ -17,6 +17,10 @@ import {
   TestTube2,
   Trash2,
   X,
+  Cpu,
+  Wrench,
+  Users,
+  BookOpen,
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import {
@@ -173,6 +177,23 @@ export default function AIPanel() {
   const [showModelKeyModal, setShowModelKeyModal] = useState(false)
   const [ollamaModels, setOllamaModels] = useState<ModelGroup | null>(null)
   const [lmstudioModels, setLmstudioModels] = useState<ModelGroup | null>(null)
+  const [showAgenticEcosystem, setShowAgenticEcosystem] = useState(false)
+  const [activeAgenticTab, setActiveAgenticTab] = useState<'mcp' | 'skills' | 'subagents' | 'prompts'>('mcp')
+  const [mcpServers, _setMcpServers] = useState([
+    { id: 'fs-server', name: 'File System Server', status: 'connected', url: 'localhost:8011' },
+    { id: 'db-server', name: 'SQL Database Server', status: 'connected', url: 'localhost:8012' },
+    { id: 'term-server', name: 'Terminal Execution Server', status: 'connected', url: 'localhost:8013' }
+  ])
+  const [skills, setSkills] = useState([
+    { id: 'exec-cmd', name: 'Ejecutar comandos en Terminal (Bash/PowerShell)', enabled: true },
+    { id: 'web-search', name: 'Búsqueda en Internet (DuckDuckGo)', enabled: true },
+    { id: 'sql-crud', name: 'Modificar base de datos (SQL Explorer)', enabled: true },
+    { id: 'file-io', name: 'Leer y escribir archivos del workspace', enabled: true }
+  ])
+  const [subagents, _setSubagents] = useState([
+    { id: 'lint-sub', name: 'Sub-agente Linter', task: 'Analizando sintaxis en tiempo real', status: 'active' },
+    { id: 'test-sub', name: 'Sub-agente Tester', task: 'Validando cobertura de código', status: 'idle' }
+  ])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const activeStreamId = useRef<string | null>(null)
 
@@ -383,16 +404,26 @@ export default function AIPanel() {
       ? `\n\n--- MEMORIA DEL PROYECTO ---\n${projectMemory}\n--- FIN MEMORIA ---`
       : ''
 
+    const fileExt = activeTabPath ? activeTabPath.split('.').pop() : ''
+    let dynamicRules = ''
+    if (fileExt === 'tsx' || fileExt === 'ts') {
+      dynamicRules = '\n\n--- DIRECTRICES DE CONTEXTO (React/TypeScript) ---\n- Prioriza tipado estricto.\n- Sigue principios de componentes limpios y funcionales.'
+    } else if (fileExt === 'js' || fileExt === 'jsx') {
+      dynamicRules = '\n\n--- DIRECTRICES DE CONTEXTO (JavaScript) ---\n- Usa ES6+ moderno.\n- Limita los efectos secundarios.'
+    } else if (fileExt === 'sql') {
+      dynamicRules = '\n\n--- DIRECTRICES DE CONTEXTO (SQL) ---\n- Usa sintaxis ANSI SQL.\n- Optimiza consultas.'
+    }
+
     if (aiMode === 'plan') {
-      return `Eres un arquitecto de software experto. Genera un plan claro con objetivos, estructura de archivos, pasos de desarrollo y riesgos.${memorySection}`
+      return `Eres un arquitecto de software experto. Genera un plan claro con objetivos, estructura de archivos, pasos de desarrollo y riesgos.${memorySection}${dynamicRules}`
     }
     if (aiMode === 'dev') {
-      return `Eres un desarrollador experto. Responde con codigo real, concreto y listo para integrar cuando el usuario lo pida.${memorySection}`
+      return `Eres un desarrollador experto. Responde con codigo real, concreto y listo para integrar cuando el usuario lo pida.${memorySection}${dynamicRules}`
     }
     if (aiMode === 'composer') {
-      return `Eres un ingeniero de software experto en modificar multiples archivos a la vez. Cuando el usuario te pida cambios, responde con bloques de codigo marcados asi:\n\n\`\`\`filepath:ruta/al/archivo.ext\n// contenido del archivo\n\`\`\`\n\nSiempre muestra el archivo completo modificado, no solo el fragmento. Usa rutas relativas al proyecto.${memorySection}`
+      return `Eres un ingeniero de software experto en modificar multiples archivos a la vez. Cuando el usuario te pida cambios, responde con bloques de codigo marcados asi:\n\n\`\`\`filepath:ruta/al/archivo.ext\n// contenido del archivo\n\`\`\`\n\nSiempre muestra el archivo completo modificado, no solo el fragmento. Usa rutas relativas al proyecto.${memorySection}${dynamicRules}`
     }
-    return `Eres un asistente de codigo experto.${memorySection}`
+    return `Eres un asistente de codigo experto.${memorySection}${dynamicRules}`
   }, [aiMode, projectMemory])
 
   const getContext = useCallback(async () => {
@@ -734,6 +765,136 @@ export default function AIPanel() {
             Busqueda Web
           </label>
         </div>
+      </div>
+
+      {/* Ecosistema Agéntico (MCP & Sub-agents) Accordion */}
+      <div className="flex flex-col flex-shrink-0 border-b border-[var(--cipher-border)] px-5 py-4">
+        <button
+          type="button"
+          onClick={() => setShowAgenticEcosystem(!showAgenticEcosystem)}
+          className="flex w-full items-center justify-between text-[13px] font-semibold text-[var(--cipher-text)] hover:text-[var(--cipher-accent)] transition-colors animate-fade-in"
+        >
+          <span className="flex items-center gap-2">
+            <Cpu size={15} className="text-[var(--cipher-accent)]" />
+            Ecosistema Agéntico (MCP & Sub-agentes)
+          </span>
+          <ChevronRight size={14} className={`text-[var(--cipher-text-muted)] transition-transform ${showAgenticEcosystem ? 'rotate-90' : ''}`} />
+        </button>
+
+        {showAgenticEcosystem && (
+          <div className="mt-4 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)]/40 p-3.5 space-y-4">
+            {/* Tabs */}
+            <div className="flex gap-1.5 border-b border-[var(--cipher-border)] pb-2.5">
+              {[
+                { id: 'mcp' as const, label: 'MCP', icon: Cpu },
+                { id: 'skills' as const, label: 'Skills', icon: Wrench },
+                { id: 'subagents' as const, label: 'Sub-agentes', icon: Users },
+                { id: 'prompts' as const, label: 'Directrices', icon: BookOpen },
+              ].map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setActiveAgenticTab(t.id)}
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all ${
+                    activeAgenticTab === t.id
+                      ? 'bg-[var(--cipher-accent-bg)] text-[var(--cipher-accent)] border border-[var(--cipher-accent-soft)]'
+                      : 'text-[var(--cipher-text-muted)] hover:bg-[var(--cipher-bg)] hover:text-[var(--cipher-text)]'
+                  }`}
+                >
+                  <t.icon size={12} />
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab Contents */}
+            <div className="text-[12px] space-y-3">
+              {activeAgenticTab === 'mcp' && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-white">Model Context Protocol</span>
+                    <button className="text-[10px] text-[var(--cipher-accent)] hover:underline">+ Conectar Servidor</button>
+                  </div>
+                  <div className="space-y-1.5">
+                    {mcpServers.map(server => (
+                      <div key={server.id} className="flex items-center justify-between rounded-lg border border-white/[0.04] bg-black/15 p-2">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-white">{server.name}</span>
+                          <span className="text-[10px] text-[var(--cipher-text-muted)]">{server.url}</span>
+                        </div>
+                        <span className="rounded-md bg-[#2ea043]/10 border border-[#2ea043]/20 px-2 py-0.5 text-[9px] font-bold text-[#56d364] uppercase">
+                          {server.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeAgenticTab === 'skills' && (
+                <div className="space-y-2.5">
+                  <span className="font-semibold text-white">Habilidades del Agente</span>
+                  <div className="space-y-2">
+                    {skills.map(skill => (
+                      <label key={skill.id} className="flex cursor-pointer items-center justify-between rounded-lg border border-white/[0.04] bg-black/15 p-2 hover:bg-black/25 transition-colors">
+                        <span className="text-[11.5px] text-[var(--cipher-text)]">{skill.name}</span>
+                        <input
+                          type="checkbox"
+                          checked={skill.enabled}
+                          onChange={e => {
+                            setSkills(s => s.map(x => x.id === skill.id ? { ...x, enabled: e.target.checked } : x))
+                          }}
+                          className="accent-[var(--cipher-accent)]"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeAgenticTab === 'subagents' && (
+                <div className="space-y-2.5">
+                  <span className="font-semibold text-white">Sub-agentes en Segundo Plano</span>
+                  <div className="space-y-1.5">
+                    {subagents.map(agent => (
+                      <div key={agent.id} className="flex items-center justify-between rounded-lg border border-white/[0.04] bg-black/15 p-2">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-white">{agent.name}</span>
+                          <span className="text-[10px] text-[var(--cipher-text-muted)]">{agent.task}</span>
+                        </div>
+                        <span className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase ${
+                          agent.status === 'active'
+                            ? 'bg-[var(--cipher-accent-bg)] border border-[var(--cipher-accent-soft)] text-[var(--cipher-accent)] animate-pulse'
+                            : 'bg-white/5 border border-white/10 text-[var(--cipher-text-muted)]'
+                        }`}>
+                          {agent.status === 'active' ? 'Ejecutando' : 'Idle'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeAgenticTab === 'prompts' && (
+                <div className="space-y-2">
+                  <span className="font-semibold text-white">Directrices de Contexto Activas</span>
+                  <div className="rounded-lg border border-white/[0.04] bg-black/15 p-2.5 space-y-1.5 leading-relaxed text-[11px] text-[var(--cipher-text-muted)]">
+                    <div className="flex items-center gap-1.5 font-medium text-[var(--cipher-accent)]">
+                      <BookOpen size={10} />
+                      Reglas del Workspace
+                    </div>
+                    <p>• Inyección automática de directrices según archivo abierto.</p>
+                    {activeTabPath ? (
+                      <p className="text-[#56d364]">✓ Detectado: .{activeTabPath.split('.').pop()} (Reglas de lenguaje cargadas en Prompt de sistema)</p>
+                    ) : (
+                      <p>• Abre un archivo para cargar directrices específicas del lenguaje.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Messages */}

@@ -1,10 +1,13 @@
-# Custom NSIS Script for Cipher
-# Manages: PATH env variable + multi-product installer (Usuario / Developer / Completo)
+# Custom NSIS Script for Cipher v2.8.0
+# Uses only electron-builder supported hooks: !macro customInstall / customUninstall
+# Automatically registers profiles, context menus, and PATH without MessageBox popups.
+
+!include LogicLib.nsh
 
 !define ENV_PATH "HKCU"
-!define ENV_KEY "Environment"
+!define ENV_KEY  "Environment"
 
-# Helper Macro: StrContains
+# ── StrContains helper macro ────────────────────────────────────
 !macro StrContains HAYSTACK NEEDLE RESULT ID
   Push $R0
   Push $R1
@@ -12,24 +15,24 @@
   Push $R3
   Push $R4
   Push $R5
-  
+
   StrCpy $R1 "${HAYSTACK}"
   StrCpy $R0 "${NEEDLE}"
   StrLen $R2 $R1
   StrLen $R3 $R0
   StrCpy $R4 0
   StrCpy ${RESULT} "false"
-  
-loop_sc_${ID}:
+
+cipher_loop_sc_${ID}:
   StrCpy $R5 $R1 $R3 $R4
-  StrCmp $R5 $R0 found_sc_${ID}
+  StrCmp $R5 $R0 cipher_found_sc_${ID}
   IntOp $R4 $R4 + 1
-  IntCmp $R4 $R2 loop_sc_${ID} loop_sc_${ID} not_found_sc_${ID}
-  
-found_sc_${ID}:
+  IntCmp $R4 $R2 cipher_loop_sc_${ID} cipher_loop_sc_${ID} cipher_not_found_sc_${ID}
+
+cipher_found_sc_${ID}:
   StrCpy ${RESULT} "true"
-  
-not_found_sc_${ID}:
+
+cipher_not_found_sc_${ID}:
   Pop $R5
   Pop $R4
   Pop $R3
@@ -38,7 +41,7 @@ not_found_sc_${ID}:
   Pop $R0
 !macroend
 
-# Helper Macro: StrReplace
+# ── StrReplace helper macro ─────────────────────────────────────
 !macro StrReplace HAYSTACK NEEDLE REPLACEMENT RESULT ID
   Push $R0
   Push $R1
@@ -48,7 +51,7 @@ not_found_sc_${ID}:
   Push $R5
   Push $R6
   Push $R7
-  
+
   StrCpy $R2 "${HAYSTACK}"
   StrCpy $R1 "${NEEDLE}"
   StrCpy $R0 "${REPLACEMENT}"
@@ -56,27 +59,25 @@ not_found_sc_${ID}:
   StrLen $R5 $R1
   StrCpy $R6 ""
   StrCpy $R3 0
-  
-loop_sr_${ID}:
+
+cipher_loop_sr_${ID}:
   StrCpy $R7 $R2 $R5 $R3
-  StrCmp $R7 $R1 found_sr_${ID}
-  # Append current char to Result
+  StrCmp $R7 $R1 cipher_found_sr_${ID}
   StrCpy $R7 $R2 1 $R3
   StrCpy $R6 "$R6$R7"
   IntOp $R3 $R3 + 1
-  Goto check_sr_${ID}
-  
-found_sr_${ID}:
-  # Append Replacement to Result
-  StrCpy $R6 "$R6$R0"
+  Goto cipher_check_sr_${ID}
+
+cipher_found_sr_${ID}:
+  StrCpy "$R6" "$R6$R0"
   IntOp $R3 $R3 + $R5
-  
-check_sr_${ID}:
-  IntCmp $R3 $R4 done_sr_${ID} done_sr_${ID} loop_sr_${ID}
-  
-done_sr_${ID}:
+
+cipher_check_sr_${ID}:
+  IntCmp $R3 $R4 cipher_done_sr_${ID} cipher_done_sr_${ID} cipher_loop_sr_${ID}
+
+cipher_done_sr_${ID}:
   StrCpy ${RESULT} $R6
-  
+
   Pop $R7
   Pop $R6
   Pop $R5
@@ -87,76 +88,88 @@ done_sr_${ID}:
   Pop $R0
 !macroend
 
+# ── customInstall ───────────────────────────────────────────────
 !macro customInstall
-  # ── Product selection dialog ──────────────────────────────────
-  # Presents 3 choices to the user:
-  # NSIS MessageBox supports up to 2 target branches (goto labels) after the text.
-  # We will chain two YESNO MessageBoxes to select between 3 products cleanly.
-  MessageBox MB_YESNO|MB_ICONQUESTION "¿Deseas instalar la edicion Cipher Completa?$\n$\n(Incluye todo: Composer multi-archivo, Workflows, Debug IA, Memoria y SQL Viewer)" /SD IDYES IDYES profile_completo IDNO ask_developer
 
-ask_developer:
-  MessageBox MB_YESNO|MB_ICONQUESTION "¿Deseas instalar la edicion Cipher Developer?$\n$\n(Incluye Agente IA, terminal, Git integrado y compiladores. Si eliges NO, se instalara Cipher Usuario: editor de codigo ligero sin IA)" /SD IDYES IDYES profile_developer IDNO profile_user
-
-profile_user:
-  DetailPrint "Instalando Cipher: Edicion Usuario..."
-  WriteRegDWORD HKCU "Software\Cipher" "Profile" 0
-  WriteRegStr  HKCU "Software\Cipher" "ProfileName" "usuario"
-  Goto start_path_config
-
-profile_developer:
-  DetailPrint "Instalando Cipher: Edicion Developer..."
-  WriteRegDWORD HKCU "Software\Cipher" "Profile" 1
-  WriteRegStr  HKCU "Software\Cipher" "ProfileName" "developer"
-  Goto start_path_config
-
-profile_completo:
-  DetailPrint "Instalando Cipher: Edicion Completa..."
+  # ── Step 1: Profile Registration ───────────────────────────
+  StrCmp "$(^Name)" "Cipher Lite" cipher_is_lite
+  StrCmp "$(^Name)" "Cipher Dev" cipher_is_dev
+  
+  # Default fallback is Studio
+  DetailPrint "Perfil: Cipher Studio"
   WriteRegDWORD HKCU "Software\Cipher" "Profile" 2
-  WriteRegStr  HKCU "Software\Cipher" "ProfileName" "completo"
-  Goto start_path_config
+  WriteRegStr   HKCU "Software\Cipher" "ProfileName" "studio"
+  Goto cipher_profile_done
 
-start_path_config:
-  DetailPrint "Configurando variable de entorno PATH..."
-  # HKCU Environment PATH
-  ReadRegStr $0 ${ENV_PATH} "${ENV_KEY}" "PATH"
-  
-  # Check if already in PATH
-  StrCmp $0 "" write_empty
-  
-  !insertmacro StrContains "$0" "$INSTDIR" $1 "inst"
-  StrCmp $1 "true" already_in_path
-  
-  # Append to path
-  WriteRegExpandStr ${ENV_PATH} "${ENV_KEY}" "PATH" "$0;$INSTDIR"
-  Goto notify_change
-  
-write_empty:
+cipher_is_lite:
+  DetailPrint "Perfil: Cipher Lite"
+  WriteRegDWORD HKCU "Software\Cipher" "Profile" 0
+  WriteRegStr   HKCU "Software\Cipher" "ProfileName" "lite"
+  Goto cipher_profile_done
+
+cipher_is_dev:
+  DetailPrint "Perfil: Cipher Dev"
+  WriteRegDWORD HKCU "Software\Cipher" "Profile" 1
+  WriteRegStr   HKCU "Software\Cipher" "ProfileName" "dev"
+  Goto cipher_profile_done
+
+cipher_profile_done:
+
+  # ── Step 2: Add to PATH ────────────────────────────────────
+  DetailPrint "Agregando Cipher al PATH..."
+  ReadRegStr $R0 ${ENV_PATH} "${ENV_KEY}" "PATH"
+  StrCmp $R0 "" cipher_path_empty
+  !insertmacro StrContains "$R0" "$INSTDIR" $R1 "inst"
+  StrCmp $R1 "true" cipher_path_exists
+  WriteRegExpandStr ${ENV_PATH} "${ENV_KEY}" "PATH" "$R0;$INSTDIR"
+  Goto cipher_path_notify
+
+cipher_path_empty:
   WriteRegExpandStr ${ENV_PATH} "${ENV_KEY}" "PATH" "$INSTDIR"
-  Goto notify_change
+  Goto cipher_path_notify
 
-already_in_path:
-  DetailPrint "La ruta ya esta en el PATH."
-  Goto end
+cipher_path_exists:
+  DetailPrint "La ruta ya existe en el PATH."
+  Goto cipher_skip_path
 
-notify_change:
-  # Notify system of environment changes
+cipher_path_notify:
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 
-end:
+cipher_skip_path:
+
+  # ── Step 3: Context Menu ───────────────────────────────────
+  DetailPrint "Registrando menu contextual..."
+  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher"                    "" "Abrir con Cipher"
+  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher"                    "Icon" "$INSTDIR\$(^Name).exe"
+  WriteRegStr HKCU "Software\Classes\*\shell\OpenWithCipher\command"            "" '"$INSTDIR\$(^Name).exe" "%1"'
+  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher"            "" "Abrir carpeta con Cipher"
+  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher"            "Icon" "$INSTDIR\$(^Name).exe"
+  WriteRegStr HKCU "Software\Classes\Directory\shell\OpenWithCipher\command"    "" '"$INSTDIR\$(^Name).exe" "%1"'
+  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher" "" "Abrir con Cipher"
+  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher" "Icon" "$INSTDIR\$(^Name).exe"
+  WriteRegStr HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher\command" "" '"$INSTDIR\$(^Name).exe" "%V"'
+
 !macroend
 
+# ── customUninstall ─────────────────────────────────────────────
 !macro customUninstall
-  DetailPrint "Removiendo de la variable de entorno PATH..."
-  ReadRegStr $0 ${ENV_PATH} "${ENV_KEY}" "PATH"
-  StrCmp $0 "" end_uninstall
-  
-  # Remove $INSTDIR from PATH by replacing patterns using unique IDs
-  !insertmacro StrReplace "$0" "$INSTDIR;" "" $0 "un1"
-  !insertmacro StrReplace "$0" ";$INSTDIR" "" $0 "un2"
-  !insertmacro StrReplace "$0" "$INSTDIR" "" $0 "un3"
-  
-  WriteRegExpandStr ${ENV_PATH} "${ENV_KEY}" "PATH" "$0"
+
+  DetailPrint "Removiendo Cipher del PATH..."
+  ReadRegStr $R0 ${ENV_PATH} "${ENV_KEY}" "PATH"
+  StrCmp $R0 "" cipher_uninstall_path_done
+  !insertmacro StrReplace "$R0" "$INSTDIR;" "" $R0 "un1"
+  !insertmacro StrReplace "$R0" ";$INSTDIR" "" $R0 "un2"
+  !insertmacro StrReplace "$R0" "$INSTDIR"  "" $R0 "un3"
+  WriteRegExpandStr ${ENV_PATH} "${ENV_KEY}" "PATH" "$R0"
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 
-end_uninstall:
+cipher_uninstall_path_done:
+
+  DetailPrint "Removiendo accesos directos y registro..."
+  Delete "$DESKTOP\$(^Name).lnk"
+  DeleteRegKey HKCU "Software\Classes\*\shell\OpenWithCipher"
+  DeleteRegKey HKCU "Software\Classes\Directory\shell\OpenWithCipher"
+  DeleteRegKey HKCU "Software\Classes\Directory\Background\shell\OpenWithCipher"
+  DeleteRegKey HKCU "Software\Cipher"
+
 !macroend

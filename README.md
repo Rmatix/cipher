@@ -18,17 +18,17 @@ Cipher es un editor de codigo open source para Windows, construido con Electron,
 
 ## Qué hay de nuevo en v2.8.0
 
-### ✨ Instalador Multi-Perfil
-- El instalador de Windows ahora muestra **3 ediciones** para elegir:
-  - **Cipher Usuario** — Editor ligero sin servicios de IA en primer plano, ideal para edición rápida.
-  - **Cipher Developer** — Agente IA completo (Chat / Plan / Dev), terminal avanzada, Git integrado y compiladores nativos.
-  - **Cipher Completo** — Todo lo de Developer + Composer multi-archivo, Workflows avanzados, Debug IA y Memory de proyecto.
-- El perfil elegido se guarda en el registro de Windows y la app lo detecta al iniciar.
+### ✨ Instalador Multi-Perfil (Estilo VS Code / Antigravity)
+El instalador NSIS nativo rediseñado permite seleccionar entre 3 perfiles de instalación:
+- **Cipher Usuario (Usuario):** Edición ultraligera sin agentes de IA en segundo plano ni consumo de recursos para modelos. Ideal para ediciones rápidas.
+- **Cipher Developer (Developer):** Ecosistema IA completo (Chat / Plan / Dev), terminal integrada, soporte para Git y compiladores nativos.
+- **Cipher Completo (Completo):** Todo lo de Developer + el nuevo modo Composer multi-archivo, ejecución de workflows, depurador de IA y el Explorador/Visualizador SQL integrado.
 
-### 🎼 Composer Multi-archivo
-- Nuevo modo **Composer** en el panel de IA: el agente propone cambios en múltiples archivos a la vez.
-- Cada bloque de código incluye la ruta del archivo para que puedas copiarlo y aplicarlo fácilmente.
-- Ideal para refactorizaciones, cambios transversales y actualizaciones de API.
+### 🤖 Arquitectura Agéntica & Model Context Protocol (MCP)
+- **Model Context Protocol (MCP):** Soporte nativo para conectar el agente a herramientas externas (sistemas de archivos, terminales, bases de datos relacionales).
+- **Habilidades del Agente (Skills):** Panel de control interactivo para activar o desactivar habilidades (ejecutar comandos, buscar en la web, lectura y modificación de archivos).
+- **Delegación de Sub-agentes:** Arquitectura asíncrona donde el agente principal "Composer" delega tareas (linter, análisis de logs, testing) a sub-agentes en segundo plano.
+- **Directrices Dinámicas de Contexto:** Inyección en caliente de reglas del prompt de sistema según la extensión del archivo activo (TypeScript, SQL, Python, etc.).
 
 ### 💾 Session Persistence
 - Cipher recuerda qué archivos tenías abiertos al cerrar.

@@ -1,0 +1,59 @@
+name: Scheduled Release v2.8.0
+
+on:
+  schedule:
+    # 25 de Junio a las 20:00 UTC (Equivale a las 3:00 PM en Colombia UTC-5)
+    - cron: '0 20 25 6 *'
+  workflow_dispatch: # Permite ejecución manual de emergencia desde la pestaña Actions
+
+jobs:
+  release:
+    name: Publish Scheduled Release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and Package
+        run: pnpm run dist:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2.8.0
+          name: "Cipher v2.8.0 — Composer Multi-archivo, Persistencia & UI Premium"
+          body: |
+            ## Cipher v2.8.0 — Release Oficial
+
+            Esta versión consolida la unificación del Parche 7 (soporte multi-archivo estilo Composer) y el Parche 2.5.2, ofreciendo mejoras de rendimiento, persistencia de espacio completa, arquitectura agéntica basada en MCP y una UI Premium fluida.
+
+            ---
+
+            ### 🚀 Características Principales
+
+            - **Arquitectura de Agentes y MCP**: Soporte nativo para Model Context Protocol y ejecución de Skills.
+            - **Persistencia de Pestañas Avanzada**: Restauración asíncrona optimizada de pestañas y archivos activos por proyecto sin bloquear el hilo principal.
+            - **Composer Multi-Archivo**: Edición concurrente de múltiples ficheros mediante sub-agentes especializados.
+            - **Instalador Personalizado**: Nuevo asistente NSIS con 3 perfiles de instalación optimizados (Usuario, Developer, Completo).
+            - **Seguridad Garantizada**: Dependencias críticas actualizadas (DOMPurify, form-data) y verificado 100% limpio en VirusTotal contra falsos positivos.
+          files: |
+            release/Cipher Lite Setup 2.8.0.exe
+            release/Cipher Dev Setup 2.8.0.exe
+            release/Cipher Studio Setup 2.8.0.exe
+            release/Cipher Studio 2.8.0-win.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

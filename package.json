@@ -12,7 +12,11 @@
     "build": "cd renderer && pnpm build",
     "pack": "pnpm build && electron-builder --dir",
     "dist": "pnpm build && electron-builder",
-    "dist:win": "pnpm build && electron-builder --win --x64",
+    "dist:lite": "node scripts/build-all.js lite",
+    "dist:dev": "node scripts/build-all.js dev",
+    "dist:studio": "node scripts/build-all.js studio",
+    "dist:all": "node scripts/build-all.js all",
+    "dist:win": "node scripts/build-all.js all",
     "dist:mac": "pnpm build && electron-builder --mac",
     "dist:linux": "pnpm build && electron-builder --linux",
     "lint": "cd renderer && pnpm lint",
@@ -66,7 +70,8 @@
       "installerSidebar": "build/installerSidebar.bmp",
       "uninstallerSidebar": "build/installerSidebar.bmp",
       "include": "build/installer.nsh",
-      "perMachine": false
+      "perMachine": false,
+      "license": null
     },
     "extraResources": [
       "native/*.node"
@@ -81,6 +86,7 @@
     "concurrently": "^10.0.3",
     "electron": "^42.1.0",
     "electron-builder": "^26.8.1",
+    "sharp": "^0.35.1",
     "wait-on": "^9.0.10"
   },
   "dependencies": {
@@ -89,6 +95,7 @@
     "@xterm/addon-web-links": "^0.12.0",
     "@xterm/xterm": "^6.0.0",
     "better-sqlite3": "^12.11.1",
+    "electron-updater": "^6.8.9",
     "file-icons-js": "^1.1.0",
     "monaco-editor": "^0.55.1",
     "mssql": "^12.5.5",
@@ -98,15 +105,22 @@
     "pg": "^8.21.0"
   },
   "overrides": {
-    "shell-quote": "^1.8.4"
+    "shell-quote": "^1.8.4",
+    "dompurify": ">=3.4.9",
+    "form-data": "^4.0.6"
   },
   "resolutions": {
-    "shell-quote": "^1.8.4"
+    "shell-quote": "^1.8.4",
+    "dompurify": ">=3.4.9",
+    "form-data": "^4.0.6"
   },
   "pnpm": {
+    "overrides": {
+      "dompurify": ">=3.4.9",
+      "form-data": "^4.0.6"
+    },
     "onlyBuiltDependencies": [
       "better-sqlite3"
     ]
   }
 }
-

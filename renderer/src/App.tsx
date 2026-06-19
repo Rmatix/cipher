@@ -99,12 +99,17 @@ export default function App() {
   }, [setCurrentFolder, setSidebarPanel, addTab, setActiveTab])
 
   // Startup path checking, profile query, and second-instance events
-  const { setAppProfile } = useStore()
+  const { setAppProfile, setCipherProduct } = useStore()
 
   useEffect(() => {
     // Query installer registry profile
     window.cipher?.getAppProfile?.().then((profile) => {
       if (profile) setAppProfile(profile)
+    })
+
+    // Query specific cipher product variant (lite, dev, studio)
+    window.cipher?.getCipherProduct?.().then((product) => {
+      if (product) setCipherProduct(product)
     })
 
     window.cipher?.getStartupPath?.().then((data) => {
@@ -120,7 +125,7 @@ export default function App() {
       })
       return unsubscribe
     }
-  }, [openPathData, setAppProfile])
+  }, [openPathData, setAppProfile, setCipherProduct])
 
   const stateRef = useRef({ sidebarPanel, terminalVisible, bottomPanel, focusMode })
   useEffect(() => {

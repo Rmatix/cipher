@@ -66,6 +66,7 @@ export interface CipherAPI {
   getStartupPath: () => Promise<{ folderPath: string; filePath: string | null } | null>
   onOpenPathRequest: (callback: (data: { folderPath: string; filePath: string | null }) => void) => () => void
   getAppProfile: () => Promise<'common' | 'developer' | null>
+  getCipherProduct: () => Promise<'lite' | 'dev' | 'studio' | null>
 
   // ── Database (SQL Viewer) ─────────────────────────────
   dbConnect: (params: any) => Promise<{ connId: string; error?: string }>

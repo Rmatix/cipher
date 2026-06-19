@@ -3,6 +3,46 @@ const path = require('path')
 const fs = require('fs')
 const os = require('os')
 const { registerDbHandlers } = require('./db-bridge')
+const { initUpdater } = require('./updater')
+
+let cipherProduct = 'studio';
+try {
+  const pkgPath = path.join(app.getAppPath(), 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  cipherProduct = pkg.cipherProduct || 'studio';
+} catch (e) {
+  cipherProduct = process.env.CIPHER_PRODUCT || 'studio';
+}
+
+if (cipherProduct === 'lite') {
+  const originalHandle = ipcMain.handle;
+  ipcMain.handle = function (channel, listener) {
+    if (
+      channel.startsWith('ai-') ||
+      channel.startsWith('memory-') ||
+      channel.startsWith('terminal-') ||
+      channel === 'project-scan'
+    ) {
+      return originalHandle.call(ipcMain, channel, async () => {
+        throw new Error('This feature is disabled in Cipher Lite.');
+      });
+    }
+    return originalHandle.apply(ipcMain, arguments);
+  };
+
+  const originalOn = ipcMain.on;
+  ipcMain.on = function (channel, listener) {
+    if (
+      channel.startsWith('ai-') ||
+      channel.startsWith('memory-') ||
+      channel.startsWith('terminal-') ||
+      channel === 'project-scan'
+    ) {
+      return;
+    }
+    return originalOn.apply(ipcMain, arguments);
+  };
+}
 
 let mainWindow = null
 let native = null
@@ -40,26 +80,34 @@ function parseArgPath(argv) {
   return null
 }
 
-// Parse initial arguments for the first instance
-pendingOpenPath = parseArgPath(process.argv)
-if (pendingOpenPath) {
-  allowedRoots.add(pendingOpenPath.folderPath)
-} else {
-  // Load last opened folder from config
+// Parse initial arguments asynchronously
+const startupPathPromise = (async () => {
   try {
-    const configPath = path.join(app.getPath('userData'), 'cipher-config.json')
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-      if (config && config.lastOpenedFolder && fs.existsSync(config.lastOpenedFolder)) {
-        const lastFolder = path.resolve(config.lastOpenedFolder)
-        allowedRoots.add(lastFolder)
-        pendingOpenPath = { folderPath: lastFolder, filePath: null }
+    const parsed = parseArgPath(process.argv)
+    if (parsed) {
+      allowedRoots.add(parsed.folderPath)
+      pendingOpenPath = parsed
+    } else {
+      const configPath = path.join(app.getPath('userData'), 'cipher-config.json')
+      const exists = await fs.promises.access(configPath).then(() => true).catch(() => false)
+      if (exists) {
+        const content = await fs.promises.readFile(configPath, 'utf-8')
+        const config = JSON.parse(content)
+        if (config && config.lastOpenedFolder) {
+          const folderExists = await fs.promises.access(config.lastOpenedFolder).then(() => true).catch(() => false)
+          if (folderExists) {
+            const lastFolder = path.resolve(config.lastOpenedFolder)
+            allowedRoots.add(lastFolder)
+            pendingOpenPath = { folderPath: lastFolder, filePath: null }
+          }
+        }
       }
     }
   } catch (e) {
     console.error('Failed to load last workspace config:', e)
   }
-}
+  return pendingOpenPath
+})()
 
 // Single instance lock to prevent multiple windows
 const gotLock = app.requestSingleInstanceLock()
@@ -304,34 +352,36 @@ function createTerminal(options = {}) {
   return id
 }
 
-ipcMain.handle('terminal-create', (event, options) => {
-  return createTerminal(options)
-})
+if (cipherProduct !== 'lite') {
+  ipcMain.handle('terminal-create', (event, options) => {
+    return createTerminal(options)
+  })
 
-ipcMain.on('terminal-input', (event, id, data) => {
-  const proc = terminals.get(id)
-  if (proc) proc.write(data)
-})
+  ipcMain.on('terminal-input', (event, id, data) => {
+    const proc = terminals.get(id)
+    if (proc) proc.write(data)
+  })
 
-ipcMain.on('terminal-resize', (event, id, cols, rows) => {
-  const proc = terminals.get(id)
-  if (proc) {
-    try {
-      proc.resize(cols, rows)
-    } catch (e) {
-      // ignore resize errors on dead terminals
+  ipcMain.on('terminal-resize', (event, id, cols, rows) => {
+    const proc = terminals.get(id)
+    if (proc) {
+      try {
+        proc.resize(cols, rows)
+      } catch (e) {
+        // ignore resize errors on dead terminals
+      }
     }
-  }
-})
+  })
 
-ipcMain.handle('terminal-kill', (event, id) => {
-  const proc = terminals.get(id)
-  if (proc) {
-    proc.kill()
-    terminals.delete(id)
-  }
-  return true
-})
+  ipcMain.handle('terminal-kill', (event, id) => {
+    const proc = terminals.get(id)
+    if (proc) {
+      proc.kill()
+      terminals.delete(id)
+    }
+    return true
+  })
+}
 
 // ── Window controls ──────────────────────────────────────
 
@@ -357,7 +407,8 @@ ipcMain.handle('window-is-maximized', () => {
   return mainWindow ? mainWindow.isMaximized() : false
 })
 
-ipcMain.handle('get-startup-path', () => {
+ipcMain.handle('get-startup-path', async () => {
+  await startupPathPromise
   return pendingOpenPath
 })
 
@@ -367,16 +418,27 @@ ipcMain.handle('open-external', async (event, url) => {
 })
 
 ipcMain.handle('get-app-profile', async () => {
+  if (cipherProduct === 'lite') return 'common';
   if (os.platform() !== 'win32') return 'developer' // Non-windows runs full dev
-  try {
-    const { execSync } = require('child_process')
-    // Read the Software\Cipher:Profile value from registry
-    const output = execSync('reg query "HKCU\\Software\\Cipher" /v Profile', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] })
-    if (output.includes('0x0') || output.includes('0')) return 'common'
-    return 'developer'
-  } catch (e) {
-    return 'developer' // Default fallback
-  }
+  return new Promise((resolve) => {
+    const { exec } = require('child_process')
+    // Read the Software\Cipher:Profile value from registry asynchronously
+    exec('reg query "HKCU\\Software\\Cipher" /v Profile', { stdio: ['ignore', 'pipe', 'pipe'] }, (error, stdout) => {
+      if (error) {
+        resolve('developer') // Default fallback
+        return
+      }
+      if (stdout.includes('0x0') || stdout.includes('0')) {
+        resolve('common')
+      } else {
+        resolve('developer')
+      }
+    })
+  })
+})
+
+ipcMain.handle('get-cipher-product', async () => {
+  return cipherProduct;
 })
 
 // ── File system ──────────────────────────────────────────
@@ -1619,10 +1681,16 @@ ipcMain.handle('project-scan', (event, folderPath, maxFiles = 40) => {
 // ── App lifecycle ────────────────────────────────────────
 
 app.whenReady().then(() => {
-  registerDbHandlers()
+  if (cipherProduct === 'studio') {
+    registerDbHandlers()
+  }
   createWindow()
+  initUpdater(mainWindow)
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow()
+      initUpdater(mainWindow)
+    }
   })
 })
 

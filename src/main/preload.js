@@ -87,6 +87,7 @@ contextBridge.exposeInMainWorld('cipher', {
   // ── Startup & Drag / Drop File Associated Open ──────────────────────────
   getStartupPath: () => ipcRenderer.invoke('get-startup-path'),
   getAppProfile: () => ipcRenderer.invoke('get-app-profile'),
+  getCipherProduct: () => ipcRenderer.invoke('get-cipher-product'),
   onOpenPathRequest: (callback) => {
     const listener = (event, data) => callback(data)
     ipcRenderer.on('open-path-request', listener)
