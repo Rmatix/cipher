@@ -101,7 +101,7 @@ function registerDbHandlers() {
 
   // ── db:connect ──────────────────────────────────────────
   ipcMain.handle('db:connect', async (_event, params) => {
-    const { type, filePath, host, port, database, user, password } = params
+    const { type, dockerEngine, containerName, filePath, host, port, database, user, password } = params
     const connId = `conn_${++connIdCounter}`
 
     try {
@@ -138,6 +138,37 @@ function registerDbHandlers() {
         })
         connections.set(connId, { type: 'mssql', pool, database })
         return { ok: true, connId, name: `${database}@${host}` }
+      }
+
+      if (type === 'docker') {
+        const engine = dockerEngine || 'postgresql'
+        const labelHost = containerName ? `docker:${containerName}` : `docker:${host}`
+        if (engine === 'postgresql') {
+          const { Client } = require('pg')
+          const client = new Client({ host, port: port || 5432, database, user, password })
+          await client.connect()
+          connections.set(connId, { type: 'postgresql', client, database })
+          return { ok: true, connId, name: `${database}@${labelHost}` }
+        }
+        if (engine === 'mysql') {
+          const mysql = require('mysql2/promise')
+          const conn = await mysql.createConnection({ host, port: port || 3306, database, user, password })
+          connections.set(connId, { type: 'mysql', conn, database })
+          return { ok: true, connId, name: `${database}@${labelHost}` }
+        }
+        if (engine === 'mssql') {
+          const mssql = require('mssql')
+          const pool = await mssql.connect({
+            server: host,
+            port: port || 1433,
+            database,
+            user,
+            password,
+            options: { encrypt: false, trustServerCertificate: true }
+          })
+          connections.set(connId, { type: 'mssql', pool, database })
+          return { ok: true, connId, name: `${database}@${labelHost}` }
+        }
       }
 
       return { ok: false, error: `Unknown database type: ${type}` }

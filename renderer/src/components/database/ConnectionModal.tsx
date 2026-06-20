@@ -9,7 +9,9 @@ interface ConnectionModalProps {
 }
 
 export interface ConnectionParams {
-  type: 'sqlite' | 'postgresql' | 'mysql' | 'mssql'
+  type: 'sqlite' | 'postgresql' | 'mysql' | 'mssql' | 'docker'
+  dockerEngine?: 'postgresql' | 'mysql' | 'mssql'
+  containerName?: string
   filePath?: string
   host?: string
   port?: number
@@ -18,15 +20,68 @@ export interface ConnectionParams {
   password?: string
 }
 
+// ── SVG original logos instead of emojis ────────────────
+const SqliteIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#003B57]">
+    <path d="M12 2C7.58 2 4 3.34 4 5V19C4 20.66 7.58 22 12 22C16.42 22 20 20.66 20 19V5C20 3.34 16.42 2 12 2Z" fill="#003B57" fillOpacity="0.1" />
+    <path d="M12 2C7.58 2 4 3.34 4 5C4 6.66 7.58 8 12 8C16.42 8 20 6.66 20 5C20 3.34 16.42 2 12 2Z" stroke="#0f80cc" strokeWidth="1.8" />
+    <path d="M4 5V12C4 13.66 7.58 15 12 15C16.42 15 20 13.66 20 12V5" stroke="#0f80cc" strokeWidth="1.8" />
+    <path d="M4 12V19C4 20.66 7.58 22 12 22C16.42 22 20 20.66 20 19V12" stroke="#0f80cc" strokeWidth="1.8" />
+    <path d="M8 5C8 5.55 9.79 6 12 6C14.21 6 16 5.55 16 5" stroke="#33a6ff" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+)
+
+const PostgresqlIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#336791]">
+    <path d="M8 4C6.5 4 4 5.5 4 8c0 4.5 4 7 7 8 0 0-1.5 2-1.5 3h3c0-1 1-3 1.5-3 .5 0 1.5 2 1.5 3h3c0-1-1.5-3-1.5-3 3-1 7-3.5 7-8 0-2.5-2.5-4-4-4H8Z" fill="#336791" fillOpacity="0.15" stroke="#336791" strokeWidth="1.8" />
+    <path d="M8 8c0 .8-.5 1.5-1.5 1.5S5 8.8 5 8" stroke="#336791" strokeWidth="1.5" />
+    <path d="M16 8c0 .8.5 1.5 1.5 1.5S19 8.8 19 8" stroke="#336791" strokeWidth="1.5" />
+    <path d="M12 4v7" stroke="#336791" strokeWidth="1.5" />
+  </svg>
+)
+
+const MysqlIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#00758F]">
+    <path d="M4 14c2-5 6-8 11-8 2 0 4 .5 5 1.5C18 7.5 16 9 14 10c-3 1.5-5 4-6 7-.5 1.5-1 3.5-1 4.5C6 19.5 4.5 17 4 14Z" fill="#00758F" fillOpacity="0.15" stroke="#00758F" strokeWidth="1.8" />
+    <circle cx="16" cy="8" r="1.5" fill="#F29111" stroke="none" />
+    <path d="M9 16c2.5-.5 5-2 6-4.5" stroke="#00758F" strokeWidth="1.5" />
+  </svg>
+)
+
+const MssqlIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#CC292B]">
+    <path d="M12 3c-4.42 0-8 1.12-8 2.5S7.58 8 12 8s8-1.12 8-2.5S16.42 3 12 3Z" fill="#CC292B" fillOpacity="0.15" stroke="#CC292B" strokeWidth="1.8" />
+    <path d="M4 5.5v4c0 1.38 3.58 2.5 8 2.5s8-1.12 8-2.5v-4" stroke="#CC292B" strokeWidth="1.8" />
+    <path d="M4 9.5v4c0 1.38 3.58 2.5 8 2.5s8-1.12 8-2.5v-4" stroke="#CC292B" strokeWidth="1.8" />
+    <path d="M4 13.5v4c0 1.38 3.58 2.5 8 2.5s8-1.12 8-2.5v-4" stroke="#CC292B" strokeWidth="1.8" />
+  </svg>
+)
+
+const DockerIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#2496ED]">
+    <rect x="5" y="7" width="3" height="2" rx="0.5" fill="#2496ED" fillOpacity="0.2" stroke="#2496ED" strokeWidth="1.2" />
+    <rect x="9" y="7" width="3" height="2" rx="0.5" fill="#2496ED" fillOpacity="0.2" stroke="#2496ED" strokeWidth="1.2" />
+    <rect x="13" y="7" width="3" height="2" rx="0.5" fill="#2496ED" fillOpacity="0.2" stroke="#2496ED" strokeWidth="1.2" />
+    <rect x="7" y="4" width="3" height="2" rx="0.5" fill="#2496ED" fillOpacity="0.2" stroke="#2496ED" strokeWidth="1.2" />
+    <rect x="11" y="4" width="3" height="2" rx="0.5" fill="#2496ED" fillOpacity="0.2" stroke="#2496ED" strokeWidth="1.2" />
+    <rect x="9" y="10" width="3" height="2" rx="0.5" fill="#2496ED" fillOpacity="0.2" stroke="#2496ED" strokeWidth="1.2" />
+    <path d="M2 13c0 4 3 6 7 6 5 0 9-3 11-7 .5-1 .5-2 0-2.5C19 9 18 9 17 9.5" stroke="#2496ED" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M2 13.5h18" stroke="#2496ED" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+)
+
 const DB_TYPES = [
-  { value: 'sqlite',     label: 'SQLite',      icon: '🗃️', desc: 'Archivo local .db / .sqlite' },
-  { value: 'postgresql', label: 'PostgreSQL',   icon: '🐘', desc: 'Servidor PostgreSQL' },
-  { value: 'mysql',      label: 'MySQL/MariaDB',icon: '🐬', desc: 'Servidor MySQL o MariaDB' },
-  { value: 'mssql',      label: 'SQL Server',   icon: '🏢', desc: 'Microsoft SQL Server' },
+  { value: 'sqlite',     label: 'SQLite',      icon: <SqliteIcon />, desc: 'Archivo local .db / .sqlite' },
+  { value: 'postgresql', label: 'PostgreSQL',   icon: <PostgresqlIcon />, desc: 'Servidor PostgreSQL' },
+  { value: 'mysql',      label: 'MySQL/MariaDB',icon: <MysqlIcon />, desc: 'Servidor MySQL o MariaDB' },
+  { value: 'mssql',      label: 'SQL Server',   icon: <MssqlIcon />, desc: 'Microsoft SQL Server' },
+  { value: 'docker',     label: 'Docker Container', icon: <DockerIcon />, desc: 'Base de datos en contenedor' },
 ] as const
 
 export default function ConnectionModal({ onConnect, onClose, isConnecting, error }: ConnectionModalProps) {
   const [type, setType] = useState<ConnectionParams['type']>('sqlite')
+  const [dockerEngine, setDockerEngine] = useState<'postgresql' | 'mysql' | 'mssql'>('postgresql')
+  const [containerName, setContainerName] = useState('')
   const [filePath, setFilePath] = useState('')
   const [host, setHost] = useState('localhost')
   const [port, setPort] = useState('')
@@ -40,7 +95,6 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
   const currentType = DB_TYPES.find(t => t.value === type)!
 
   const handleBrowse = async () => {
-    // Open file dialog via IPC
     const result = await (window as any).cipher.openFolder?.()
     if (result) setFilePath(result)
   }
@@ -61,6 +115,8 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
     }
     const params: ConnectionParams = type === 'sqlite'
       ? { type, filePath }
+      : type === 'docker'
+      ? { type, dockerEngine, containerName, host, port: port ? parseInt(port) : undefined, database, user, password }
       : { type, host, port: port ? parseInt(port) : undefined, database, user, password }
     await onConnect(params)
   }
@@ -101,7 +157,7 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
                 onClick={() => setShowTypeMenu(!showTypeMenu)}
                 className="flex w-full items-center gap-3 rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-3 py-2.5 text-left transition-all hover:border-[var(--cipher-accent)]/50"
               >
-                <span className="text-[16px]">{currentType.icon}</span>
+                <span className="flex items-center justify-center w-5 h-5">{currentType.icon}</span>
                 <div className="flex-1">
                   <div className="text-[13px] font-medium text-[var(--cipher-text)]">{currentType.label}</div>
                   <div className="text-[11px] text-[var(--cipher-text-muted)]">{currentType.desc}</div>
@@ -110,16 +166,16 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
               </button>
 
               {showTypeMenu && (
-                <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface)] shadow-xl">
+                <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface)] shadow-xl overflow-hidden">
                   {DB_TYPES.map(t => (
                     <button
                       key={t.value}
                       onClick={() => { setType(t.value as any); setShowTypeMenu(false) }}
-                      className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-all first:rounded-t-xl last:rounded-b-xl ${
+                      className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-all ${
                         type === t.value ? 'bg-[var(--cipher-accent-bg)] text-[var(--cipher-text)]' : 'hover:bg-white/[0.04] text-[var(--cipher-text-muted)] hover:text-[var(--cipher-text)]'
                       }`}
                     >
-                      <span className="text-[16px]">{t.icon}</span>
+                      <span className="flex items-center justify-center w-5 h-5">{t.icon}</span>
                       <div>
                         <div className="text-[13px] font-medium">{t.label}</div>
                         <div className="text-[11px] opacity-60">{t.desc}</div>
@@ -165,6 +221,39 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
             </div>
           )}
 
+          {/* Docker engine & container fields */}
+          {type === 'docker' && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-[var(--cipher-text-muted)]">
+                    Motor del Contenedor
+                  </label>
+                  <select
+                    className="w-full rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-3 py-2 text-[13px] text-[var(--cipher-text)] outline-none"
+                    value={dockerEngine}
+                    onChange={e => setDockerEngine(e.target.value as any)}
+                  >
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="mysql">MySQL/MariaDB</option>
+                    <option value="mssql">SQL Server</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-[var(--cipher-text-muted)]">
+                    Contenedor (Opcional)
+                  </label>
+                  <input
+                    className={inputCls}
+                    placeholder="ej. db_postgres"
+                    value={containerName}
+                    onChange={e => setContainerName(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Network DB fields */}
           {type !== 'sqlite' && (
             <>
@@ -177,7 +266,13 @@ export default function ConnectionModal({ onConnect, onClose, isConnecting, erro
                   <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-[var(--cipher-text-muted)]">Puerto</label>
                   <input
                     className={inputCls}
-                    placeholder={type === 'postgresql' ? '5432' : type === 'mssql' ? '1433' : '3306'}
+                    placeholder={
+                      type === 'postgresql' || (type === 'docker' && dockerEngine === 'postgresql')
+                        ? '5432'
+                        : type === 'mssql' || (type === 'docker' && dockerEngine === 'mssql')
+                        ? '1433'
+                        : '3306'
+                    }
                     value={port}
                     onChange={e => setPort(e.target.value)}
                   />

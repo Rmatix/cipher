@@ -174,6 +174,74 @@ export default function AIPanel() {
   const [ollamaModels, setOllamaModels] = useState<ModelGroup | null>(null)
   const [lmstudioModels, setLmstudioModels] = useState<ModelGroup | null>(null)
 
+  // ── Agentic Guidelines & Skills ─────────────────────────
+  const [agenticGuidelines, setAgenticGuidelines] = useState<string>('')
+  const [activeSkills, setActiveSkills] = useState<{ name: string; content: string }[]>([])
+
+  useEffect(() => {
+    if (!currentFolder) {
+      setAgenticGuidelines('')
+      setActiveSkills([])
+      return
+    }
+
+    const loadGuidelinesAndSkills = async () => {
+      let guidelines = ''
+      
+      // Load CLAUDE.md
+      try {
+        const claudeContent = await window.cipher.readFile(`${currentFolder}/CLAUDE.md`)
+        if (claudeContent) {
+          guidelines += `\n--- CLAUDE.md ---\n${claudeContent}\n`
+        }
+      } catch (e) {}
+
+      // Load AGENTS.md
+      try {
+        const agentsRootContent = await window.cipher.readFile(`${currentFolder}/AGENTS.md`)
+        if (agentsRootContent) {
+          guidelines += `\n--- AGENTS.md ---\n${agentsRootContent}\n`
+        }
+      } catch (e) {}
+
+      // Load .agents/AGENTS.md
+      try {
+        const agentsSubContent = await window.cipher.readFile(`${currentFolder}/.agents/AGENTS.md`)
+        if (agentsSubContent) {
+          guidelines += `\n--- .agents/AGENTS.md ---\n${agentsSubContent}\n`
+        }
+      } catch (e) {}
+
+      setAgenticGuidelines(guidelines)
+
+      // Load skills
+      try {
+        const skillsPath = `${currentFolder}/.agents/skills`
+        const entries = await window.cipher.readDirectory(skillsPath)
+        const loadedSkills: { name: string; content: string }[] = []
+        
+        if (entries && Array.isArray(entries)) {
+          for (const entry of entries) {
+            if (entry.isDirectory) {
+              const skillName = entry.name
+              try {
+                const skillContent = await window.cipher.readFile(`${skillsPath}/${skillName}/SKILL.md`)
+                if (skillContent) {
+                  loadedSkills.push({ name: skillName, content: skillContent })
+                }
+              } catch (e) {}
+            }
+          }
+        }
+        setActiveSkills(loadedSkills)
+      } catch (e) {
+        setActiveSkills([])
+      }
+    }
+
+    loadGuidelinesAndSkills()
+  }, [currentFolder])
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const activeStreamId = useRef<string | null>(null)
 
@@ -373,7 +441,7 @@ export default function AIPanel() {
   }
 
   const modes = [
-    { id: 'chat' as const, icon: MessageSquare, label: 'Chat' },
+    { id: 'chat' as const, icon: MessageSquare, label: 'Agente' },
     { id: 'plan' as const, icon: FileText, label: 'Plan' },
     { id: 'dev' as const, icon: Code2, label: 'Dev' },
     { id: 'composer' as const, icon: Layers, label: 'Composer' },
@@ -382,6 +450,14 @@ export default function AIPanel() {
   const getSystemPrompt = useCallback(() => {
     const memorySection = projectMemory?.trim()
       ? `\n\n--- MEMORIA DEL PROYECTO ---\n${projectMemory}\n--- FIN MEMORIA ---`
+      : ''
+
+    const guidelinesSection = agenticGuidelines?.trim()
+      ? `\n\n--- DIRECTRICES AGENTICAS ---\n${agenticGuidelines}\n--- FIN DIRECTRICES ---`
+      : ''
+
+    const skillsSection = activeSkills.length > 0
+      ? `\n\n--- HABILIDADES / SKILLS DISPONIBLES ---\n${activeSkills.map(s => `[Skill: ${s.name}]\n${s.content}`).join('\n\n')}\n--- FIN HABILIDADES ---`
       : ''
 
     const fileExt = activeTabPath ? activeTabPath.split('.').pop() : ''
@@ -394,17 +470,19 @@ export default function AIPanel() {
       dynamicRules = '\n\n--- DIRECTRICES DE CONTEXTO (SQL) ---\n- Usa sintaxis ANSI SQL.\n- Optimiza consultas.'
     }
 
+    let modePrompt = ''
     if (aiMode === 'plan') {
-      return `Eres un arquitecto de software experto. Genera un plan claro con objetivos, estructura de archivos, pasos de desarrollo y riesgos.${memorySection}${dynamicRules}`
+      modePrompt = `Eres un arquitecto de software experto. Genera un plan claro con objetivos, estructura de archivos, pasos de desarrollo y riesgos.`
+    } else if (aiMode === 'dev') {
+      modePrompt = `Eres un desarrollador experto. Responde con codigo real, concreto y listo para integrar cuando el usuario lo pida.`
+    } else if (aiMode === 'composer') {
+      modePrompt = `Eres un ingeniero de software experto en modificar multiples archivos a la vez. Cuando el usuario te pida cambios, responde con bloques de codigo marcados asi:\n\n\`\`\`filepath:ruta/al/archivo.ext\n// contenido del archivo\n\`\`\`\n\nSiempre muestra el archivo completo modificado, no solo el fragmento. Usa rutas relativas al proyecto.`
+    } else {
+      modePrompt = `Eres un asistente de codigo experto.`
     }
-    if (aiMode === 'dev') {
-      return `Eres un desarrollador experto. Responde con codigo real, concreto y listo para integrar cuando el usuario lo pida.${memorySection}${dynamicRules}`
-    }
-    if (aiMode === 'composer') {
-      return `Eres un ingeniero de software experto en modificar multiples archivos a la vez. Cuando el usuario te pida cambios, responde con bloques de codigo marcados asi:\n\n\`\`\`filepath:ruta/al/archivo.ext\n// contenido del archivo\n\`\`\`\n\nSiempre muestra el archivo completo modificado, no solo el fragmento. Usa rutas relativas al proyecto.${memorySection}${dynamicRules}`
-    }
-    return `Eres un asistente de codigo experto.${memorySection}${dynamicRules}`
-  }, [aiMode, projectMemory])
+
+    return `${modePrompt}${memorySection}${guidelinesSection}${skillsSection}${dynamicRules}`
+  }, [aiMode, projectMemory, agenticGuidelines, activeSkills, activeTabPath])
 
   const getContext = useCallback(async () => {
     if (!activeTabPath) return null
@@ -696,6 +774,24 @@ export default function AIPanel() {
             <KeyRound size={14} />
             Agregar API key de un modelo
           </button>
+        </div>
+      )}
+
+      {/* Agentic Guidelines & Skills indicators */}
+      {(agenticGuidelines || activeSkills.length > 0) && (
+        <div className="flex flex-wrap gap-2 px-5 pb-4">
+          {agenticGuidelines && (
+            <div className="flex items-center gap-1.5 rounded-lg border border-[var(--cipher-accent)]/20 bg-[var(--cipher-accent-bg)]/30 px-2.5 py-1 text-[11px] text-[var(--cipher-accent)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--cipher-accent)] animate-pulse" />
+              Directrices agenticas activas
+            </div>
+          )}
+          {activeSkills.length > 0 && (
+            <div className="flex items-center gap-1.5 rounded-lg border border-purple-500/20 bg-purple-500/5 px-2.5 py-1 text-[11px] text-purple-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+              {activeSkills.length} {activeSkills.length === 1 ? 'Skill cargada' : 'Skills cargadas'}
+            </div>
+          )}
         </div>
       )}
 
