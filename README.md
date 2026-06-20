@@ -18,8 +18,9 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 
 ## Qué hay de nuevo en v2.8.0
 
-### 🤖 Agente Autónomo (Reemplaza el Chat de IA)
+### 🤖 Agente Autónomo
 - El panel de IA ahora actúa como un **Agente Autónomo** moderno, capaz de planificar, ejecutar y componer cambios en múltiples archivos simultáneamente.
+- **Directrices & Skills**: Soporte interactivo para cargar e inyectar directrices globales (`AGENTS.md`) y habilidades personalizadas (`.agents/skills/**/SKILL.md`) desde el panel de Agentes en Configuración.
 - Burbujas de diálogo limpias, sin ruido visual. Espaciado consistente y estructura clara de respuestas.
 - Soporte a **Composer**: modificación paralela de archivos con un panel de revisión de cambios antes de aplicar.
 
@@ -28,20 +29,19 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 - Registra y monitoriza servidores Stdio (locales) y SSE (HTTP remotos) de manera visual.
 - Completamente desvinculado del chat del agente para mantener la arquitectura limpia.
 
-### 💾 SQL Explorer — Creación de SQLite Físico
+### 💾 SQL Explorer & Conexiones Docker
 - Ahora puedes **crear nuevas bases de datos SQLite (.db)** directamente desde Cipher Studio.
-- En el modal de Nueva Conexión, marca "Crear nueva base de datos física (.db)" y el archivo se inicializa en disco de inmediato.
-- Soporte completo para PostgreSQL, MySQL/MariaDB y SQL Server además de SQLite.
+- Soporte de conexiones nativas a **Contenedores Docker** con sub-motores (PostgreSQL, MySQL, SQL Server) y nombres de contenedor.
+- Iconografía mejorada con **logotipos SVG originales y oficiales** para SQLite, PostgreSQL, MySQL, SQL Server y Docker.
 
 ### ⚙️ Panel de Ajustes Rework
 - 5 pestañas con iconos en la barra lateral: Apariencia, API Keys, Atajos, Editor y Agentes.
-- Cada sección tiene su propio espacio, sin scroll interminable.
+- Pestaña de **Agentes** interactiva que te permite editar tus directrices globales y crear/eliminar tus propias Skills sin salir del editor.
 - API keys configurables por proveedor y por modelo individual.
 
-### 🎨 Rediseño Estético Global
+### 🎨 Rediseño Estético Global e Iconografía Expandida
 - Interfaz más técnica y profesional: paleta desaturada, tipografía limpia, sin animaciones excesivas.
-- Sidebar compacto de 16rem. Micro-animaciones sutiles en hover.
-- Iconos de lenguajes nativos SVG: Go, Rust, Python, Ruby, C/C++, SQL, Docker, GitHub Actions y más.
+- Mapeo visual nativo con logotipos reales en el explorador de archivos para: Dockerfile (`Dockerfile.warp`, etc.), `.npmrc` y ficheros de bloqueo de pnpm (`pnpm.svg`).
 
 ## Caracteristicas
 

@@ -30,30 +30,27 @@ jobs:
         run: pnpm run dist:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v2.8.0
-          name: "Cipher v2.8.0 — Composer Multi-archivo, Persistencia & UI Premium"
+          name: "Cipher Studio v2.8.0 — Agente IA, SQL Viewer & Custom Skills"
           body: |
-            ## Cipher v2.8.0 — Release Oficial
+            ## Cipher Studio v2.8.0 — Release Oficial
 
-            Esta versión consolida la unificación del Parche 7 (soporte multi-archivo estilo Composer) y el Parche 2.5.2, ofreciendo mejoras de rendimiento, persistencia de espacio completa, arquitectura agéntica basada en MCP y una UI Premium fluida.
+            Esta versión consolida el producto unificado **Cipher Studio**, integrando el Agente de IA con soporte de directrices agénticas y habilidades personalizadas, el SQL Viewer con creación de bases de datos físicas SQLite y conexiones a contenedores Docker, y un diseño visual premium y serio.
 
             ---
 
             ### 🚀 Características Principales
 
-            - **Arquitectura de Agentes y MCP**: Soporte nativo para Model Context Protocol y ejecución de Skills.
-            - **Persistencia de Pestañas Avanzada**: Restauración asíncrona optimizada de pestañas y archivos activos por proyecto sin bloquear el hilo principal.
-            - **Composer Multi-Archivo**: Edición concurrente de múltiples ficheros mediante sub-agentes especializados.
-            - **Instalador Personalizado**: Nuevo asistente NSIS con 3 perfiles de instalación optimizados (Usuario, Developer, Completo).
-            - **Seguridad Garantizada**: Dependencias críticas actualizadas (DOMPurify, form-data) y verificado 100% limpio en VirusTotal contra falsos positivos.
+            - **🤖 Agente Autónomo**: Soporte dinámico para inyección de directrices globales (`AGENTS.md`) y creación/administración interactiva de habilidades personalizadas (`.agents/skills/`).
+            - **🔌 Infraestructura MCP**: Panel lateral de Model Context Protocol independiente del chat.
+            - **💾 SQL Viewer & SQLite físico**: Visualizador de bases de datos integrado, capacidad de crear bases de datos SQLite locales físicas y soporte de conexiones para contenedores Docker con SVGs de marca oficiales.
+            - **📁 Iconografía de Archivos Expandida**: Mapeo visual nativo de Dockerfile, .npmrc y archivos de bloqueo de pnpm (`pnpm.svg`).
+            - **🎨 Diseño Premium**: Nueva identidad visual unificada, reduciendo el ruido visual para un entorno de programación serio y profesional.
           files: |
-            release/Cipher Lite Setup 2.8.0.exe
-            release/Cipher Dev Setup 2.8.0.exe
             release/Cipher Studio Setup 2.8.0.exe
-            release/Cipher Studio 2.8.0-win.zip
+            release/Cipher Studio-2.8.0-win.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
