@@ -14,7 +14,7 @@
 
 Cipher Studio es un editor de código open source para Windows, construido con Electron, React, TypeScript, Monaco Editor, Rust y Node.js. Incluye un Agente de IA Autónomo multi-proveedor, soporte nativo al Model Context Protocol (MCP), un Explorador SQL con creación de bases de datos físicas, terminal integrada y Git.
 
-> Estado: versión `v2.8.0` estable. Verificado 100% libre de malware con VirusTotal. Se cambio el nombre de Cipher code editor a Cipher studio, peo sige siendo igual.
+> Estado: versión `v2.8.0` estable. Verificado 100% libre de malware con VirusTotal. Se cambio el nombre de Cipher code editor a Cipher studio, pero sige siendo igual.
 
 ## Qué hay de nuevo en v2.8.0
 
