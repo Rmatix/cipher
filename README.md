@@ -41,7 +41,7 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 
 ### 🎨 Rediseño Estético Global e Iconografía Expandida
 - Interfaz más técnica y profesional: paleta desaturada, tipografía limpia, sin animaciones excesivas.
-- Mapeo visual nativo con logotipos reales en el explorador de archivos para: Dockerfile (`Dockerfile.warp`, etc.), `.npmrc` y ficheros de bloqueo de pnpm (`pnpm.svg`).
+- Mapeo visual nativo con logotipos reales en el explorador de archivos para: Docker, npm y pnpm.
 
 ## Caracteristicas
 
