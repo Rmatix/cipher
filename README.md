@@ -367,7 +367,7 @@ Si Cipher te parece util y quieres apoyar su crecimiento, puedes donar o contact
 
 [Rmatix/Rmatix](https://github.com/Rmatix/Rmatix)
 
-Los donativos ayudan a mejorar el proyecto con mejores builds, firma digital, pruebas en mas equipos, diseno, documentacion, nuevas funciones de IA y mas tiempo de desarrollo.
+Los donativos ayudan a mejorar el proyecto con mejores builds, firma digital, pruebas en mas equipos, diseño, documentacion, nuevas funciones de IA y mas tiempo de desarrollo.
 
 ## Repositorio
 
