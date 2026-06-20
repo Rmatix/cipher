@@ -444,6 +444,21 @@ ipcMain.handle('save-file', async (event, filePath, content) => {
   return true
 })
 
+ipcMain.handle('delete-file', async (event, filePath) => {
+  const safePath = requireAllowedPath(filePath)
+  if (fs.existsSync(safePath)) {
+    fs.unlinkSync(safePath)
+    // Try to remove directory if it is empty
+    const dir = path.dirname(safePath)
+    try {
+      if (fs.readdirSync(dir).length === 0) {
+        fs.rmdirSync(dir)
+      }
+    } catch (e) {}
+  }
+  return true
+})
+
 // ── Git ──────────────────────────────────────────────────
 
 const { execFileSync } = require('child_process')

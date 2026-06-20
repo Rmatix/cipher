@@ -78,9 +78,12 @@ const fileNameIcons: Record<string, string> = {
   'license': 'license.svg',
   'license.md': 'license.svg',
   'license.txt': 'license.svg',
+  '.npmrc': 'npm.svg',
   'package-lock.json': 'npm.svg',
   'package.json': 'nodejs.svg',
-  'pnpm-lock.yaml': 'lock.svg',
+  'pnpm-lock.yaml': 'pnpm.svg',
+  'pnpm-workspace.yaml': 'pnpm.svg',
+  'pnpm-workspace.yml': 'pnpm.svg',
   'readme.md': 'readme.svg',
   'tsconfig.json': 'typescript-def.svg',
   'tsconfig.app.json': 'typescript-def.svg',
@@ -233,6 +236,9 @@ export function getFileIconColor(fileName: string): string {
 export function getMaterialFileIcon(fileName: string): string {
   const lowerName = fileName.toLowerCase()
   const ext = getFileExtension(fileName)
+  if (lowerName.startsWith('dockerfile') || lowerName.includes('docker-compose') || ext === 'dockerfile') {
+    return `${materialIconBase}docker.svg`
+  }
   const icon = fileNameIcons[lowerName] || extensionIcons[ext] || 'file.svg'
   return `${materialIconBase}${icon}`
 }

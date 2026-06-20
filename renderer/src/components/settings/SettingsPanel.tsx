@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
   Bot, Code2, Focus, Keyboard, KeyRound,
   MonitorCheck, Palette, RotateCcw, Save, Server,
-  SlidersHorizontal, TestTube2, X,
+  SlidersHorizontal, TestTube2, X, Trash2, Plus,
 } from 'lucide-react'
 import { useStore, BUILT_IN_THEMES } from '../../store/useStore'
 
@@ -182,9 +182,107 @@ export default function SettingsPanel() {
   const {
     keyBindings, setKeyBinding, resetKeyBindings,
     toggleFocusMode, themeId, setTheme,
+    currentFolder,
   } = useStore()
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance')
+
+  // ── Agentic Guidelines & Skills State ───────────────────
+  const [agentsMdContent, setAgentsMdContent] = useState('')
+  const [skillsList, setSkillsList] = useState<{ name: string; content: string; desc?: string }[]>([])
+  const [editingSkillName, setEditingSkillName] = useState('')
+  const [editingSkillDesc, setEditingSkillDesc] = useState('')
+  const [editingSkillPrompt, setEditingSkillPrompt] = useState('')
+  const [showSkillForm, setShowSkillForm] = useState(false)
+
+  useEffect(() => {
+    if (activeTab !== 'agents' || !currentFolder) return
+
+    const loadData = async () => {
+      try {
+        const content = await window.cipher.readFile(`${currentFolder}/AGENTS.md`)
+        setAgentsMdContent(content || '')
+      } catch (e) {
+        setAgentsMdContent('')
+      }
+
+      try {
+        const skillsPath = `${currentFolder}/.agents/skills`
+        const entries = await window.cipher.readDirectory(skillsPath)
+        const loaded: { name: string; content: string; desc?: string }[] = []
+        if (entries && Array.isArray(entries)) {
+          for (const entry of entries) {
+            if (entry.isDirectory) {
+              try {
+                const skillContent = await window.cipher.readFile(`${skillsPath}/${entry.name}/SKILL.md`)
+                if (skillContent) {
+                  let desc = ''
+                  const match = skillContent.match(/description:\s*"(.*?)"/) || skillContent.match(/description:\s*'(.*?)'/) || skillContent.match(/description:\s*([^\r\n]+)/)
+                  if (match) desc = match[1]
+                  loaded.push({ name: entry.name, content: skillContent, desc })
+                }
+              } catch (e) {}
+            }
+          }
+        }
+        setSkillsList(loaded)
+      } catch (e) {
+        setSkillsList([])
+      }
+    }
+
+    loadData()
+  }, [activeTab, currentFolder])
+
+  const saveAgentsMd = async () => {
+    if (!currentFolder) return
+    try {
+      await window.cipher.saveFile(`${currentFolder}/AGENTS.md`, agentsMdContent)
+      showStatus('Directrices guardadas en AGENTS.md')
+    } catch (err: any) {
+      showStatus(`Error al guardar: ${err.message}`)
+    }
+  }
+
+  const saveSkill = async () => {
+    if (!currentFolder || !editingSkillName.trim()) return
+    const slug = editingSkillName.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-')
+    const skillDir = `${currentFolder}/.agents/skills/${slug}`
+    const filePath = `${skillDir}/SKILL.md`
+    const fileContent = `---
+name: "${editingSkillName.trim()}"
+description: "${editingSkillDesc.trim()}"
+---
+
+${editingSkillPrompt.trim()}`
+
+    try {
+      await window.cipher.saveFile(filePath, fileContent)
+      showStatus(`Skill '${slug}' guardada.`)
+      setSkillsList(prev => {
+        const filtered = prev.filter(s => s.name !== slug)
+        return [...filtered, { name: slug, content: fileContent, desc: editingSkillDesc.trim() }]
+      })
+      setEditingSkillName('')
+      setEditingSkillDesc('')
+      setEditingSkillPrompt('')
+      setShowSkillForm(false)
+    } catch (err: any) {
+      showStatus(`Error al guardar skill: ${err.message}`)
+    }
+  }
+
+  const deleteSkill = async (name: string) => {
+    if (!currentFolder) return
+    const filePath = `${currentFolder}/.agents/skills/${name}/SKILL.md`
+    try {
+      await (window as any).cipher.deleteFile(filePath)
+      showStatus(`Skill '${name}' eliminada.`)
+      setSkillsList(prev => prev.filter(s => s.name !== name))
+    } catch (err: any) {
+      showStatus(`Error al eliminar: ${err.message}`)
+    }
+  }
 
   const [providerKeys, setProviderKeys] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -523,9 +621,127 @@ export default function SettingsPanel() {
   )
 
   const renderAgents = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 max-h-[85vh] overflow-y-auto pr-1">
+      {/* Directrices Agenticas */}
+      <div className="border-b border-[var(--cipher-border)] pb-6">
+        <SectionHeader
+          icon={<Bot size={17} />}
+          color="text-[#60cdff]"
+          bg="bg-[#60cdff]/10"
+          title="Directrices Agénticas Globales"
+          sub="Configura instrucciones personalizadas que el agente seguirá siempre."
+        />
+        <div className="space-y-3">
+          <textarea
+            className="w-full h-32 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-bg)] p-3 text-[13px] text-[var(--cipher-text)] outline-none focus:border-[var(--cipher-accent)] resize-none font-mono"
+            placeholder="Introduce directrices globales del agente (ej. Siempre responde en español, usa la arquitectura limpia...)"
+            value={agentsMdContent}
+            onChange={e => setAgentsMdContent(e.target.value)}
+          />
+          <button
+            onClick={saveAgentsMd}
+            disabled={!currentFolder}
+            className="flex h-9 items-center justify-center gap-2 rounded-xl bg-[var(--cipher-accent)] px-4 text-[12px] font-semibold text-black transition-all hover:bg-[var(--cipher-accent)]/90 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Save size={13} /> Guardar directrices (AGENTS.md)
+          </button>
+          {!currentFolder && (
+            <p className="text-[11px] text-[var(--cipher-text-muted)] italic">Abre un proyecto para editar AGENTS.md</p>
+          )}
+        </div>
+      </div>
+
+      {/* Skills del Proyecto */}
+      <div className="border-b border-[var(--cipher-border)] pb-6">
+        <SectionHeader
+          icon={<Code2 size={17} />}
+          color="text-purple-400"
+          bg="bg-purple-500/10"
+          title="Skills del Proyecto (.agents/skills)"
+          sub="Habilidades y herramientas personalizadas que el agente puede cargar."
+        />
+
+        {/* Skills list */}
+        <div className="space-y-2 mb-4">
+          {skillsList.length === 0 ? (
+            <div className="text-[12px] text-[var(--cipher-text-muted)] italic">No hay skills definidas en este proyecto.</div>
+          ) : (
+            skillsList.map(skill => (
+              <div key={skill.name} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] p-3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold text-[var(--cipher-text)] truncate">{skill.name}</div>
+                  <div className="text-[11px] text-[var(--cipher-text-muted)] truncate">{skill.desc || 'Sin descripción'}</div>
+                </div>
+                <button
+                  onClick={() => deleteSkill(skill.name)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cipher-text-muted)] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                  title="Eliminar skill"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Add Skill button / form */}
+        {!showSkillForm ? (
+          <button
+            onClick={() => setShowSkillForm(true)}
+            disabled={!currentFolder}
+            className="flex h-9 items-center justify-center gap-2 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] px-4 text-[12px] text-[var(--cipher-text)] transition-all hover:border-[var(--cipher-accent)] hover:bg-[var(--cipher-accent-bg)] disabled:opacity-40"
+          >
+            <Plus size={13} /> Crear Habilidad / Skill
+          </button>
+        ) : (
+          <div className="rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--cipher-border)] pb-2 mb-1">
+              <span className="text-[12px] font-bold text-[var(--cipher-text)]">Nueva Skill</span>
+              <button onClick={() => setShowSkillForm(false)} className="text-[var(--cipher-text-muted)] hover:text-white">
+                <X size={14} />
+              </button>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase">Nombre de la Skill (slug)</label>
+              <input
+                type="text"
+                placeholder="ej. custom-linter"
+                value={editingSkillName}
+                onChange={e => setEditingSkillName(e.target.value)}
+                className="w-full rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-bg)] px-3 py-2 text-[12px] text-[var(--cipher-text)] outline-none"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase">Descripción</label>
+              <input
+                type="text"
+                placeholder="ej. Valida el formato del archivo..."
+                value={editingSkillDesc}
+                onChange={e => setEditingSkillDesc(e.target.value)}
+                className="w-full rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-bg)] px-3 py-2 text-[12px] text-[var(--cipher-text)] outline-none"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-[var(--cipher-text-muted)] uppercase">Instrucciones del Prompt</label>
+              <textarea
+                placeholder="Define los pasos, comandos o reglas de la skill..."
+                value={editingSkillPrompt}
+                onChange={e => setEditingSkillPrompt(e.target.value)}
+                className="w-full h-24 rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-bg)] p-3 text-[12px] text-[var(--cipher-text)] outline-none resize-none font-mono"
+              />
+            </div>
+            <button
+              onClick={saveSkill}
+              className="flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-purple-500 text-white text-[12px] font-semibold transition-all hover:bg-purple-600"
+            >
+              <Save size={13} /> Guardar Skill (.agents/skills)
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* External agents */}
-      <div>
+      <div className="border-b border-[var(--cipher-border)] pb-6">
         <SectionHeader
           icon={<Bot size={17} />}
           color="text-[#56d364]"

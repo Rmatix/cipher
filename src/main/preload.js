@@ -48,6 +48,7 @@ contextBridge.exposeInMainWorld('cipher', {
   readFile: (path) => ipcRenderer.invoke('read-file', path),
   readFileDataUrl: (path) => ipcRenderer.invoke('read-file-data-url', path),
   saveFile: (path, content) => ipcRenderer.invoke('save-file', path, content),
+  deleteFile: (path) => ipcRenderer.invoke('delete-file', path),
   portsList: () => ipcRenderer.invoke('ports-list'),
   cloudStatus: () => ipcRenderer.invoke('cloud-status'),
   ollamaList: (url) => ipcRenderer.invoke('ollama-list', url),
