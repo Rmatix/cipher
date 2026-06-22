@@ -39,10 +39,10 @@ function resolveModel(
 }
 
 function severityLabel(s: number) {
-  if (s === 8) return { label: 'Error',      color: 'text-[#ff6b6b]', bg: 'bg-[#ff6b6b]/10', border: 'border-[#ff6b6b]/20', icon: AlertCircle }
-  if (s === 4) return { label: 'Advertencia', color: 'text-[#ffd93d]', bg: 'bg-[#ffd93d]/08', border: 'border-[#ffd93d]/20', icon: AlertTriangle }
+  if (s === 8) return { label: 'Error',      color: 'text-[var(--cipher-status-err)]', bg: 'bg-[var(--cipher-status-err)]/10', border: 'border-[var(--cipher-status-err)]/20', icon: AlertCircle }
+  if (s === 4) return { label: 'Advertencia', color: 'text-[var(--cipher-status-warn)]', bg: 'bg-[var(--cipher-status-warn)]/08', border: 'border-[var(--cipher-status-warn)]/20', icon: AlertTriangle }
   if (s === 2) return { label: 'Info',        color: 'text-[#4fc3f7]', bg: 'bg-[#4fc3f7]/08', border: 'border-[#4fc3f7]/20', icon: Info }
-  return { label: 'Sugerencia',               color: 'text-[#9d87ff]', bg: 'bg-[#9d87ff]/08', border: 'border-[#9d87ff]/20', icon: Lightbulb }
+  return { label: 'Sugerencia',               color: 'text-[var(--cipher-violet-soft)]', bg: 'bg-[var(--cipher-violet-soft)]/08', border: 'border-[var(--cipher-violet-soft)]/20', icon: Lightbulb }
 }
 
 function markerId(marker: { filePath: string; startLineNumber: number; startColumn: number; message: string }) {
@@ -58,7 +58,7 @@ function newStreamId() {
 
 function StreamingCursor() {
   return (
-    <span className="ml-0.5 inline-block h-[12px] w-[2px] translate-y-[1px] animate-pulse rounded-sm bg-[#7c4dff]" />
+    <span className="ml-0.5 inline-block h-[12px] w-[2px] translate-y-[1px] animate-pulse rounded-sm bg-[var(--cipher-violet)]" />
   )
 }
 
@@ -228,11 +228,11 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
   if (actionableMarkers.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2ea043]/10">
-          <AlertCircle size={26} className="text-[#3fb950]" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--cipher-status-ok)]/10">
+          <AlertCircle size={26} className="text-[var(--cipher-status-ok)]" />
         </div>
         <p className="text-[14px] font-medium text-[#dce4ff]">Sin errores ni advertencias</p>
-        <p className="text-[12px] text-[#6b7280]">
+        <p className="text-[12px] text-[var(--cipher-muted-ink)]">
           Cuando Monaco detecte un problema accionable, aparecera aqui para explicarlo o sugerir un fix.
         </p>
       </div>
@@ -248,7 +248,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
         <button
           onClick={() => setFilterSeverity(filterSeverity === 8 ? null : 8)}
           className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] transition-all ${
-            filterSeverity === 8 ? 'bg-[#ff6b6b]/20 text-[#ff9a9a]' : 'text-[#ff6b6b] hover:bg-[#ff6b6b]/10'
+            filterSeverity === 8 ? 'bg-[var(--cipher-status-err)]/20 text-[var(--cipher-status-err)]' : 'text-[var(--cipher-status-err)] hover:bg-[var(--cipher-status-err)]/10'
           }`}
         >
           <AlertCircle size={12} />
@@ -257,7 +257,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
         <button
           onClick={() => setFilterSeverity(filterSeverity === 4 ? null : 4)}
           className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] transition-all ${
-            filterSeverity === 4 ? 'bg-[#ffd93d]/20 text-[#ffe97d]' : 'text-[#ffd93d] hover:bg-[#ffd93d]/10'
+            filterSeverity === 4 ? 'bg-[var(--cipher-status-warn)]/20 text-[var(--cipher-status-warn)]' : 'text-[var(--cipher-status-warn)] hover:bg-[var(--cipher-status-warn)]/10'
           }`}
         >
           <AlertTriangle size={12} />
@@ -267,7 +267,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
         {isStreaming && (
           <button
             onClick={stopStream}
-            className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#ff6b6b]/10 px-2.5 py-1.5 text-[12px] text-[#ff9a9a] transition-all hover:bg-[#ff6b6b]/20"
+            className="ml-auto flex items-center gap-1.5 rounded-lg bg-[var(--cipher-status-err)]/10 px-2.5 py-1.5 text-[12px] text-[var(--cipher-status-err)] transition-all hover:bg-[var(--cipher-status-err)]/20"
           >
             <Square size={11} fill="currentColor" />
             Detener
@@ -280,10 +280,10 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
         {Object.entries(byFile).map(([file, markers]) => (
           <div key={file} className="border-b border-white/[0.05]">
             {/* File header */}
-            <div className="sticky top-0 z-10 flex items-center gap-2 bg-[#0d0f1a] px-5 py-2.5">
+            <div className="sticky top-0 z-10 flex items-center gap-2 bg-[var(--cipher-surface-alt)] px-5 py-2.5">
               <WrapText size={12} className="text-[#4a5070]" />
               <span className="text-[12px] font-semibold text-[#7f8bb0]">{file}</span>
-              <span className="ml-auto rounded-full bg-white/[0.06] px-2 py-0.5 text-[11px] text-[#6b7280]">
+              <span className="ml-auto rounded-full bg-white/[0.06] px-2 py-0.5 text-[11px] text-[var(--cipher-muted-ink)]">
                 {markers.length}
               </span>
             </div>
@@ -306,7 +306,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
                       <p className="break-words text-[13px] leading-relaxed text-[#dce4ff]">
                         {marker.message}
                       </p>
-                      <div className="flex items-center gap-3 text-[11px] text-[#5a6080]">
+                      <div className="flex items-center gap-3 text-[11px] text-[var(--cipher-text-muted)]">
                         <span className={`font-medium ${color}`}>{label}</span>
                         {marker.source && <span>{marker.source}</span>}
                         <span>Ln {marker.startLineNumber}, Col {marker.startColumn}</span>
@@ -319,7 +319,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
                         onClick={() => askAI(marker, 'explain')}
                         disabled={!!isStreaming}
                         title="Explicar con IA"
-                        className="flex h-7 items-center gap-1 rounded-lg border border-white/[0.07] bg-white/[0.04] px-2 text-[11px] text-[#9d87ff] transition-all hover:border-[#7a5cff]/40 hover:bg-[#7a5cff]/12 hover:text-white disabled:opacity-40"
+                        className="flex h-7 items-center gap-1 rounded-lg border border-white/[0.07] bg-white/[0.04] px-2 text-[11px] text-[var(--cipher-violet-soft)] transition-all hover:border-[var(--cipher-violet)]/40 hover:bg-[var(--cipher-violet)]/12 hover:text-white disabled:opacity-40"
                       >
                         {isStreaming && response?.type === 'explain'
                           ? <Loader2 size={11} className="animate-spin" />
@@ -342,7 +342,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
                       {response && (
                         <button
                           onClick={() => setExpanded(prev => ({ ...prev, [mid]: !isExpanded }))}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg text-[#5a6080] transition-all hover:text-white"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--cipher-text-muted)] transition-all hover:text-white"
                         >
                           {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                         </button>
@@ -350,7 +350,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
                       {response && !isStreaming && (
                         <button
                           onClick={() => setResponses(prev => { const n = { ...prev }; delete n[mid]; return n })}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg text-[#5a6080] transition-all hover:text-[#ff6b6b]"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--cipher-text-muted)] transition-all hover:text-[var(--cipher-status-err)]"
                         >
                           <X size={13} />
                         </button>
@@ -362,7 +362,7 @@ Proporciona el código corregido específico para esta línea. Muestra solo el f
                   {response && isExpanded && (
                     <div className={`mx-4 mb-3 rounded-xl border ${border} bg-[#070912] p-4`}>
                       <div className="mb-2 flex items-center gap-2">
-                        <Bot size={12} className="text-[#7c4dff]" />
+                        <Bot size={12} className="text-[var(--cipher-violet)]" />
                         <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b6b8a]">
                           {response.type === 'explain' ? 'Explicación' : 'Fix sugerido'}
                         </span>
@@ -426,7 +426,7 @@ function ThinkingAccordion({ content, active }: { content: string; active?: bool
         className="flex w-full items-center justify-between px-3 py-2 text-[#7f8bb0] hover:bg-white/[0.04]"
       >
         <span className="flex items-center gap-2 font-medium">
-          <Loader2 size={12} className={`text-[#9d87ff] ${active ? 'animate-spin' : ''}`} />
+          <Loader2 size={12} className={`text-[var(--cipher-violet-soft)] ${active ? 'animate-spin' : ''}`} />
           {active ? 'Pensando...' : 'Proceso de pensamiento'}
         </span>
         <ChevronRight size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
@@ -554,7 +554,7 @@ function renderInlineMarkdown(text: string): React.ReactNode[] {
       return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>;
     }
     if (part.startsWith('*') && part.endsWith('*')) {
-      return <em key={i} className="italic text-[#b7c1de]">{part.slice(1, -1)}</em>;
+      return <em key={i} className="italic text-[var(--cipher-text)]">{part.slice(1, -1)}</em>;
     }
     if (part.startsWith('`') && part.endsWith('`')) {
       return <code key={i} className="rounded bg-[#070912] px-1.5 py-0.5 font-mono text-[12px] text-[#4fc3f7] border border-white/[0.04]">{part.slice(1, -1)}</code>;

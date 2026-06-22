@@ -62,7 +62,7 @@ export default function HistoryPanel() {
         <span className="text-[12px] text-[#7e8bae]">{sorted.length} snapshots</span>
         <button
           onClick={clearAllHistory}
-          className="flex h-8 items-center gap-2 rounded-lg px-2.5 text-[12px] text-[#8f9bc0] transition-all hover:bg-[#ff6b6b]/12 hover:text-[#ff9c9c]"
+          className="flex h-8 items-center gap-2 rounded-lg px-2.5 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:bg-[var(--cipher-status-err)]/12 hover:text-[var(--cipher-status-err)]"
           title="Limpiar historial"
         >
           <Trash2 size={13} />
@@ -78,7 +78,7 @@ export default function HistoryPanel() {
               key={entry.id}
               className={`mb-2 rounded-lg border px-3 py-3 transition-all ${
                 isActive
-                  ? 'border-[#7a5cff]/28 bg-[#7a5cff]/8'
+                  ? 'border-[var(--cipher-violet)]/28 bg-[var(--cipher-violet)]/8'
                   : 'border-white/[0.06] bg-white/[0.025] hover:border-white/[0.1] hover:bg-white/[0.04]'
               }`}
             >
@@ -93,14 +93,14 @@ export default function HistoryPanel() {
               <div className="mt-3 flex items-center gap-2">
                 <button
                   onClick={() => restoreSnapshot(entry.filePath, entry.snapshot)}
-                  className="flex h-8 flex-1 items-center justify-center gap-2 rounded-lg bg-[#7a5cff]/16 px-3 text-[12px] text-[#c5b8ff] transition-all hover:bg-[#7a5cff]/24 hover:text-white"
+                  className="flex h-8 flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--cipher-violet)]/16 px-3 text-[12px] text-[var(--cipher-violet-text)] transition-all hover:bg-[var(--cipher-violet)]/24 hover:text-white"
                 >
                   <RotateCcw size={13} />
                   Restaurar
                 </button>
                 <button
                   onClick={() => clearFileHistory(entry.filePath)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#8f9bc0] transition-all hover:bg-[#ff6b6b]/12 hover:text-[#ff9c9c]"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cipher-text-muted)] transition-all hover:bg-[var(--cipher-status-err)]/12 hover:text-[var(--cipher-status-err)]"
                   title="Limpiar historial de este archivo"
                 >
                   <Trash2 size={13} />

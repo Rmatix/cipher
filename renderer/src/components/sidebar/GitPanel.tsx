@@ -93,13 +93,13 @@ export default function GitPanel() {
           value={message}
           onChange={e => setMessage(e.target.value)}
           placeholder="Mensaje de commit..."
-          className="h-28 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] p-4 text-[14px] text-[#dce4ff] outline-none transition-all placeholder-[#627091] focus:border-[#7a5cff]/70 focus:bg-white/[0.055]"
+          className="h-28 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] p-4 text-[14px] text-[#dce4ff] outline-none transition-all placeholder-[#627091] focus:border-[var(--cipher-violet)]/70 focus:bg-white/[0.055]"
           rows={3}
         />
         <button
           onClick={handleCommit}
           disabled={loading || !message.trim()}
-          className="mt-4 h-11 w-full rounded-xl bg-[#7a5cff] text-[14px] font-medium text-white transition-all hover:bg-[#8b74ff] disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-4 h-11 w-full rounded-xl bg-[var(--cipher-violet)] text-[14px] font-medium text-white transition-all hover:bg-[var(--cipher-violet-bright)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? 'Commiteando...' : 'Commit'}
         </button>
@@ -109,13 +109,13 @@ export default function GitPanel() {
         <div className="flex gap-3">
           <button
             onClick={() => currentFolder && window.cipher.gitPush(currentFolder).then(refresh)}
-            className="h-11 flex-1 rounded-xl border border-white/[0.08] bg-white/[0.035] text-[14px] text-[#dce4ff] transition-all hover:border-[#7a5cff]/70 hover:bg-white/[0.055]"
+            className="h-11 flex-1 rounded-xl border border-white/[0.08] bg-white/[0.035] text-[14px] text-[#dce4ff] transition-all hover:border-[var(--cipher-violet)]/70 hover:bg-white/[0.055]"
           >
             Push
           </button>
           <button
             onClick={() => currentFolder && window.cipher.gitPull(currentFolder).then(refresh)}
-            className="h-11 flex-1 rounded-xl border border-white/[0.08] bg-white/[0.035] text-[14px] text-[#dce4ff] transition-all hover:border-[#7a5cff]/70 hover:bg-white/[0.055]"
+            className="h-11 flex-1 rounded-xl border border-white/[0.08] bg-white/[0.035] text-[14px] text-[#dce4ff] transition-all hover:border-[var(--cipher-violet)]/70 hover:bg-white/[0.055]"
           >
             Pull
           </button>

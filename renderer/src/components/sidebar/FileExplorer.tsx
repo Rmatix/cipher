@@ -171,7 +171,7 @@ export default function FileExplorer() {
           </p>
           <button
             onClick={handleOpenFolder}
-            className="w-full max-w-56 rounded-xl border border-[#8b74ff]/50 bg-[#7a5cff] px-5 py-3 text-[14px] font-medium text-white shadow-[0_10px_30px_rgba(122,92,255,0.15)] transition-all hover:bg-[#8b74ff]"
+            className="w-full max-w-56 rounded-xl border border-[var(--cipher-violet-bright)]/50 bg-[var(--cipher-violet)] px-5 py-3 text-[14px] font-medium text-white shadow-[0_10px_30px_rgba(122,92,255,0.15)] transition-all hover:bg-[var(--cipher-violet-bright)]"
           >
             Abrir carpeta
           </button>

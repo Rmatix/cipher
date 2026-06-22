@@ -210,7 +210,7 @@ export default function SplashScreen({ onDone }: Props) {
 
         {/* Scan line */}
         <div
-          className="pointer-events-none absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#7a5cff] to-transparent"
+          className="pointer-events-none absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--cipher-violet)] to-transparent"
           style={{
             animation: `sp-scanline ${DURATION}ms linear both`,
             boxShadow: '0 0 8px #7a5cff, 0 0 20px rgba(122,92,255,0.4)',
@@ -220,24 +220,24 @@ export default function SplashScreen({ onDone }: Props) {
         {/* Outer rings */}
         <div className="pointer-events-none absolute flex items-center justify-center">
           <div
-            className="h-[420px] w-[420px] rounded-full border border-[#7a5cff]/15"
+            className="h-[420px] w-[420px] rounded-full border border-[var(--cipher-violet)]/15"
             style={{ animation: 'sp-ring-pulse 2.4s 0.2s ease-out infinite' }}
           />
         </div>
         <div className="pointer-events-none absolute flex items-center justify-center">
           <div
-            className="h-[300px] w-[300px] rounded-full border border-[#4fc3f7]/12"
+            className="h-[300px] w-[300px] rounded-full border border-[var(--cipher-sky)]/12"
             style={{ animation: 'sp-ring-pulse-2 3s 0.6s ease-out infinite' }}
           />
         </div>
 
         {/* Horizontal accent lines */}
         <div
-          className="pointer-events-none absolute left-[15%] right-[15%] h-px origin-left bg-gradient-to-r from-transparent via-[#7a5cff]/40 to-transparent"
+          className="pointer-events-none absolute left-[15%] right-[15%] h-px origin-left bg-gradient-to-r from-transparent via-[var(--cipher-violet)]/40 to-transparent"
           style={{ top: '30%', animation: 'sp-line-h 3.2s 0.3s ease both' }}
         />
         <div
-          className="pointer-events-none absolute left-[15%] right-[15%] h-px origin-right bg-gradient-to-r from-transparent via-[#4fc3f7]/30 to-transparent"
+          className="pointer-events-none absolute left-[15%] right-[15%] h-px origin-right bg-gradient-to-r from-transparent via-[var(--cipher-sky)]/30 to-transparent"
           style={{ top: '70%', animation: 'sp-line-h 3.2s 0.5s ease both' }}
         />
 
@@ -308,7 +308,7 @@ export default function SplashScreen({ onDone }: Props) {
               Cipher
             </h1>
             <p
-              className="text-[11px] font-semibold tracking-[0.6em] text-[#9d87ff]"
+              className="text-[11px] font-semibold tracking-[0.6em] text-[var(--cipher-violet-soft)]"
               style={{
                 animation: phase === 'exit'
                   ? 'sp-text-exit 500ms 50ms ease forwards'

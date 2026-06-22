@@ -104,7 +104,7 @@ export default function SchemaTree({
                       className="flex items-center gap-1.5 py-1 text-[11px] text-[var(--cipher-text-muted)]"
                     >
                       {col.pk
-                        ? <KeyRound size={10} className="flex-shrink-0 text-[#ffd93d]" />
+                        ? <KeyRound size={10} className="flex-shrink-0 text-[var(--cipher-status-warn)]" />
                         : col.type.toLowerCase().includes('int') || col.type.toLowerCase().includes('num')
                           ? <Hash size={10} className="flex-shrink-0 text-[#80d8ff]/70" />
                           : <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full border border-[var(--cipher-border)]" />

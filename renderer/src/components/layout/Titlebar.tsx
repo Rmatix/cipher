@@ -200,8 +200,8 @@ export default function Titlebar() {
             title={`Ejecutar con ${runner.label} (${activeTab?.name})`}
             className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-all ${
               runFlash
-                ? 'border-[#56d364]/60 bg-[#56d364]/20 text-[#56d364]'
-                : 'border-[#56d364]/30 bg-[#56d364]/10 text-[#56d364] hover:border-[#56d364]/60 hover:bg-[#56d364]/20'
+                ? 'border-[var(--cipher-status-ok)]/60 bg-[var(--cipher-status-ok)]/20 text-[var(--cipher-status-ok)]'
+                : 'border-[var(--cipher-status-ok)]/30 bg-[var(--cipher-status-ok)]/10 text-[var(--cipher-status-ok)] hover:border-[var(--cipher-status-ok)]/60 hover:bg-[var(--cipher-status-ok)]/20'
             }`}
           >
             <Play size={12} className="fill-current" />
@@ -230,7 +230,7 @@ export default function Titlebar() {
         {/* Focus mode button */}
         <button
           onClick={toggleFocusMode}
-          className="flex h-full w-12 items-center justify-center text-[#7d88aa] transition-all hover:bg-white/[0.06] hover:text-[#c5b8ff]"
+          className="flex h-full w-12 items-center justify-center text-[var(--cipher-text-muted)] transition-all hover:bg-white/[0.06] hover:text-[#c5b8ff]"
           title="Modo enfoque (Ctrl+K Z)"
         >
           <Focus size={15} className="icon" />
@@ -242,7 +242,7 @@ export default function Titlebar() {
 
             <button
               onClick={() => window.cipher?.minimizeWindow?.()}
-              className="flex h-full w-14 items-center justify-center text-[#7d88aa] transition-all hover:bg-white/[0.06] hover:text-white"
+              className="flex h-full w-14 items-center justify-center text-[var(--cipher-text-muted)] transition-all hover:bg-white/[0.06] hover:text-white"
               title="Minimizar"
             >
               <Minimize2 size={15} className="icon" />
@@ -254,14 +254,14 @@ export default function Titlebar() {
                   try { setIsMaximized(await window.cipher.isMaximized()) } catch { setIsMaximized(false) }
                 }
               }}
-              className="flex h-full w-14 items-center justify-center text-[#7d88aa] transition-all hover:bg-white/[0.06] hover:text-white"
+              className="flex h-full w-14 items-center justify-center text-[var(--cipher-text-muted)] transition-all hover:bg-white/[0.06] hover:text-white"
               title="Maximizar"
             >
               {isMaximized ? <Square size={13} className="scale-75" /> : <Maximize2 size={15} className="icon" />}
             </button>
             <button
               onClick={() => window.cipher?.closeWindow?.()}
-              className="flex h-full w-14 items-center justify-center text-[#7d88aa] transition-all hover:bg-[#ef4444] hover:text-white"
+              className="flex h-full w-14 items-center justify-center text-[var(--cipher-text-muted)] transition-all hover:bg-[var(--cipher-status-err)] hover:text-white"
               title="Cerrar"
             >
               <X size={16} className="icon" />

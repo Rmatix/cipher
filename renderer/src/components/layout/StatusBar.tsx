@@ -32,8 +32,8 @@ export default function StatusBar() {
           onClick={openDebugger}
           className={`flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[12px] transition-all ${
             errors > 0
-              ? 'text-[#ff6b6b] hover:bg-[#ff6b6b]/10'
-              : 'text-[#5a6b80] hover:text-[#b7c1de]'
+              ? 'text-[var(--cipher-status-err)] hover:bg-[var(--cipher-status-err)]/10'
+              : 'text-[var(--cipher-text-muted)] hover:text-[var(--cipher-text)]'
           }`}
         >
           <AlertCircle size={12} />
@@ -45,8 +45,8 @@ export default function StatusBar() {
           onClick={openDebugger}
           className={`flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[12px] transition-all ${
             warnings > 0
-              ? 'text-[#ffd93d] hover:bg-[#ffd93d]/10'
-              : 'text-[#5a6b80] hover:text-[#b7c1de]'
+              ? 'text-[var(--cipher-status-warn)] hover:bg-[var(--cipher-status-warn)]/10'
+              : 'text-[var(--cipher-text-muted)] hover:text-[var(--cipher-text)]'
           }`}
         >
           <AlertTriangle size={12} />

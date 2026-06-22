@@ -74,7 +74,7 @@ export default function NotesPanel() {
                     </button>
                     <button
                       onClick={() => deleteNote(note.id)}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--cipher-text-muted)] hover:bg-[#ff6b6b]/12 hover:text-[#ff9a9a]"
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--cipher-text-muted)] hover:bg-[var(--cipher-status-err)]/12 hover:text-[var(--cipher-status-err)]"
                       title="Eliminar nota"
                     >
                       <Trash2 size={13} />

@@ -75,7 +75,7 @@ export default function Panel() {
     workflows:'WORKFLOWS (BETA)',
     database: 'SQL VIEWER',
     settings: 'CONFIGURACION',
-    mcp:      'INFRAESTRUCTURA MCP',
+    mcp:      'MCP',
   }
 
   return (
@@ -86,7 +86,7 @@ export default function Panel() {
         display: sidebarPanel ? 'flex' : 'none'
       }}
     >
-      <div className="flex-shrink-0 border-b border-[var(--cipher-border)] px-6 py-5 text-[12px] font-semibold tracking-[0.22em] text-[var(--cipher-text-muted)]">
+      <div className="flex-shrink-0 border-b border-[var(--cipher-border)] px-5 py-4 text-[11px] font-semibold tracking-[0.18em] text-[var(--cipher-text-muted)]">
         {sidebarPanel ? (titles[sidebarPanel] ?? sidebarPanel.toUpperCase()) : ''}
       </div>
       <div className="flex-1 overflow-hidden min-h-0 relative">

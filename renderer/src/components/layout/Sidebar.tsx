@@ -63,7 +63,7 @@ export default function Sidebar() {
               {/* Badge dot or count */}
               {panel.badge && !isActive && (
                 panel.badgeCount && panel.badgeCount > 0 ? (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#ef4444] px-0.5 text-[9px] font-bold text-white">
+                  <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[var(--cipher-status-err)] px-0.5 text-[9px] font-bold text-white">
                     {panel.badgeCount > 9 ? '9+' : panel.badgeCount}
                   </span>
                 ) : (

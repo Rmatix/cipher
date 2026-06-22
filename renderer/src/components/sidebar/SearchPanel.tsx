@@ -50,7 +50,7 @@ export default function SearchPanel() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex-shrink-0 p-5">
-        <div className="flex h-12 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 transition-all focus-within:border-[#7a5cff]/70 focus-within:bg-white/[0.055]">
+        <div className="flex h-12 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 transition-all focus-within:border-[var(--cipher-violet)]/70 focus-within:bg-white/[0.055]">
           <Search size={17} className="text-[#7f8bb0]" />
           <input
             type="text"
@@ -64,7 +64,7 @@ export default function SearchPanel() {
 
       <div className="flex-1 overflow-y-auto">
         {searching && (
-          <p className="cipher-fade-up px-5 py-4 text-[13px] text-[#9d87ff]">Buscando...</p>
+          <p className="cipher-fade-up px-5 py-4 text-[13px] text-[var(--cipher-violet-soft)]">Buscando...</p>
         )}
         {!searching && results.length === 0 && query.length >= 2 && (
           <p className="cipher-fade-up px-5 py-4 text-[13px] text-[#627091]">Sin resultados</p>

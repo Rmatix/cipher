@@ -51,7 +51,7 @@ export default function TabBar() {
           </span>
           <button
             onClick={e => { e.stopPropagation(); removeTab(tab.path) }}
-            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md opacity-0 transition-all hover:bg-[#ff6b6b]/12 hover:text-[#ff6b6b] group-hover:opacity-100"
+            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md opacity-0 transition-all hover:bg-[var(--cipher-status-err)]/12 hover:text-[var(--cipher-status-err)] group-hover:opacity-100"
           >
             <X size={14} />
           </button>

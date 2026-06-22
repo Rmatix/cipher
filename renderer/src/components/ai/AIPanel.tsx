@@ -95,8 +95,8 @@ function ModelSelect({
           <div className="cipher-pop-enter absolute left-20 right-0 top-12 z-40 max-h-80 overflow-y-auto rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface)] p-2 shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
             {groups.map(group => (
               <div key={group.group} className="py-1">
-                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#38bdf8] border-b border-[#38bdf8]/20 mb-1 flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#38bdf8]/60" />
+                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cipher-sky)] border-b border-[var(--cipher-sky)]/20 mb-1 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--cipher-sky)]/60" />
                   {group.group}
                 </div>
                 {group.options.map(option => {
@@ -119,8 +119,8 @@ function ModelSelect({
                     >
                       <span>{option.label}</span>
                       {soon
-                        ? <span className="rounded-md bg-[#7a5cff]/20 px-1.5 py-0.5 text-[10px] font-medium text-[#9d87ff]">pronto</span>
-                        : active && <Check size={14} className="text-[#9d87ff]" />
+                        ? <span className="rounded-md bg-[var(--cipher-violet)]/20 px-1.5 py-0.5 text-[10px] font-medium text-[var(--cipher-violet-soft)]">pronto</span>
+                        : active && <Check size={14} className="text-[var(--cipher-violet-soft)]" />
                       }
                     </button>
                   )
@@ -139,7 +139,7 @@ function ModelSelect({
 function StreamingCursor() {
   return (
     <span
-      className="ml-0.5 inline-block h-[14px] w-[2px] translate-y-[2px] animate-pulse rounded-sm bg-[#7c4dff]"
+      className="ml-0.5 inline-block h-[14px] w-[2px] translate-y-[2px] animate-pulse rounded-sm bg-[var(--cipher-violet)]"
       aria-hidden
     />
   )
@@ -773,7 +773,7 @@ export default function AIPanel() {
           {messages.length > 0 && (
             <button
               onClick={clearChat}
-              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:bg-[var(--cipher-surface-alt)] hover:text-[#ff9a9a]"
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:bg-[var(--cipher-surface-alt)] hover:text-[var(--cipher-status-err)]"
               title="Limpiar conversación"
             >
               <Trash2 size={13} />
@@ -816,7 +816,7 @@ export default function AIPanel() {
               if (!ollamaGroup) return null
               const count = ollamaGroup.options.length
               return (
-                <p className="mt-2 text-[12px] text-[#5a7a4a]">
+                <p className="mt-2 text-[12px] text-[var(--cipher-status-ok)]">
                   ✓ Ollama detectado — {count} modelo{count !== 1 ? 's' : ''} disponible{count !== 1 ? 's' : ''}
                 </p>
               )
@@ -826,7 +826,7 @@ export default function AIPanel() {
               if (!lmGroup) return null
               const count = lmGroup.options.length
               return (
-                <p className="mt-2 text-[12px] text-[#5a7a4a]">
+                <p className="mt-2 text-[12px] text-[var(--cipher-status-ok)]">
                   ✓ LM Studio detectado — {count} modelo{count !== 1 ? 's' : ''} disponible{count !== 1 ? 's' : ''}
                 </p>
               )
@@ -845,8 +845,8 @@ export default function AIPanel() {
           }`}>
             <span className={`text-[11px] font-semibold uppercase tracking-wider ${
               msg.role === 'user' ? 'text-[var(--cipher-accent)]' :
-              msg.role === 'error' ? 'text-[#ef4444]' :
-              msg.role === 'system' ? 'text-[#38bdf8]' :
+              msg.role === 'error' ? 'text-[var(--cipher-status-err)]' :
+              msg.role === 'system' ? 'text-[var(--cipher-sky)]' :
               'text-[var(--cipher-text)]'
             }`}>
               {msg.role === 'user' ? 'Tú' :
@@ -865,12 +865,12 @@ export default function AIPanel() {
             ) : (
               <div className={`break-words rounded-xl px-4 py-3 text-[13px] leading-[1.65] ${
                 msg.role === 'user'
-                  ? 'max-w-[85%] border border-[var(--cipher-accent-soft)] bg-[var(--cipher-accent-bg)] text-[var(--cipher-text)] rounded-tr-none'
+                  ? 'max-w-[85%] border border-[var(--cipher-accent-soft)] bg-[var(--cipher-accent-bg)] text-[var(--cipher-text)]'
                   : msg.role === 'error'
-                  ? 'w-full border-l-2 border-red-500 bg-red-500/5 text-red-400 pl-4'
+                  ? 'w-full border-l-2 border-[var(--cipher-status-err)] bg-[var(--cipher-status-err)]/5 text-[var(--cipher-status-err)] pl-4'
                   : msg.role === 'system'
-                  ? 'w-full border-l-2 border-[#38bdf8] bg-[#38bdf8]/5 text-[#38bdf8]/90 pl-4'
-                  : 'w-full border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)]/35 text-[var(--cipher-text)]'
+                  ? 'w-full border-l-2 border-[var(--cipher-sky)] bg-[var(--cipher-sky)]/5 text-[var(--cipher-sky)]/90 pl-4'
+                  : 'w-full border border-[var(--cipher-border)] bg-[var(--cipher-surface)] text-[var(--cipher-text)]'
               }`}>
                 {renderContentWithThinking(msg.content, msg.streaming)}
               </div>
@@ -881,7 +881,7 @@ export default function AIPanel() {
         {currentPlan && aiMode === 'plan' && !loading && (
           <button
             onClick={approvePlan}
-            className="w-full rounded-xl bg-[#2ea043] py-3 text-[13px] text-white transition-all hover:bg-[#3fb950]"
+            className="w-full rounded-xl bg-[var(--cipher-status-ok)] py-3 text-[13px] font-medium text-white transition-all hover:opacity-90"
           >
             Aprobar plan e iniciar desarrollo
           </button>
@@ -896,22 +896,22 @@ export default function AIPanel() {
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">
             {attachments.map((file, idx) => (
-              <div key={idx} className="relative flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2 pr-8 text-[12px] text-[#b7c1de]">
+              <div key={idx} className="relative flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2 pr-8 text-[12px] text-[var(--cipher-text)]">
                 {file.type.startsWith('image/') ? (
                   <img src={file.previewUrl} className="h-8 w-8 rounded object-cover" />
                 ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded bg-white/[0.05] text-[#7f8bb0]">
+                  <div className="flex h-8 w-8 items-center justify-center rounded bg-white/[0.05] text-[var(--cipher-text-muted)]">
                     <FileText size={16} />
                   </div>
                 )}
                 <div className="flex flex-col max-w-[120px]">
-                  <span className="truncate font-medium text-[#dce4ff]">{file.name}</span>
-                  <span className="text-[10px] text-[#687498]">{formatSize(file.size)}</span>
+                  <span className="truncate font-medium text-[var(--cipher-text)]">{file.name}</span>
+                  <span className="text-[10px] text-[var(--cipher-text-muted)]">{formatSize(file.size)}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeAttachment(idx)}
-                  className="absolute right-1 top-1 rounded-full p-0.5 text-[#6b6b8a] transition-all hover:bg-white/[0.1] hover:text-[#ff9a9a]"
+                  className="absolute right-1 top-1 rounded-full p-0.5 text-[#6b6b8a] transition-all hover:bg-white/[0.1] hover:text-[var(--cipher-status-err)]"
                 >
                   <X size={12} />
                 </button>
@@ -957,7 +957,7 @@ export default function AIPanel() {
             {loading ? (
               <button
                 onClick={stopResponse}
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ff6b6b] text-white transition-all hover:bg-[#ff4444]"
+                className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--cipher-status-err)] text-white transition-all hover:bg-[var(--cipher-status-err)]"
                 title="Detener respuesta"
               >
                 <Square size={12} fill="white" />
@@ -966,7 +966,7 @@ export default function AIPanel() {
               <button
                 onClick={() => sendMessage()}
                 disabled={!input.trim() && attachments.length === 0}
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#7c4dff] text-white transition-all hover:bg-[#6a3de8] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--cipher-violet)] text-white transition-all hover:bg-[#6a3de8] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={14} />
               </button>
@@ -998,10 +998,10 @@ export default function AIPanel() {
       {/* Composer mode hint */}
       {aiMode === 'composer' && (
         <div className="flex-shrink-0 border-t border-[var(--cipher-border)] px-5 pb-4 pt-3">
-          <div className="rounded-xl border border-[#7c4dff]/30 bg-[#7c4dff]/10 p-3 text-[12px] text-[var(--cipher-text-muted)] leading-5">
-            <p className="font-semibold text-[#c5b8ff] mb-1">Modo Composer activo</p>
+          <div className="rounded-xl border border-[var(--cipher-violet)]/30 bg-[var(--cipher-violet)]/10 p-3 text-[12px] text-[var(--cipher-text-muted)] leading-5">
+            <p className="font-semibold text-[var(--cipher-violet-text)] mb-1">Modo Composer activo</p>
             El agente propondrá cambios en múltiples archivos con bloques marcados como
-            <code className="mx-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-[11px] text-[#c5b8ff]">```filepath:ruta</code>.
+            <code className="mx-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-[11px] text-[var(--cipher-violet-text)]">```filepath:ruta</code>.
             Copia y aplica cada bloque al archivo correspondiente.
           </div>
         </div>
@@ -1054,7 +1054,7 @@ function ModelApiKeyModal({
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h3 className="text-[14px] font-semibold text-white">API key de modelo</h3>
-            <p className="mt-1 text-[12px] text-[#7f8bb0]">
+            <p className="mt-1 text-[12px] text-[var(--cipher-text-muted)]">
               {provider === 'nim' ? 'NVIDIA NIM' : 'OpenRouter'}
             </p>
           </div>
@@ -1081,7 +1081,7 @@ function ModelApiKeyModal({
           />
           <button
             onClick={save}
-            className="h-11 w-full rounded-xl bg-[#7c4dff] text-[13px] font-medium text-white transition-all hover:bg-[#8b74ff]"
+            className="h-11 w-full rounded-xl bg-[var(--cipher-violet)] text-[13px] font-medium text-white transition-all hover:bg-[var(--cipher-violet-bright)]"
           >
             Guardar API key
           </button>

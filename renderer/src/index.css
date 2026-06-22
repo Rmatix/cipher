@@ -12,6 +12,41 @@
   --cipher-accent-bg: rgba(99, 102, 241, 0.08);
   --cipher-text: #e2e8f0;
   --cipher-text-muted: #94a3b8;
+
+  /* ── Extended semantic palette (centralizes existing brand colors) ── */
+  --cipher-violet: #7a5cff;
+  --cipher-violet-bright: #8b74ff;
+  --cipher-violet-soft: #9d87ff;
+  --cipher-violet-text: #c5b8ff;
+  --cipher-sky: #38bdf8;
+  --cipher-status-ok: #3fb950;
+  --cipher-status-warn: #d29922;
+  --cipher-status-err: #f85149;
+  --cipher-muted-ink: #6b7280;
+  --cipher-muted-blue: #8d99bd;
+
+  /* ── Spacing scale (4px base) ── */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+
+  /* ── Radius scale ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ── Semantic z-index ── */
+  --z-dropdown: 30;
+  --z-sticky: 40;
+  --z-backdrop: 45;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
 }
 
 * {
@@ -374,6 +409,18 @@ button.accent:active {
   --cipher-code-text: #111827;
   --cipher-code-inline-bg: rgba(79, 70, 229, 0.08);
   --cipher-code-inline-text: #4338ca;
+
+  /* Light overrides for semantic palette */
+  --cipher-violet: #6d4eff;
+  --cipher-violet-bright: #7c5fff;
+  --cipher-violet-soft: #7c3aed;
+  --cipher-violet-text: #6d28d9;
+  --cipher-sky: #0284c7;
+  --cipher-status-ok: #16a34a;
+  --cipher-status-warn: #ca8a04;
+  --cipher-status-err: #dc2626;
+  --cipher-muted-ink: #6b7280;
+  --cipher-muted-blue: #64748b;
 }
 
 /* Dark themes — code block defaults */

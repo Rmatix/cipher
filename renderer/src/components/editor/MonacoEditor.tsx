@@ -86,7 +86,7 @@ function MediaPreview({
 
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-8">
         {error ? (
-          <div className="rounded-lg border border-[#ff6b6b]/20 bg-[#ff6b6b]/8 px-5 py-4 text-sm text-[#ff9c9c]">
+          <div className="rounded-lg border border-[var(--cipher-status-err)]/20 bg-[var(--cipher-status-err)]/8 px-5 py-4 text-sm text-[var(--cipher-status-err)]">
             {error}
           </div>
         ) : !media ? (
@@ -121,7 +121,7 @@ function AICompletionToggle({
       title={enabled ? 'Desactivar autocompletado IA (Tab)' : 'Activar autocompletado IA (Tab)'}
       className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
         enabled
-          ? 'bg-[#7c4dff]/20 text-[#c5b8ff] hover:bg-[#7c4dff]/30'
+          ? 'bg-[var(--cipher-violet)]/20 text-[var(--cipher-violet-text)] hover:bg-[var(--cipher-violet)]/30'
           : 'bg-white/[0.04] text-[#4a5070] hover:bg-white/[0.08] hover:text-[#7f8bb0]'
       }`}
     >
@@ -239,7 +239,7 @@ export default function MonacoEditor({
         'editor.foreground':                css('--cipher-text', isLightTheme ? '#2c3e50' : '#dce4ff'),
         'editor.lineHighlightBackground':   css('--cipher-surface-alt', isLightTheme ? '#f0f4f8' : '#121827'),
         'editor.selectionBackground':       css('--cipher-accent-bg', '#7a5cff33'),
-        'editorCursor.foreground':          css('--cipher-accent', '#7a5cff'),
+        'editorCursor.foreground':          css('--cipher-accent', '#6366f1'),
         'editorLineNumber.foreground':      isLightTheme ? '#bdc3c7' : '#39425f',
         'editorLineNumber.activeForeground': css('--cipher-text-muted', isLightTheme ? '#7f8c8d' : '#8da0d8'),
         'editorWidget.background':          css('--cipher-surface-alt', isLightTheme ? '#ffffff' : '#10131f'),
@@ -534,14 +534,14 @@ export default function MonacoEditor({
               className="mb-10 h-36 w-36 object-contain opacity-85 drop-shadow-[0_0_30px_rgba(122,92,255,0.34)] transition-transform duration-500 hover:scale-105"
             />
             <h1 className="text-6xl font-semibold tracking-[0.1em] leading-normal text-[#eef3ff]">Cipher</h1>
-            <p className="mt-4 text-[13px] font-medium tracking-[0.46em] text-[#8f9bc0]">CODE EDITOR</p>
+            <p className="mt-4 text-[13px] font-medium tracking-[0.46em] text-[var(--cipher-text-muted)]">CODE EDITOR</p>
           </div>
 
           <div className="cipher-fade-up flex flex-col gap-5 max-[900px]:order-2">
             <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.24em] text-[#6f7a9d]">Inicio</p>
             <button
               onClick={openFolder}
-              className="flex h-14 items-center gap-4 rounded-xl border border-[#8b74ff]/50 bg-[#7a5cff] px-6 text-[14px] font-medium text-white shadow-[0_14px_40px_rgba(122,92,255,0.16)] transition-all hover:bg-[#8b74ff]"
+              className="flex h-14 items-center gap-4 rounded-xl border border-[var(--cipher-violet-bright)]/50 bg-[var(--cipher-violet)] px-6 text-[14px] font-medium text-white shadow-[0_14px_40px_rgba(122,92,255,0.16)] transition-all hover:bg-[var(--cipher-violet-bright)]"
             >
               <FolderOpen size={19} strokeWidth={1.8} />
               Abrir carpeta
@@ -567,14 +567,14 @@ export default function MonacoEditor({
                 className="flex w-full items-center justify-between gap-6 rounded-lg px-1 py-1.5 text-left transition-all hover:text-[#dce4ff]"
               >
                 <span>Paleta de comandos</span>
-                <kbd className="rounded border border-white/[0.08] bg-white/[0.035] px-2.5 py-1 text-[12px] text-[#b7c1de]">Ctrl+Shift+P</kbd>
+                <kbd className="rounded border border-white/[0.08] bg-white/[0.035] px-2.5 py-1 text-[12px] text-[var(--cipher-text)]">Ctrl+Shift+P</kbd>
               </button>
               <button
                 onClick={() => setSidebarPanel('files')}
                 className="flex w-full items-center justify-between gap-6 rounded-lg px-1 py-1.5 text-left transition-all hover:text-[#dce4ff]"
               >
                 <span>Explorador</span>
-                <kbd className="rounded border border-white/[0.08] bg-white/[0.035] px-2.5 py-1 text-[12px] text-[#b7c1de]">Ctrl+B</kbd>
+                <kbd className="rounded border border-white/[0.08] bg-white/[0.035] px-2.5 py-1 text-[12px] text-[var(--cipher-text)]">Ctrl+B</kbd>
               </button>
             </div>
           </div>
@@ -620,7 +620,7 @@ export default function MonacoEditor({
           title="Modo enfoque (Ctrl+K Z)"
           className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
             focusMode
-              ? 'bg-[#7c4dff]/20 text-[#c5b8ff] hover:bg-[#7c4dff]/30'
+              ? 'bg-[var(--cipher-violet)]/20 text-[var(--cipher-violet-text)] hover:bg-[var(--cipher-violet)]/30'
               : 'bg-white/[0.04] text-[#4a5070] hover:bg-white/[0.08] hover:text-[#7f8bb0]'
           }`}
         >

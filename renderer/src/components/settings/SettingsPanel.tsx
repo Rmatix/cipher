@@ -88,7 +88,7 @@ function KeyBindingRow({
       <span className={`text-[13px] ${isModified ? 'text-[var(--cipher-accent)]' : 'text-[var(--cipher-text)]'}`}>
         {label}
         {isModified && (
-          <span className="ml-2 text-[11px] text-[#7c4dff]">modificado</span>
+          <span className="ml-2 text-[11px] text-[var(--cipher-violet)]">modificado</span>
         )}
       </span>
       <div className="flex items-center gap-2">
@@ -100,19 +100,19 @@ function KeyBindingRow({
               onBlur={cancel}
               readOnly
               value={captured || 'Presiona una tecla…'}
-              className="h-8 w-44 rounded-lg border border-[#7c4dff] bg-[#0d0f1a] px-3 text-center text-[12px] text-[#c5b8ff] outline-none"
+              className="h-8 w-44 rounded-lg border border-[var(--cipher-violet)] bg-[var(--cipher-surface-alt)] px-3 text-center text-[12px] text-[var(--cipher-violet-text)] outline-none"
             />
             {captured && (
               <button
                 onMouseDown={confirm}
-                className="h-8 rounded-lg bg-[#7c4dff] px-3 text-[12px] text-white transition-all hover:bg-[#8b74ff]"
+                className="h-8 rounded-lg bg-[var(--cipher-violet)] px-3 text-[12px] text-white transition-all hover:bg-[var(--cipher-violet-bright)]"
               >
                 OK
               </button>
             )}
             <button
               onMouseDown={cancel}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] transition-all hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cipher-muted-ink)] transition-all hover:text-white"
             >
               <X size={13} />
             </button>
@@ -128,7 +128,7 @@ function KeyBindingRow({
             {isModified && (
               <button
                 onClick={() => onSave(id, defaultKey)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cipher-text-muted)] transition-all hover:text-[#ffd93d]"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cipher-text-muted)] transition-all hover:text-[var(--cipher-status-warn)]"
                 title="Restaurar por defecto"
               >
                 <RotateCcw size={12} />
@@ -172,7 +172,7 @@ const SETTINGS_TABS = [
   { id: 'apikeys',    label: 'API Keys',    icon: KeyRound,          color: 'text-[var(--cipher-accent)]', bg: 'bg-[var(--cipher-accent-bg)]' },
   { id: 'keybinds',  label: 'Atajos',      icon: Keyboard,          color: 'text-[#ffc46b]', bg: 'bg-[#ffab40]/12' },
   { id: 'editor',    label: 'Editor',      icon: SlidersHorizontal, color: 'text-[#80d8ff]', bg: 'bg-[#4fc3f7]/12' },
-  { id: 'agents',    label: 'Agentes',     icon: Bot,               color: 'text-[#56d364]', bg: 'bg-[#2ea043]/14' },
+  { id: 'agents',    label: 'Agentes',     icon: Bot,               color: 'text-[var(--cipher-status-ok)]', bg: 'bg-[var(--cipher-status-ok)]/14' },
 ] as const
 
 type SettingsTab = typeof SETTINGS_TABS[number]['id']
@@ -634,7 +634,7 @@ ${editingSkillPrompt.trim()}`
         />
         <button
           onClick={resetKeyBindings}
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-[var(--cipher-border)] px-2.5 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:border-[#ffd93d]/30 hover:text-[#ffd93d]"
+          className="flex h-8 items-center gap-1.5 rounded-lg border border-[var(--cipher-border)] px-2.5 text-[12px] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-status-warn)]/30 hover:text-[var(--cipher-status-warn)]"
           title="Restaurar todos los atajos"
         >
           <RotateCcw size={12} />
@@ -832,8 +832,8 @@ ${editingSkillPrompt.trim()}`
       <div className="border-b border-[var(--cipher-border)] pb-6">
         <SectionHeader
           icon={<Bot size={17} />}
-          color="text-[#56d364]"
-          bg="bg-[#2ea043]/14"
+          color="text-[var(--cipher-status-ok)]"
+          bg="bg-[var(--cipher-status-ok)]/14"
           title="Agentes externos"
           sub="Compatibilidad con Claude Code y OpenAI Codex CLI."
         />
@@ -861,8 +861,8 @@ ${editingSkillPrompt.trim()}`
       <div>
         <SectionHeader
           icon={<MonitorCheck size={17} />}
-          color="text-[#56d364]"
-          bg="bg-[#2ea043]/14"
+          color="text-[var(--cipher-status-ok)]"
+          bg="bg-[var(--cipher-status-ok)]/14"
           title="Servicios locales"
           sub="Configura y comprueba Ollama o LM Studio."
         />

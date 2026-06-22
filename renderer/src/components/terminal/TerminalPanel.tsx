@@ -333,14 +333,14 @@ export default function TerminalPanel() {
         <div className="relative flex items-center gap-1">
           <button
             onClick={() => addSession()}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#cfd6e6] transition-all hover:bg-white/[0.08] hover:text-white"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--cipher-text)] transition-all hover:bg-white/[0.08] hover:text-white"
             title="New Terminal"
           >
             <Plus size={15} />
           </button>
           <button
             onClick={() => setProfileMenuOpen(value => !value)}
-            className="flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-[#cfd6e6] transition-all hover:bg-white/[0.08] hover:text-white"
+            className="flex h-7 items-center gap-1 rounded-md px-2 text-[12px] text-[var(--cipher-text)] transition-all hover:bg-white/[0.08] hover:text-white"
             title="Select Profile"
           >
             {profileLabels[activeSession?.profile || 'system']}
@@ -348,28 +348,28 @@ export default function TerminalPanel() {
           </button>
           <button
             onClick={splitTerminal}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#cfd6e6] transition-all hover:bg-white/[0.08] hover:text-white"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--cipher-text)] transition-all hover:bg-white/[0.08] hover:text-white"
             title="Split Terminal"
           >
             <PanelBottom size={14} />
           </button>
           <button
             onClick={() => runInActive(activeSession?.profile === 'cmd' ? 'cls' : 'clear')}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#cfd6e6] transition-all hover:bg-white/[0.08] hover:text-white"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--cipher-text)] transition-all hover:bg-white/[0.08] hover:text-white"
             title="Clear Terminal"
           >
             <Eraser size={14} />
           </button>
           <button
             onClick={() => killSession(activeSessionId)}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#cfd6e6] transition-all hover:bg-[#ff6b6b]/12 hover:text-[#ff9c9c]"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--cipher-text)] transition-all hover:bg-[var(--cipher-status-err)]/12 hover:text-[var(--cipher-status-err)]"
             title="Kill Terminal"
           >
             <Trash2 size={14} />
           </button>
           <button
             onClick={() => setMoreOpen(value => !value)}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#cfd6e6] transition-all hover:bg-white/[0.08] hover:text-white"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--cipher-text)] transition-all hover:bg-white/[0.08] hover:text-white"
             title="More Actions"
           >
             <MoreHorizontal size={15} />
@@ -457,7 +457,7 @@ export default function TerminalPanel() {
                   }`}
                 >
                   <span className="flex items-center gap-2 truncate">
-                    <TerminalIcon size={12} className={activeSessionId === session.id ? 'text-[#7a5cff]' : 'text-[#7884aa]'} />
+                    <TerminalIcon size={12} className={activeSessionId === session.id ? 'text-[var(--cipher-violet)]' : 'text-[#7884aa]'} />
                     {editingSessionId === session.id ? (
                       <input
                         value={editName}
@@ -480,7 +480,7 @@ export default function TerminalPanel() {
                       e.stopPropagation()
                       killSession(session.id)
                     }}
-                    className="opacity-0 group-hover:opacity-100 rounded p-1 text-[#7884aa] hover:bg-white/[0.08] hover:text-[#ff9c9c] transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 rounded p-1 text-[#7884aa] hover:bg-white/[0.08] hover:text-[var(--cipher-status-err)] transition-opacity"
                     title="Kill Terminal"
                   >
                     <X size={12} />
@@ -515,7 +515,7 @@ export default function TerminalPanel() {
               killSession(contextMenu.sessionId)
               setContextMenu(null)
             }}
-            className="flex h-8 w-full items-center px-3 text-left text-[12px] text-[#ff6b6b] hover:bg-[#ff6b6b]/12"
+            className="flex h-8 w-full items-center px-3 text-left text-[12px] text-[var(--cipher-status-err)] hover:bg-[var(--cipher-status-err)]/12"
           >
             Eliminar terminal
           </button>

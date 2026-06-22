@@ -109,7 +109,7 @@ function ProblemsPanel({ activeTabPath, problems }: { activeTabPath: string | nu
   return (
     <div className="flex h-full flex-col overflow-hidden text-[12px]">
       <div className="flex h-10 flex-shrink-0 items-center justify-between border-b border-white/[0.06] px-3">
-        <span className="text-[#8d99bd]">{activeFileName}</span>
+        <span className="text-[var(--cipher-muted-blue)]">{activeFileName}</span>
         <div className="relative flex items-center gap-2">
           <input
             value={filter}
@@ -147,7 +147,7 @@ function ProblemsPanel({ activeTabPath, problems }: { activeTabPath: string | nu
               <CircleAlert
                 size={14}
                 className={
-                  problem.severity === 'error' ? 'mt-0.5 text-[#ff6b6b]' :
+                  problem.severity === 'error' ? 'mt-0.5 text-[var(--cipher-status-err)]' :
                   problem.severity === 'warning' ? 'mt-0.5 text-[#ffcc66]' :
                   'mt-0.5 text-[#62aaff]'
                 }
@@ -185,8 +185,8 @@ function OutputPanel() {
           {tasks.map(item => <option key={item}>{item}</option>)}
         </select>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 font-mono text-[12px] leading-6 text-[#b7c1de]">
-        <div className="mb-2 text-[#8d99bd]">Output: {task}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 font-mono text-[12px] leading-6 text-[var(--cipher-text)]">
+        <div className="mb-2 text-[var(--cipher-muted-blue)]">Output: {task}</div>
         {messages.map(message => <div key={message}>{message}</div>)}
       </div>
     </div>
@@ -211,7 +211,7 @@ function DebugPanel() {
         <input placeholder="Filter (e.g. text, !exclude)" className="h-7 w-72 rounded-md border border-white/[0.08] bg-[#2a2a2a] px-2 text-[12px] text-[#dce4ff] outline-none placeholder-[#858b98] focus:border-[#62aaff]/70" />
         <PanelToolButton icon={Search} title="Buscar en debug" />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 font-mono text-[12px] leading-6 text-[#b7c1de]">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 font-mono text-[12px] leading-6 text-[var(--cipher-text)]">
         {debugLog.map((entry, index) => <div key={index}>{entry}</div>)}
       </div>
       <div className="flex h-11 flex-shrink-0 items-center gap-2 border-t border-white/[0.07] px-3">
@@ -262,14 +262,14 @@ function PortsPanel() {
   return (
     <div className="flex h-full flex-col overflow-hidden text-[12px]">
       <div className="flex h-10 items-center justify-between border-b border-white/[0.06] px-3">
-        <span className="text-[#8d99bd]">Local forwarded and detected ports</span>
+        <span className="text-[var(--cipher-muted-blue)]">Local forwarded and detected ports</span>
         <PanelToolButton icon={RefreshCw} title="Refresh ports" onClick={refresh} />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {loading ? (
           <div className="text-[#7f8bb0]">Escaneando puertos locales...</div>
         ) : ports.length === 0 ? (
-          <div className="rounded-md border border-white/[0.08] bg-[#151515] p-4 text-[#8d99bd]">
+          <div className="rounded-md border border-white/[0.08] bg-[#151515] p-4 text-[var(--cipher-muted-blue)]">
             No hay servidores locales escuchando o no se pudo consultar el sistema.
           </div>
         ) : (
@@ -277,11 +277,11 @@ function PortsPanel() {
             {ports.map(port => (
               <div key={port.port} className="grid grid-cols-[100px_1fr_90px_110px] items-center border-b border-white/[0.06] px-3 py-2 last:border-b-0 hover:bg-white/[0.04]">
                 <span className="font-mono text-[#dce4ff]">:{port.port}</span>
-                <span className="truncate text-[#b7c1de]">{port.url}</span>
+                <span className="truncate text-[var(--cipher-text)]">{port.url}</span>
                 <span className="text-[#7f8bb0]">PID {port.pid || '-'}</span>
                 <span className="flex justify-end gap-1">
-                  <button onClick={() => window.cipher.openExternal(port.url)} className="rounded p-1 text-[#8d99bd] hover:bg-white/[0.08] hover:text-white" title="Open in browser"><ExternalLink size={14} /></button>
-                  <button onClick={() => navigator.clipboard?.writeText(port.url)} className="rounded p-1 text-[#8d99bd] hover:bg-white/[0.08] hover:text-white" title="Copy URL"><Copy size={14} /></button>
+                  <button onClick={() => window.cipher.openExternal(port.url)} className="rounded p-1 text-[var(--cipher-muted-blue)] hover:bg-white/[0.08] hover:text-white" title="Open in browser"><ExternalLink size={14} /></button>
+                  <button onClick={() => navigator.clipboard?.writeText(port.url)} className="rounded p-1 text-[var(--cipher-muted-blue)] hover:bg-white/[0.08] hover:text-white" title="Copy URL"><Copy size={14} /></button>
                 </span>
               </div>
             ))}
@@ -314,7 +314,7 @@ function CloudPanel() {
   return (
     <div className="flex h-full flex-col overflow-hidden text-[12px]">
       <div className="flex h-10 items-center justify-between border-b border-white/[0.06] px-3">
-        <span className="text-[#8d99bd]">Cloud providers</span>
+        <span className="text-[var(--cipher-muted-blue)]">Cloud providers</span>
         <PanelToolButton icon={RefreshCw} title="Refresh cloud status" onClick={refresh} />
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-[220px_1fr] overflow-hidden">
@@ -326,7 +326,7 @@ function CloudPanel() {
                 key={provider.id}
                 onClick={() => setSelected(provider.id)}
                 className={`mb-1 flex w-full items-center justify-between rounded-md px-3 py-2 text-left transition-all ${
-                  selected === provider.id ? 'bg-white/[0.08] text-white' : 'text-[#b7c1de] hover:bg-white/[0.05]'
+                  selected === provider.id ? 'bg-white/[0.08] text-white' : 'text-[var(--cipher-text)] hover:bg-white/[0.05]'
                 }`}
               >
                 <span className="flex items-center gap-2"><Globe2 size={14} /> {provider.label}</span>
@@ -340,7 +340,7 @@ function CloudPanel() {
         <div className="overflow-y-auto p-4">
           <div className="mb-3 text-[13px] font-medium text-[#dce4ff]">{current.label}</div>
           <div className="rounded-md border border-white/[0.08] bg-[#151515] p-4">
-            <div className="mb-2 text-[#b7c1de]">CLI: <span className="font-mono">{current.command}</span></div>
+            <div className="mb-2 text-[var(--cipher-text)]">CLI: <span className="font-mono">{current.command}</span></div>
             <div className={currentStatus?.installed ? 'text-[#73d18c]' : 'text-[#ffcc66]'}>
               {currentStatus?.installed ? currentStatus.version : 'CLI no detectada en PATH.'}
             </div>
@@ -416,7 +416,7 @@ export default function BottomPanel() {
                 <Icon size={13} />
                 {tab.label}
                 {problemCount !== null && (
-                  <span className="rounded-full bg-[#ff6b6b]/18 px-1.5 py-0.5 text-[10px] text-[#ff9a9a]">
+                  <span className="rounded-full bg-[var(--cipher-status-err)]/18 px-1.5 py-0.5 text-[10px] text-[var(--cipher-status-err)]">
                     {problemCount}
                   </span>
                 )}

@@ -243,8 +243,8 @@ function FocusModeHint() {
 
   return (
     <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-      <div className="cipher-fade-up flex items-center gap-2.5 rounded-xl border border-white/[0.1] bg-[#10131f]/90 px-4 py-2.5 text-[12px] text-[#8d99bd] shadow-2xl backdrop-blur-sm">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#7c4dff]" />
+      <div className="cipher-fade-up flex items-center gap-2.5 rounded-xl border border-white/[0.1] bg-[var(--cipher-surface)]/90 px-4 py-2.5 text-[12px] text-[var(--cipher-muted-blue)] shadow-2xl backdrop-blur-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-[var(--cipher-violet)]" />
         Modo enfoque activo
         <kbd className="rounded border border-white/[0.1] bg-white/[0.06] px-2 py-0.5 text-[11px]">Esc</kbd>
         para salir

@@ -77,10 +77,10 @@ function StatusBadge({ exists }: { exists: boolean | null }) {
   return (
     <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
       exists
-        ? 'bg-[#2ea043]/15 text-[#3fb950]'
-        : 'bg-white/[0.06] text-[#6b7280]'
+        ? 'bg-[var(--cipher-status-ok)]/15 text-[var(--cipher-status-ok)]'
+        : 'bg-white/[0.06] text-[var(--cipher-muted-ink)]'
     }`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${exists ? 'bg-[#3fb950]' : 'bg-[#6b7280]'}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${exists ? 'bg-[var(--cipher-status-ok)]' : 'bg-[var(--cipher-muted-ink)]'}`} />
       {exists ? 'Memoria activa' : 'Sin memoria'}
     </span>
   )
@@ -312,7 +312,7 @@ export default function MemoryPanel() {
         {generating ? (
           <button
             onClick={stopGeneration}
-            className="flex h-9 flex-1 items-center justify-center gap-2 rounded-xl bg-[#ff6b6b]/20 text-[12px] text-[#ff9a9a] transition-all hover:bg-[#ff6b6b]/30"
+            className="flex h-9 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--cipher-status-err)]/20 text-[12px] text-[var(--cipher-status-err)] transition-all hover:bg-[var(--cipher-status-err)]/30"
           >
             <X size={13} />
             Detener
@@ -334,14 +334,14 @@ export default function MemoryPanel() {
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-accent)] hover:text-white disabled:opacity-40"
           title="Guardar memoria (Ctrl+S)"
         >
-          {saved ? <CheckCircle2 size={14} className="text-[#3fb950]" /> : <Save size={14} />}
+          {saved ? <CheckCircle2 size={14} className="text-[var(--cipher-status-ok)]" /> : <Save size={14} />}
         </button>
 
         {/* Reset */}
         <button
           onClick={clearMemory}
           disabled={generating}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] text-[var(--cipher-text-muted)] transition-all hover:border-[#ff6b6b]/50 hover:text-[#ff9a9a] disabled:opacity-40"
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-status-err)]/50 hover:text-[var(--cipher-status-err)] disabled:opacity-40"
           title="Limpiar memoria"
         >
           <RotateCcw size={14} />
@@ -358,9 +358,9 @@ export default function MemoryPanel() {
 
       {/* Error */}
       {error && (
-        <div className="flex flex-shrink-0 items-start gap-2 border-b border-[#ff6b6b]/20 bg-[#ff6b6b]/08 px-5 py-3">
-          <span className="text-[12px] leading-relaxed text-[#ff9a9a]">{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto text-[#ff6b6b] hover:text-white">
+        <div className="flex flex-shrink-0 items-start gap-2 border-b border-[var(--cipher-status-err)]/20 bg-[var(--cipher-status-err)]/08 px-5 py-3">
+          <span className="text-[12px] leading-relaxed text-[var(--cipher-status-err)]">{error}</span>
+          <button onClick={() => setError(null)} className="ml-auto text-[var(--cipher-status-err)] hover:text-white">
             <X size={13} />
           </button>
         </div>
