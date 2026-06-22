@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs')
 const os = require('os')
 const { registerDbHandlers } = require('./db-bridge')
+const { registerMcpHandlers } = require('./mcp')
 const { initUpdater } = require('./updater')
 
 
@@ -1756,6 +1757,7 @@ ipcMain.handle('project-scan', (event, folderPath, maxFiles = 40) => {
 app.whenReady().then(() => {
   registerDbHandlers()
   createWindow()
+  registerMcpHandlers(mainWindow)
   initUpdater(mainWindow)
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

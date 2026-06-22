@@ -107,5 +107,20 @@ contextBridge.exposeInMainWorld('cipher', {
   dbInsertRow:  (params)                    => ipcRenderer.invoke('db:insert-row',  params),
   dbDeleteRow:  (params)                    => ipcRenderer.invoke('db:delete-row',  params),
   dbCreateSqlite:(params)                    => ipcRenderer.invoke('db:create-sqlite',params),
+
+  // ── MCP (Model Context Protocol) ──────────────────────
+  mcpListServers:  ()                => ipcRenderer.invoke('mcp:list-servers'),
+  mcpAddServer:    (server)          => ipcRenderer.invoke('mcp:add-server', server),
+  mcpRemoveServer: (id)              => ipcRenderer.invoke('mcp:remove-server', id),
+  mcpConnect:      (id)              => ipcRenderer.invoke('mcp:connect', id),
+  mcpDisconnect:   (id)              => ipcRenderer.invoke('mcp:disconnect', id),
+  mcpListTools:    (id)              => ipcRenderer.invoke('mcp:list-tools', id),
+  mcpCallTool:     (params)          => ipcRenderer.invoke('mcp:call-tool', params),
+  mcpTestServer:   (server)          => ipcRenderer.invoke('mcp:test-server', server),
+  onMcpServerStatus: (callback) => {
+    const listener = (event, snapshot) => callback(snapshot)
+    ipcRenderer.on('mcp:server-status', listener)
+    return () => ipcRenderer.removeListener('mcp:server-status', listener)
+  },
 })
 

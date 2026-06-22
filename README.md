@@ -25,8 +25,10 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 - Soporte a **Composer**: modificación paralela de archivos con un panel de revisión de cambios antes de aplicar.
 
 ### 🔌 Panel de MCP Independiente (Model Context Protocol)
-- Panel de control dedicado en el sidebar para gestionar conexiones MCP.
-- Registra y monitoriza servidores Stdio (locales) y SSE (HTTP remotos) de manera visual.
+- Cliente MCP **real y funcional**: handshake `initialize`, descubrimiento de `tools/list` y ejecución de `tools/call` sobre transporte **Stdio** (comando local) y **SSE** (HTTP).
+- Persistencia de servidores en `~/.cipher/mcp-servers.json` con auto-arranque opcional.
+- Panel de control dedicado en el sidebar: registra, conecta/desconecta, prueba conexión y explora las herramientas que expone cada servidor.
+- Estado de conexión en tiempo real (conectado / conectando / error) con el último mensaje de error visible.
 - Completamente desvinculado del chat del agente para mantener la arquitectura limpia.
 
 ### 💾 SQL Explorer & Conexiones Docker

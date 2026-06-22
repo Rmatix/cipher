@@ -77,6 +77,17 @@ export interface CipherAPI {
   dbInsertRow: (params: { connId: string; table: string; row: any }) => Promise<any>
   dbDeleteRow: (params: { connId: string; table: string; rowKey: any }) => Promise<any>
   dbCreateSqlite: (params: { filePath: string }) => Promise<{ ok: boolean; error?: string }>
+
+  // ── MCP (Model Context Protocol) ──────────────────────
+  mcpListServers: () => Promise<McpServerStatus[]>
+  mcpAddServer: (server: McpServerConfig) => Promise<McpServerConfig>
+  mcpRemoveServer: (id: string) => Promise<boolean>
+  mcpConnect: (id: string) => Promise<{ ok: boolean; error?: string }>
+  mcpDisconnect: (id: string) => Promise<{ ok: boolean }>
+  mcpListTools: (id: string) => Promise<McpTool[]>
+  mcpCallTool: (params: { id: string; name: string; args?: Record<string, unknown> }) => Promise<{ result?: McpToolResult; error?: string }>
+  mcpTestServer: (server: McpServerConfig) => Promise<{ ok: boolean; error?: string; toolCount: number }>
+  onMcpServerStatus: (callback: (snapshot: McpServerStatus[]) => void) => () => void
 }
 
 // ── AI types ─────────────────────────────────────────────
@@ -223,6 +234,38 @@ export interface GitStatus {
 export interface GitResult {
   success: boolean
   error?: string
+}
+
+// ── MCP types ────────────────────────────────────────────
+
+export interface McpServerConfig {
+  id?: string
+  name: string
+  transport: 'sse' | 'stdio'
+  url?: string
+  command?: string
+  args?: string[]
+  env?: Record<string, string>
+  headers?: Record<string, string>
+  autoStart?: boolean
+}
+
+export interface McpServerStatus extends McpServerConfig {
+  id: string
+  status: 'disconnected' | 'connecting' | 'connected' | 'error'
+  error?: string | null
+  toolCount: number
+}
+
+export interface McpTool {
+  name: string
+  description?: string
+  inputSchema?: Record<string, unknown>
+}
+
+export interface McpToolResult {
+  content?: Array<{ type: string; text?: string }>
+  isError?: boolean
 }
 
 // ── Global ───────────────────────────────────────────────
