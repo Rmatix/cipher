@@ -3,6 +3,7 @@ import {
   Bot, Code2, Focus, Keyboard, KeyRound,
   MonitorCheck, Palette, RotateCcw, Save, Server,
   SlidersHorizontal, TestTube2, X, Trash2, Plus,
+  CheckCircle2, XCircle, Loader2, RefreshCw,
 } from 'lucide-react'
 import { useStore, BUILT_IN_THEMES } from '../../store/useStore'
 
@@ -322,6 +323,51 @@ ${editingSkillPrompt.trim()}`
   const saveProviderKey = (id: string) => {
     localStorage.setItem(providerKeyId(id), providerKeys[id] || '')
     showStatus(`${PROVIDER_KEYS.find(item => item.id === id)?.label} guardado.`)
+    // Reset detection state when key changes
+    setDetectedModels(prev => ({ ...prev, [id]: [] }))
+    setProviderStatus(prev => ({ ...prev, [id]: 'idle' }))
+  }
+
+  // ── Dynamic model detection ─────────────────────────────
+  const [detectedModels, setDetectedModels] = useState<Record<string, { id: string; name: string }[]>>({})
+  const [providerStatus, setProviderStatus] = useState<Record<string, 'idle' | 'testing' | 'valid' | 'invalid' | 'nokey'>>({})
+
+  const detectModels = async (providerId: string) => {
+    const key = providerKeys[providerId] || ''
+    const label = PROVIDER_KEYS.find(item => item.id === providerId)?.label || providerId
+
+    // Anthropic uses static list — no detection needed
+    if (providerId === 'anthropic') {
+      setProviderStatus(prev => ({ ...prev, [providerId]: 'valid' }))
+      showStatus(`${label}: modelos conocidos disponibles (sin endpoint de listado).`)
+      return
+    }
+
+    if (!key.trim()) {
+      setProviderStatus(prev => ({ ...prev, [providerId]: 'nokey' }))
+      showStatus(`${label}: ingresa una API key primero.`)
+      return
+    }
+
+    setProviderStatus(prev => ({ ...prev, [providerId]: 'testing' }))
+    try {
+      const models = await window.cipher.aiListModels({
+        provider: providerId,
+        apiKey: key,
+        baseUrl: providerId === 'nim' ? 'https://integrate.api.nvidia.com' : undefined,
+      })
+      if (models && models.length > 0) {
+        setDetectedModels(prev => ({ ...prev, [providerId]: models }))
+        setProviderStatus(prev => ({ ...prev, [providerId]: 'valid' }))
+        showStatus(`${label}: ${models.length} modelo${models.length !== 1 ? 's' : ''} detectado${models.length !== 1 ? 's' : ''}.`)
+      } else {
+        setProviderStatus(prev => ({ ...prev, [providerId]: 'invalid' }))
+        showStatus(`${label}: key inválida o sin modelos disponibles.`)
+      }
+    } catch {
+      setProviderStatus(prev => ({ ...prev, [providerId]: 'invalid' }))
+      showStatus(`${label}: error al conectar con el proveedor.`)
+    }
   }
 
   const saveModelKey = () => {
@@ -462,26 +508,68 @@ ${editingSkillPrompt.trim()}`
           sub="Se usan como fallback para todos los modelos del proveedor."
         />
         <div className="space-y-3">
-          {PROVIDER_KEYS.map(item => (
-            <div key={item.id} className="space-y-1">
-              <label className="text-[12px] font-medium text-[var(--cipher-text)]">{item.label}</label>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  value={providerKeys[item.id] || ''}
-                  onChange={e => setProviderKeys(k => ({ ...k, [item.id]: e.target.value }))}
-                  placeholder={item.hint}
-                  className={inputCls}
-                />
-                <button
-                  onClick={() => saveProviderKey(item.id)}
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-accent)] hover:text-white"
-                >
-                  <Save size={15} />
-                </button>
+          {PROVIDER_KEYS.map(item => {
+            const status = providerStatus[item.id] || 'idle'
+            const models = detectedModels[item.id] || []
+            return (
+              <div key={item.id} className="space-y-1">
+                <label className="text-[12px] font-medium text-[var(--cipher-text)]">{item.label}</label>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={providerKeys[item.id] || ''}
+                    onChange={e => setProviderKeys(k => ({ ...k, [item.id]: e.target.value }))}
+                    placeholder={item.hint}
+                    className={inputCls}
+                  />
+                  <button
+                    onClick={() => saveProviderKey(item.id)}
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-accent)] hover:text-white"
+                    title="Guardar API key"
+                  >
+                    <Save size={15} />
+                  </button>
+                  <button
+                    onClick={() => detectModels(item.id)}
+                    disabled={status === 'testing'}
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] text-[var(--cipher-text-muted)] transition-all hover:border-[var(--cipher-accent)] hover:text-white disabled:opacity-50"
+                    title="Probar y detectar modelos"
+                  >
+                    {status === 'testing'
+                      ? <Loader2 size={15} className="animate-spin" />
+                      : status === 'valid'
+                        ? <CheckCircle2 size={15} className="text-green-400" />
+                        : status === 'invalid'
+                          ? <XCircle size={15} className="text-red-400" />
+                          : <RefreshCw size={15} />}
+                  </button>
+                </div>
+                {/* Status hint */}
+                {status === 'nokey' && (
+                  <p className="text-[11px] text-[var(--cipher-text-muted)] italic">Ingresa una API key y guárdala primero.</p>
+                )}
+                {status === 'invalid' && (
+                  <p className="text-[11px] text-red-400/80 italic">La key no es válida o el proveedor no respondió.</p>
+                )}
+                {/* Detected models list */}
+                {status === 'valid' && models.length > 0 && (
+                  <div className="rounded-lg border border-[var(--cipher-border)] bg-[var(--cipher-bg)] p-2 max-h-40 overflow-y-auto">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--cipher-text-muted)] mb-1 px-1">
+                      {models.length} modelo{models.length !== 1 ? 's' : ''} disponible{models.length !== 1 ? 's' : ''}
+                    </div>
+                    {models.slice(0, 30).map(m => (
+                      <div key={m.id} className="truncate rounded px-1.5 py-1 text-[11px] text-[var(--cipher-text)] hover:bg-[var(--cipher-surface-alt)]" title={m.id}>
+                        {m.name}
+                      </div>
+                    ))}
+                    {models.length > 30 && (
+                      <div className="px-1.5 py-1 text-[11px] text-[var(--cipher-text-muted)] italic">+{models.length - 30} más…</div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

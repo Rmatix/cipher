@@ -87,11 +87,10 @@ Cipher Studio es un editor de código open source para Windows, construido con E
 - Compatibilidad inicial con Claude Code y OpenAI Codex CLI.
 - Configuracion de API keys por proveedor y por modelo.
 - **Configuración avanzada de Endpoints Personalizados:** Permite crear y agrupar múltiples modelos (cada uno con su nombre técnico y un alias opcional legible) bajo endpoints personalizados con URLs específicas para OpenRouter, NVIDIA NIM, Ollama (tanto servidores locales como remotos en la nube) u otros proveedores compatibles con OpenAI.
-- **Sincronización de Modelos en tiempo real:** El selector rápido de modelos de la barra superior (header) y el selector del panel lateral de IA están sincronizados al 100%. Comparten los mismos estados de autodetección (Ollama/LM Studio) y los modelos de "Pronto" (indisponibles temporalmente en la API) aparecen correctamente deshabilitados en ambos.
-- Los modelos marcados como "pronto" aun no estan disponibles en todas las APIs de sus proveedores (verificado al 9 de junio 2026). Entre los modelos que estarán disponibles próximamente:
-  - Claude Opus 4.5, Claude Sonnet 4.5 y Claude Haiku 4.5 (Anthropic)
-  - GPT-4.1, GPT-4.1 Mini, o4-mini (OpenAI)
-  - Llama 4 Scout y Llama 4 Maverick (vía OpenRouter y NVIDIA NIM)
+- **Detección dinámica de modelos:** Al guardar una API key en Configuración, Cipher consulta el endpoint de modelos del proveedor y lista automáticamente los que tu cuenta tiene disponibles. Ya no hay listas fijas ni modelos "Pronto" — solo aparecen los modelos reales a los que tienes acceso. El selector rápido de la barra superior y el del panel de IA están sincronizados y comparten el mismo cache de detección.
+  - Ollama y LM Studio se autodetectan al inicio (servidores locales).
+  - Anthropic no expone un endpoint público de listado, por lo que Cipher mantiene una lista mínima conocida y vigente.
+- **Sincronización de Modelos en tiempo real:** El selector rápido de modelos de la barra superior (header) y el selector del panel lateral de IA están sincronizados al 100% y comparten el cache de detección dinámica.
 
 ### Interfaz
 

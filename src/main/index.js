@@ -1374,6 +1374,120 @@ ipcMain.handle('lmstudio-list', async (event, url) => {
   }
 })
 
+// ── AI Dynamic Model Listing ────────────────────────────────
+// Lists available models from a provider's API using the user's API key.
+// Returns an array of { id, name } objects.
+
+const PROVIDER_MODEL_ENDPOINTS = {
+  openai: {
+    url: 'https://api.openai.com/v1/models',
+    header: (key) => ({ 'Authorization': `Bearer ${key}` }),
+    parse: (data) => (data.data || []).map(m => ({ id: m.id, name: m.id })),
+  },
+  anthropic: {
+    // Anthropic has no public /models endpoint — return known models
+    static: [
+      { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
+      { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' },
+      { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
+      { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus' },
+    ],
+  },
+  google: {
+    url: (key) => `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`,
+    header: () => ({}),
+    parse: (data) => {
+      const models = data.models || []
+      return models
+        .filter(m => m.supportedGenerationMethods?.includes('generateContent') || m.supportedGenerationMethods?.includes('generateMessage'))
+        .map(m => ({ id: m.name.replace('models/', ''), name: m.displayName || m.name.replace('models/', '') }))
+    },
+  },
+  deepseek: {
+    url: 'https://api.deepseek.com/v1/models',
+    header: (key) => ({ 'Authorization': `Bearer ${key}` }),
+    parse: (data) => (data.data || []).map(m => ({ id: m.id, name: m.id })),
+  },
+  openrouter: {
+    url: 'https://openrouter.ai/api/v1/models',
+    header: (key) => key ? { 'Authorization': `Bearer ${key}` } : {},
+    parse: (data) => {
+      const models = data.data || []
+      return models.map(m => ({
+        id: m.id,
+        name: m.name || m.id,
+      })).filter(m => {
+        // Filter out embedding-only models
+        const id = m.id.toLowerCase()
+        return !id.includes('embed') && !id.includes('image') && !id.includes('audio') && !id.includes('tts')
+      })
+    },
+  },
+  nim: {
+    // NVIDIA NIM — requires base URL from user config
+    url: (key, baseUrl) => `${(baseUrl || 'https://integrate.api.nvidia.com').replace(/\/$/, '')}/v1/models`,
+    header: (key) => ({ 'Authorization': `Bearer ${key}` }),
+    parse: (data) => (data.data || []).map(m => ({ id: m.id, name: m.id })),
+  },
+  kimi: {
+    url: 'https://api.moonshot.cn/v1/models',
+    header: (key) => ({ 'Authorization': `Bearer ${key}` }),
+    parse: (data) => (data.data || []).map(m => ({ id: m.id, name: m.id })),
+  },
+  qwen: {
+    url: 'https://dashscope.aliyuncs.com/compatible-mode/v1/models',
+    header: (key) => ({ 'Authorization': `Bearer ${key}` }),
+    parse: (data) => (data.data || []).map(m => ({ id: m.id, name: m.id })),
+  },
+  ollama: {
+    // Ollama already has its own handler — delegate
+    delegate: 'ollama',
+  },
+  lmstudio: {
+    // LM Studio already has its own handler — delegate
+    delegate: 'lmstudio',
+  },
+}
+
+ipcMain.handle('ai-list-models', async (event, { provider, apiKey, baseUrl }) => {
+  if (!provider) return []
+  const config = PROVIDER_MODEL_ENDPOINTS[provider]
+  if (!config) return []
+
+  // Static / Anthropic fallback
+  if (config.static) return config.static
+
+  // Delegate to existing handlers for Ollama / LM Studio
+  if (config.delegate === 'ollama') {
+    try {
+      const host = baseUrl || process.env.OLLAMA_HOST || 'http://localhost:11434'
+      const response = await fetch(`${host}/api/tags`)
+      const data = await response.json()
+      return (data.models || []).map(m => ({ id: m.name, name: m.name }))
+    } catch { return [] }
+  }
+  if (config.delegate === 'lmstudio') {
+    try {
+      const host = baseUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234'
+      const response = await fetch(`${host}/v1/models`)
+      const data = await response.json()
+      return (data.data || []).map(m => ({ id: m.id, name: m.id }))
+    } catch { return [] }
+  }
+
+  // Standard fetch-based providers
+  try {
+    const endpointUrl = typeof config.url === 'function' ? config.url(apiKey, baseUrl) : config.url
+    const headers = config.header(apiKey || '')
+    const response = await fetch(endpointUrl, { headers, signal: AbortSignal.timeout(10000) })
+    if (!response.ok) return []
+    const data = await response.json()
+    return config.parse(data)
+  } catch {
+    return []
+  }
+})
+
 // ── Claude Code / Codex CLI ──────────────────────────────
 
 function getCliCommand(tool) {

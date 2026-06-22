@@ -11,73 +11,13 @@ export interface ModelGroup {
   options: ModelOption[]
 }
 
-export const STATIC_MODELS: ModelGroup[] = [
-  {
-    group: 'Anthropic',
-    options: [
-      { value: 'claude-opus-4-5', label: 'Claude Opus 4.5', soon: true },
-      { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5', soon: true },
-      { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5', soon: true },
-      { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
-      { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
-    ],
-  },
-  {
-    group: 'OpenAI',
-    options: [
-      { value: 'gpt-4.1', label: 'GPT-4.1', soon: true },
-      { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', soon: true },
-      { value: 'gpt-4o', label: 'GPT-4o' },
-      { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-      { value: 'o3', label: 'o3' },
-      { value: 'o4-mini', label: 'o4-mini', soon: true },
-      { value: 'o3-mini', label: 'o3-mini' },
-      { value: 'gpt-4.5-preview', label: 'GPT-4.5 Preview' },
-    ],
-  },
-  {
-    group: 'Google',
-    options: [
-      { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-      { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-      { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-      { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
-      { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
-      { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
-    ],
-  },
-  {
-    group: 'DeepSeek',
-    options: [
-      { value: 'deepseek-chat', label: 'DeepSeek V3 (Chat)' },
-      { value: 'deepseek-reasoner', label: 'DeepSeek R1 (Reasoner)' },
-    ],
-  },
-  {
-    group: 'Kimi (Moonshot)',
-    options: [
-      { value: 'kimi:moonshot-v1-8k', label: 'Kimi v1 8k' },
-      { value: 'kimi:moonshot-v1-32k', label: 'Kimi v1 32k' },
-      { value: 'kimi:moonshot-v1-128k', label: 'Kimi v1 128k' },
-      { value: 'kimi:kimi-vl-a3b-thinking', label: 'Kimi VL Thinking', soon: true },
-    ],
-  },
-  {
-    group: 'Qwen (Alibaba)',
-    options: [
-      { value: 'qwen:qwen-plus', label: 'Qwen Plus' },
-      { value: 'qwen:qwen-turbo', label: 'Qwen Turbo' },
-      { value: 'qwen:qwen-max', label: 'Qwen Max' },
-      { value: 'qwen:qwen2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder 32B' },
-      { value: 'qwen:qwq-32b', label: 'QwQ 32B' },
-    ],
-  },
-  {
-    group: 'LM Studio (local)',
-    options: [
-      { value: 'lmstudio:local', label: 'Modelo activo' },
-    ],
-  },
+// Only used for Anthropic (no public /models endpoint).
+// All other providers fetch models dynamically via ai-list-models.
+export const KNOWN_ANTHROPIC_MODELS: ModelOption[] = [
+  { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
+  { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
+  { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
+  { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus' },
 ]
 
 export const PROVIDERS: ModelGroup[] = [
@@ -88,7 +28,6 @@ export const PROVIDERS: ModelGroup[] = [
       { value: 'nim', label: 'NVIDIA NIM' },
       { value: 'ollama', label: 'Ollama local/nube' },
       { value: 'lmstudio', label: 'LM Studio local' },
-      { value: 'openai-compatible', label: 'Compatible OpenAI' },
       { value: 'openai', label: 'OpenAI' },
       { value: 'anthropic', label: 'Anthropic' },
       { value: 'google', label: 'Google' },
@@ -98,6 +37,30 @@ export const PROVIDERS: ModelGroup[] = [
     ],
   },
 ]
+
+export const PROVIDER_BASE_URLS: Record<string, string> = {
+  openai: 'https://api.openai.com/v1',
+  anthropic: 'https://api.anthropic.com/v1',
+  google: 'https://generativelanguage.googleapis.com',
+  deepseek: 'https://api.deepseek.com/v1',
+  openrouter: 'https://openrouter.ai/api/v1',
+  nim: 'https://integrate.api.nvidia.com',
+  kimi: 'https://api.moonshot.cn/v1',
+  qwen: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+}
+
+export const PROVIDER_LABELS: Record<string, string> = {
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  google: 'Google Gemini',
+  deepseek: 'DeepSeek',
+  openrouter: 'OpenRouter',
+  nim: 'NVIDIA NIM',
+  ollama: 'Ollama',
+  lmstudio: 'LM Studio',
+  kimi: 'Kimi (Moonshot)',
+  qwen: 'Qwen (Alibaba)',
+}
 
 export const isLocalModel = (model: string) =>
   model.startsWith('ollama:') || model.startsWith('lmstudio:')
@@ -127,6 +90,35 @@ export function getStoredApiKey(model: string, fallback?: string) {
     fallback ||
     ''
   )
+}
+
+export function getStoredProviderKey(provider: string): string {
+  return (
+    localStorage.getItem(`cipher-provider-api-key-${provider}`) ||
+    ''
+  )
+}
+
+export function setStoredProviderKey(provider: string, key: string): void {
+  localStorage.setItem(`cipher-provider-api-key-${provider}`, key)
+}
+
+/** Cache key for dynamically fetched models */
+export function modelCacheKey(provider: string): string {
+  return `cipher-models-${provider}`
+}
+
+export function getCachedModels(provider: string): { id: string; name: string }[] {
+  try {
+    const raw = localStorage.getItem(modelCacheKey(provider))
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+export function setCachedModels(provider: string, models: { id: string; name: string }[]): void {
+  localStorage.setItem(modelCacheKey(provider), JSON.stringify(models))
 }
 
 export function resolveCustomModel(

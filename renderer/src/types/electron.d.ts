@@ -37,6 +37,10 @@ export interface CipherAPI {
   ollamaList: (url?: string) => Promise<OllamaModel[]>
   lmstudioList: (url?: string) => Promise<LMStudioModel[]>
 
+  // ── AI dynamic model listing ───────────────────────────
+  aiListModels: (params: AIListModelsParams) => Promise<AIModelInfo[]>
+  deleteFile: (path: string) => Promise<boolean>
+
   // ── Terminal ─────────────────────────────────────────
   terminalCreate: (options?: string | TerminalCreateOptions) => Promise<number>
   terminalInput: (id: number, data: string) => void
@@ -119,6 +123,17 @@ export interface AIChatParams {
   systemPrompt?: string
   ollamaUrl?: string
   lmstudioUrl?: string
+}
+
+export interface AIListModelsParams {
+  provider: string
+  apiKey?: string
+  baseUrl?: string
+}
+
+export interface AIModelInfo {
+  id: string
+  name: string
 }
 
 export interface AIChatResult {

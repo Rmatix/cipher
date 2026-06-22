@@ -20,7 +20,6 @@ import {
 } from 'lucide-react'
 import { useStore } from '../../store/useStore'
 import {
-  STATIC_MODELS,
   PROVIDERS,
   getProviderFromModel,
   getStoredApiKey,
@@ -28,6 +27,7 @@ import {
   isLocalModel,
 } from './models'
 import type { ModelGroup, ModelOption } from './models'
+import { useDynamicModels } from './useDynamicModels'
 
 // ── Types ────────────────────────────────────────────────
 
@@ -171,8 +171,6 @@ export default function AIPanel() {
   const [currentPlan, setCurrentPlan] = useState<string | null>(null)
   const [showCustomModal, setShowCustomModal] = useState(false)
   const [showModelKeyModal, setShowModelKeyModal] = useState(false)
-  const [ollamaModels, setOllamaModels] = useState<ModelGroup | null>(null)
-  const [lmstudioModels, setLmstudioModels] = useState<ModelGroup | null>(null)
 
   // ── Agentic Guidelines & Skills ─────────────────────────
   const [agenticGuidelines, setAgenticGuidelines] = useState<string>('')
@@ -306,45 +304,9 @@ export default function AIPanel() {
     localStorage.setItem('cipher-ai-websearch', String(enableWebSearch))
   }, [enableWebSearch])
 
-  // ── Auto-detect Ollama and LM Studio models ─────────────
-  useEffect(() => {
-    const ollamaUrl = localStorage.getItem('cipher-ollama-url') || 'http://localhost:11434'
-    window.cipher.ollamaList(ollamaUrl).then(models => {
-      if (models.length === 0) return
-      setOllamaModels({
-        group: 'Ollama (local)',
-        options: models.map(m => ({
-          value: `ollama:${m.name}`,
-          label: m.name,
-        })),
-      })
-    }).catch(() => {})
-
-    const lmstudioUrl = localStorage.getItem('cipher-lmstudio-url') || 'http://localhost:1234'
-    window.cipher.lmstudioList(lmstudioUrl).then(models => {
-      if (models.length === 0) return
-      setLmstudioModels({
-        group: 'LM Studio (local)',
-        options: models.map(m => ({
-          value: `lmstudio:${m.id}`,
-          label: m.id,
-        })),
-      })
-    }).catch(() => {})
-  }, [])
-
-  const modelGroups = useMemo<ModelGroup[]>(() => {
-    let base = [...STATIC_MODELS]
-    if (lmstudioModels) {
-      base = base.map(g =>
-        g.group === 'LM Studio (local)' ? lmstudioModels : g
-      )
-    }
-    const merged = ollamaModels
-      ? [...base, ollamaModels]
-      : base
-    if (customModels.length === 0) return merged
-
+  // ── Custom model groups (from user's custom endpoints) ──
+  const customModelGroups = useMemo<ModelGroup[]>(() => {
+    if (customModels.length === 0) return []
     const customGroupsMap = new Map<string, ModelOption[]>()
     customModels.forEach((model, index) => {
       const groupName = model.endpointName || 'Personalizados'
@@ -356,14 +318,15 @@ export default function AIPanel() {
         label: model.alias || model.name || model.modelId,
       })
     })
-
     const customGroupsList: ModelGroup[] = []
     customGroupsMap.forEach((options, group) => {
       customGroupsList.push({ group, options })
     })
+    return customGroupsList
+  }, [customModels])
 
-    return [...merged, ...customGroupsList]
-  }, [customModels, ollamaModels, lmstudioModels])
+  // ── Dynamic model discovery (by provider API key) ────────
+  const { modelGroups } = useDynamicModels(customModelGroups)
 
   const selectedModel = resolveCustomModel(aiModel, customModels)
   const apiKey = apiKeys[aiModel] ?? getStoredApiKey(selectedModel.model, selectedModel.savedKey)
@@ -848,16 +811,26 @@ export default function AIPanel() {
         {messages.length === 0 && (
           <div className="cipher-fade-up rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] p-4 text-[13px] leading-6 text-[var(--cipher-text-muted)]">
             Selecciona un modelo, guarda su key si aplica y usa el boton de prueba para validar la conexion.
-            {ollamaModels && (
-              <p className="mt-2 text-[12px] text-[#5a7a4a]">
-                ✓ Ollama detectado — {ollamaModels.options.length} modelo{ollamaModels.options.length !== 1 ? 's' : ''} disponible{ollamaModels.options.length !== 1 ? 's' : ''}
-              </p>
-            )}
-            {lmstudioModels && (
-              <p className="mt-2 text-[12px] text-[#5a7a4a]">
-                ✓ LM Studio detectado — {lmstudioModels.options.length} modelo{lmstudioModels.options.length !== 1 ? 's' : ''} disponible{lmstudioModels.options.length !== 1 ? 's' : ''}
-              </p>
-            )}
+            {(() => {
+              const ollamaGroup = modelGroups.find(g => g.group === 'Ollama (local)')
+              if (!ollamaGroup) return null
+              const count = ollamaGroup.options.length
+              return (
+                <p className="mt-2 text-[12px] text-[#5a7a4a]">
+                  ✓ Ollama detectado — {count} modelo{count !== 1 ? 's' : ''} disponible{count !== 1 ? 's' : ''}
+                </p>
+              )
+            })()}
+            {(() => {
+              const lmGroup = modelGroups.find(g => g.group === 'LM Studio (local)')
+              if (!lmGroup) return null
+              const count = lmGroup.options.length
+              return (
+                <p className="mt-2 text-[12px] text-[#5a7a4a]">
+                  ✓ LM Studio detectado — {count} modelo{count !== 1 ? 's' : ''} disponible{count !== 1 ? 's' : ''}
+                </p>
+              )
+            })()}
             {projectMemory && (
               <p className="mt-2 text-[12px] text-[var(--cipher-accent)]">
                 ✓ Memoria del proyecto activa — el agente conoce el contexto

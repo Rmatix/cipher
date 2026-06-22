@@ -54,6 +54,9 @@ contextBridge.exposeInMainWorld('cipher', {
   ollamaList: (url) => ipcRenderer.invoke('ollama-list', url),
   lmstudioList: (url) => ipcRenderer.invoke('lmstudio-list', url),
 
+  // ── AI dynamic model listing ───────────────────────────
+  aiListModels: (params) => ipcRenderer.invoke('ai-list-models', params),
+
   // ── Terminal ─────────────────────────────────────────
   terminalCreate: (options) => ipcRenderer.invoke('terminal-create', options),
   terminalInput: (id, data) => ipcRenderer.send('terminal-input', id, data),
