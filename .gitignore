@@ -40,6 +40,8 @@ renderer/dist/
 CLAUDE.md
 .DS_Store
 Thumbs.db
+# Windows reserved-name stray file (created by malformed `2>nul` redirects)
+nul
 
 # Secrets and local config
 .env
