@@ -1,7 +1,7 @@
 {
   "name": "cipher",
   "version": "2.8.0",
-  "description": "Open source code editor with multi-model AI agent",
+  "description": "Open source code editor (Cipher Studio) with multi-model AI agent",
   "main": "src/main/index.js",
   "author": "Rmatix",
   "license": "MIT",

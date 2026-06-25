@@ -4,7 +4,7 @@ interface Props {
   onDone: () => void
 }
 
-const DURATION = 5520
+const DURATION = 2600
 
 // ── Particles ────────────────────────────────────────────
 
@@ -57,13 +57,13 @@ export default function SplashScreen({ onDone }: Props) {
     }, DURATION * 0.4)
 
     // Phases
-    const holdTimer = setTimeout(() => setPhase('hold'), 600)
+    const holdTimer = setTimeout(() => setPhase('hold'), 350)
 
     const exitTimer = setTimeout(() => {
       setPhase('exit')
       clearInterval(progressInterval)
       setProgress(100)
-    }, DURATION - 500)
+    }, DURATION - 400)
 
     const doneTimer = setTimeout(() => {
       if (!doneRef.current) {
@@ -315,7 +315,7 @@ export default function SplashScreen({ onDone }: Props) {
                   : 'sp-subtitle-enter 600ms 420ms cubic-bezier(0.16,1,0.3,1) both',
               }}
             >
-              CODE EDITOR
+              STUDIO
             </p>
           </div>
 

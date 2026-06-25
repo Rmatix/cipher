@@ -54,6 +54,7 @@ export interface CipherAPI {
   maximizeWindow: () => void
   closeWindow: () => void
   isMaximized: () => Promise<boolean>
+  onMaximizedChange: (callback: (isMaximized: boolean) => void) => () => void
   openExternal: (url: string) => Promise<boolean>
   /** Register a listener for theme toggle IPC messages */
   onThemeToggle: (callback: () => void) => () => void

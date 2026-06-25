@@ -534,7 +534,7 @@ export default function MonacoEditor({
               className="mb-10 h-36 w-36 object-contain opacity-85 drop-shadow-[0_0_30px_rgba(122,92,255,0.34)] transition-transform duration-500 hover:scale-105"
             />
             <h1 className="text-6xl font-semibold tracking-[0.1em] leading-normal text-[#eef3ff]">Cipher</h1>
-            <p className="mt-4 text-[13px] font-medium tracking-[0.46em] text-[var(--cipher-text-muted)]">CODE EDITOR</p>
+            <p className="mt-4 text-[13px] font-medium tracking-[0.46em] text-[var(--cipher-text-muted)]">STUDIO</p>
           </div>
 
           <div className="cipher-fade-up flex flex-col gap-5 max-[900px]:order-2">

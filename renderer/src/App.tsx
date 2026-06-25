@@ -70,8 +70,15 @@ export default function App() {
       }
     }
     checkMaximized()
+    // Listen to real maximize/unmaximize events for reliable UI updates
+    const unsubscribe = window.cipher?.onMaximizedChange?.((maximized) => {
+      setIsMaximized(maximized)
+    }) || (() => {})
     window.addEventListener('resize', checkMaximized)
-    return () => window.removeEventListener('resize', checkMaximized)
+    return () => {
+      window.removeEventListener('resize', checkMaximized)
+      unsubscribe()
+    }
   }, [])
 
   const {
@@ -208,7 +215,9 @@ export default function App() {
     <div
       className="flex h-screen w-screen flex-col overflow-hidden bg-[var(--cipher-bg)] text-[var(--cipher-text)]"
       style={{
-        padding: (isMaximized && isWindows) ? '8px' : '0px',
+        // Inset content when the window is floating (restored) so the rounded
+        // border has breathing room; fill everything when maximized.
+        padding: (!isMaximized && isWindows) ? '8px' : '0px',
         borderRadius: isMaximized ? '0px' : '12px',
         border: isMaximized ? 'none' : '1px solid rgba(255, 255, 255, 0.085)',
       }}

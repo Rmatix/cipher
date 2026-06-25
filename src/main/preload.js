@@ -78,6 +78,11 @@ contextBridge.exposeInMainWorld('cipher', {
   maximizeWindow: () => ipcRenderer.send('window-maximize'),
   closeWindow: () => ipcRenderer.send('window-close'),
   isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+  onMaximizedChange: (callback) => {
+    const listener = (event, isMaximized) => callback(isMaximized)
+    ipcRenderer.on('window-maximized-changed', listener)
+    return () => ipcRenderer.removeListener('window-maximized-changed', listener)
+  },
   openDevTools: () => ipcRenderer.send('open-devtools'),
 
   // ── Git ──────────────────────────────────────────────────────────────────

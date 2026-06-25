@@ -202,13 +202,29 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      zoomFactor: 1.08
     },
     frame: false,
-    ...(isMac ? { titleBarStyle: 'hidden' } : {}),
-    title: 'Cipher Code Editor',
+    show: false,
+    ...(isMac ? { titleBarStyle: 'hidden' } : { transparent: true }),
+    title: 'Cipher Studio',
     backgroundColor: '#0d0d1a'
   })
+
+  // Show window only when renderer is ready — eliminates black flash on cold start
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
+  })
+
+  // Notify renderer on maximize/unmaximize so the UI (padding, border radius) updates reliably
+  const broadcastMaximized = () => {
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('window-maximized-changed', mainWindow.isMaximized())
+    }
+  }
+  mainWindow.on('maximize', broadcastMaximized)
+  mainWindow.on('unmaximize', broadcastMaximized)
 
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.type === 'keyDown') {
@@ -1056,7 +1072,7 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://github.com/Rmatix/cipher',
-          'X-Title': 'Cipher Code Editor'
+          'X-Title': 'Cipher Studio'
         },
         body: JSON.stringify({
           model: orModel,
@@ -1304,7 +1320,7 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const tools = openRouterTools(webSearch)
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://github.com/Rmatix/cipher', 'X-Title': 'Cipher Code Editor' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://github.com/Rmatix/cipher', 'X-Title': 'Cipher Studio' },
         body: JSON.stringify({
           model: orModel,
           messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, { ...aiOptions, nativeWebSearch: Boolean(webSearch) }) }, ...messages],

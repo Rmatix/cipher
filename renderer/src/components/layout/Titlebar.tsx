@@ -126,7 +126,7 @@ export default function Titlebar() {
     {
       label: 'Ayuda',
       options: [
-        { label: 'Acerca de Cipher',          action: () => alert('Cipher Code Editor v0.2.0') },
+        { label: 'Acerca de Cipher',          action: () => alert('Cipher Studio v2.9.0') },
         { label: 'Documentacion del proyecto', action: openDocumentation, external: true        },
       ],
     },
@@ -136,7 +136,7 @@ export default function Titlebar() {
     <div className="drag z-50 flex h-14 w-full flex-shrink-0 select-none items-center justify-between border-b border-[var(--cipher-border)] bg-[var(--cipher-surface)]/95">
       <div className="no-drag flex h-full items-center gap-6 pr-4 pl-5">
         <div className="flex items-center gap-2.5 flex-shrink-0">
-          <img src="./logo.png" alt="Cipher Logo" className="h-6 w-6 object-contain flex-shrink-0 transition-transform duration-300 hover:scale-110" />
+          <img src="./logo.png" alt="Cipher Logo" className="h-7 w-7 object-contain flex-shrink-0 transition-transform duration-300 hover:scale-110" />
           <span className="text-[15px] font-semibold text-[var(--cipher-text)] flex-shrink-0">Cipher</span>
         </div>
 
