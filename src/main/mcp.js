@@ -10,12 +10,43 @@
 
 const { ipcMain, app } = require('electron')
 const fs = require('fs')
+const { requireValidAIUrl, getSafeEnv } = require('./url-validator')
 const path = require('path')
 const os = require('os')
 const { spawn } = require('child_process')
 const http = require('http')
 const https = require('https')
 const { URL } = require('url')
+
+function validateCommandBinary(command) {
+  if (!command) return false
+  try {
+    const cmdName = process.platform === 'win32' ? 'where' : 'which'
+    execFileSync(cmdName, [command], { stdio: 'ignore' })
+    return true
+  } catch (e) {
+    try {
+      if (fs.existsSync(command)) {
+        const stat = fs.statSync(command)
+        if (process.platform === 'win32') {
+          return stat.isFile()
+        } else {
+          return stat.isFile() && (stat.mode & 0o111) !== 0
+        }
+      }
+    } catch {}
+    return false
+  }
+}
+
+function sanitizeArg(arg) {
+  if (typeof arg !== 'string') return String(arg)
+  let sanitized = arg.replace(/[&;|<>`$()]/g, '')
+  sanitized = sanitized.replace(/\.\./g, '.')
+  return sanitized
+}
+
+const { execFileSync } = require('child_process')
 
 // ── Persistence ────────────────────────────────────────────
 
@@ -86,7 +117,7 @@ function connectStdio(client, serverConfig) {
   return new Promise((resolve) => {
     const cmd = serverConfig.command
     const args = serverConfig.args || []
-    const env = { ...process.env, ...(serverConfig.env || {}) }
+    const env = getSafeEnv(serverConfig.env || {})
 
     let proc
     try {
@@ -386,6 +417,15 @@ function registerMcpHandlers(mainWindow) {
 
   // Add a new server config and persist
   ipcMain.handle('mcp:add-server', async (event, server) => {
+    if (server.transport === 'stdio') {
+      if (!server.command) {
+        throw new Error('El comando es requerido para transporte stdio')
+      }
+      if (!validateCommandBinary(server.command)) {
+        throw new Error(`El comando '${server.command}' no se resolvió a un binario válido`)
+      }
+    }
+
     const servers = loadServers()
     const newServer = {
       id: server.id || `mcp-${Date.now()}`,
@@ -393,10 +433,11 @@ function registerMcpHandlers(mainWindow) {
       transport: server.transport || 'sse',
       url: server.url || '',
       command: server.command || '',
-      args: server.args || [],
+      args: (server.args || []).map(sanitizeArg),
       env: server.env || {},
       headers: server.headers || {},
       autoStart: server.autoStart !== false,
+      trusted: server.trusted === true,
     }
     // Remove existing with same id, then add
     const filtered = servers.filter(s => s.id !== newServer.id)
@@ -419,6 +460,13 @@ function registerMcpHandlers(mainWindow) {
     const servers = loadServers()
     const config = servers.find(s => s.id === id)
     if (!config) return { ok: false, error: 'Servidor no encontrado' }
+    if (config.transport === 'sse' || !config.transport) {
+      try {
+        requireValidAIUrl(config.url)
+      } catch (urlErr) {
+        return { ok: false, error: urlErr.message }
+      }
+    }
     const ok = await connectServer(config)
     return { ok, error: ok ? null : (clients.get(id)?.error || 'Error de conexión') }
   })
@@ -488,13 +536,24 @@ function registerMcpHandlers(mainWindow) {
 
   // Test a server config (without persisting) — tries to connect and report
   ipcMain.handle('mcp:test-server', async (event, server) => {
+    if (server.transport === 'stdio') {
+      if (!server.command || !validateCommandBinary(server.command)) {
+        return { ok: false, error: `El comando '${server.command || ''}' no es un binario válido` }
+      }
+    } else {
+      try {
+        requireValidAIUrl(server.url)
+      } catch (urlErr) {
+        return { ok: false, error: urlErr.message }
+      }
+    }
     const tempConfig = {
       id: `test-${Date.now()}`,
       name: server.name || 'Test',
       transport: server.transport,
       url: server.url,
       command: server.command,
-      args: server.args,
+      args: (server.args || []).map(sanitizeArg),
       env: server.env,
       headers: server.headers,
       autoStart: false,
@@ -515,7 +574,13 @@ function registerMcpHandlers(mainWindow) {
   setTimeout(() => {
     const servers = loadServers()
     for (const s of servers) {
-      if (s.autoStart !== false) {
+      if (s.autoStart !== false && s.trusted === true) {
+        if (s.transport === 'stdio') {
+          if (!validateCommandBinary(s.command)) {
+            console.error(`MCP: El comando auto-start '${s.command}' no es un binario válido.`)
+            continue
+          }
+        }
         connectServer(s).catch(() => {})
       }
     }

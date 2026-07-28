@@ -35,6 +35,7 @@ renderer/dist/
 
 # Local editor/agent state
 .agents/
+.cipher/
 .claude/
 .vscode/
 .idea/

@@ -1,10 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, shell, session } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
 const { registerDbHandlers } = require('./db-bridge')
 const { registerMcpHandlers } = require('./mcp')
 const { initUpdater } = require('./updater')
+const { requireValidAIUrl, getSafeEnv } = require('./url-validator')
 
 
 let mainWindow = null
@@ -187,7 +188,7 @@ function isTrustedAppNavigation(urlString) {
 
 // Handle open-devtools IPC from renderer
 ipcMain.on('open-devtools', () => {
-  if (mainWindow) mainWindow.webContents.openDevTools({ mode: 'detach' })
+  if (!app.isPackaged && mainWindow) mainWindow.webContents.openDevTools({ mode: 'detach' })
 })
 
 function createWindow() {
@@ -231,8 +232,7 @@ function createWindow() {
       const isControl = process.platform === 'darwin' ? input.meta : input.control
       if (
         (isControl && input.shift && input.key.toLowerCase() === 'i') || // Ctrl+Shift+I
-        input.key === 'F12' || // F12
-        input.key === 'F2' // F2
+        input.key === 'F12' // F12
       ) {
         mainWindow.webContents.openDevTools({ mode: 'detach' })
         event.preventDefault()
@@ -311,7 +311,7 @@ function createTerminal(options = {}) {
     cols: 80,
     rows: 24,
     cwd: spawnCwd,
-    env: process.env
+    env: getSafeEnv()
   })
 
   ptyProcess.onData(data => {
@@ -589,47 +589,95 @@ function decodeHtmlEntities(str) {
 }
 
 async function searchDuckDuckGo(query) {
+  // Strategy 1: HTML scrape (richest results)
   try {
     const response = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      }
+      },
+      signal: AbortSignal.timeout(8000)
     })
-    if (!response.ok) {
-      throw new Error(`DuckDuckGo HTTP ${response.status}`)
-    }
-    const html = await response.text()
-    const results = []
-    const regex = /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g
-    
-    let match
-    let count = 0
-    while ((match = regex.exec(html)) !== null && count < 5) {
-      let url = match[1]
-      if (url.startsWith('//')) {
-        url = 'https:' + url
-      }
-      try {
-        const urlObj = new URL(url)
-        const uddg = urlObj.searchParams.get('uddg')
-        if (uddg) url = uddg
-      } catch {}
+    if (response.ok) {
+      const html = await response.text()
+      const results = []
+      const regex = /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g
 
-      if (url.includes('duckduckgo.com/l/?') && url.includes('ad_provider')) {
-        continue
-      }
+      let match
+      let count = 0
+      while ((match = regex.exec(html)) !== null && count < 5) {
+        let url = match[1]
+        if (url.startsWith('//')) {
+          url = 'https:' + url
+        }
+        try {
+          const urlObj = new URL(url)
+          const uddg = urlObj.searchParams.get('uddg')
+          if (uddg) url = uddg
+        } catch {}
 
-      const title = decodeHtmlEntities(match[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim())
-      const snippet = decodeHtmlEntities(match[3].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim())
-      
-      results.push({ title, url, snippet })
-      count++
+        if (url.includes('duckduckgo.com/l/?') && url.includes('ad_provider')) {
+          continue
+        }
+
+        const title = sanitizeHtmlString(match[2])
+        const snippet = sanitizeHtmlString(match[3])
+
+        results.push({ title, url, snippet })
+        count++
+      }
+      if (results.length > 0) return results
     }
-    return results
   } catch (err) {
-    console.error("DuckDuckGo search failed:", err)
-    return []
+    console.error('DuckDuckGo HTML search failed:', err.message)
   }
+
+  // Strategy 2: JSON Instant Answer API fallback
+  try {
+    const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      signal: AbortSignal.timeout(8000)
+    })
+    if (response.ok) {
+      const data = await response.json()
+      const results = []
+      // Abstract (main answer)
+      if (data.AbstractText) {
+        results.push({
+          title: sanitizeHtmlString(data.Heading || query),
+          url: data.AbstractURL || '',
+          snippet: sanitizeHtmlString(data.AbstractText)
+        })
+      }
+      // Related topics
+      const relatedTopics = data.RelatedTopics || []
+      for (const topic of relatedTopics) {
+        if (results.length >= 5) break
+        if (topic.Text && topic.FirstURL) {
+          results.push({
+            title: sanitizeHtmlString(topic.Text.split(' - ')[0] || topic.Text.slice(0, 80)),
+            url: topic.FirstURL,
+            snippet: sanitizeHtmlString(topic.Text)
+          })
+        }
+      }
+      if (results.length > 0) return results
+    }
+  } catch (err) {
+    console.error('DuckDuckGo JSON search failed:', err.message)
+  }
+
+  // Both strategies failed — return an explicit error result so the user sees why
+  return [{ title: 'Búsqueda fallida', url: '', snippet: 'No se pudieron obtener resultados de DuckDuckGo (posible bloqueo o límite de tasa). Intenta de nuevo más tarde o usa un modelo con búsqueda nativa como OpenRouter.' }]
+}
+
+function sanitizeHtmlString(str) {
+  if (!str) return ''
+  let clean = String(str).replace(/<[^>]+>/g, '')
+  clean = decodeHtmlEntities(clean)
+  clean = clean.replace(/<[^>]+>/g, '')
+  return clean.replace(/\s+/g, ' ').trim()
 }
 
 function toSystemPrompt(context, systemPrompt, options = {}) {
@@ -677,6 +725,15 @@ function formatOpenAIMessages(messages, attachments) {
             url: `data:${att.type};base64,${att.data}`
           }
         })
+      } else if (att.type === 'application/pdf') {
+        // OpenAI Files API format for PDFs (supported by some providers)
+        content.push({
+          type: 'file',
+          file: {
+            filename: att.name || 'document.pdf',
+            file_data: `data:${att.type};base64,${att.data}`
+          }
+        })
       }
     })
     openaiMessages[openaiMessages.length - 1] = { role: 'user', content }
@@ -709,8 +766,13 @@ ipcMain.handle('git-branch', async (event, folderPath) => {
 ipcMain.handle('git-commit', async (event, folderPath, message) => {
   try {
     const safeCwd = requireAllowedPath(folderPath)
+    let sanitized = String(message || '').trim()
+    while (sanitized.startsWith('-')) {
+      sanitized = sanitized.slice(1).trim()
+    }
+    sanitized = sanitized.slice(0, 500)
     execFileSync('git', ['add', '.'], { cwd: safeCwd })
-    execFileSync('git', ['commit', '-m', String(message || '').slice(0, 500)], { cwd: safeCwd })
+    execFileSync('git', ['commit', '-m', sanitized], { cwd: safeCwd })
     return { success: true }
   } catch (e) {
     return { success: false, error: e.message }
@@ -841,6 +903,21 @@ ipcMain.on('ai-stream-abort', (event, streamId) => {
 })
 
 ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages, context, systemPrompt, webSearch = false, thinking = false, ollamaUrl, lmstudioUrl, attachments }) => {
+  try {
+    const parsedEndpoint = parseProviderEndpoint(model)
+    if (parsedEndpoint?.baseUrl) {
+      requireValidAIUrl(parsedEndpoint.baseUrl)
+    }
+    if (ollamaUrl) {
+      requireValidAIUrl(ollamaUrl)
+    }
+    if (lmstudioUrl) {
+      requireValidAIUrl(lmstudioUrl)
+    }
+  } catch (urlErr) {
+    return sendError(streamId, urlErr.message)
+  }
+
   const controller = new AbortController()
   activeAborts.set(streamId, controller)
   const { signal } = controller
@@ -1179,7 +1256,8 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
     if (model.startsWith('lmstudio:') || parsedEndpoint?.provider === 'lmstudio') {
       const lmModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'lmstudio')
       const modelId = lmModel === 'local' ? 'local-model' : lmModel
-      const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages]
+      const formattedMsgs = formatOpenAIMessages(messages, attachments)
+      const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs]
       const host = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : (lmstudioUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234')
       const response = await fetch(`${host}/v1/chat/completions`, {
         method: 'POST',
@@ -1204,7 +1282,8 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
         // No endpoint given — skip
         // fall through
       } else {
-        const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages]
+        const formattedMsgs = formatOpenAIMessages(messages, attachments)
+        const msgs = [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs]
         const response = await fetch(`${baseUrl}/chat/completions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -1233,8 +1312,19 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
 
 // ── ai-chat (sin streaming, para test-model) ─────────────
 
-ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, systemPrompt, webSearch = false, ollamaUrl, lmstudioUrl }) => {
+ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, systemPrompt, webSearch = false, attachments, ollamaUrl, lmstudioUrl }) => {
   try {
+    const parsedEndpoint = parseProviderEndpoint(model)
+    if (parsedEndpoint?.baseUrl) {
+      requireValidAIUrl(parsedEndpoint.baseUrl)
+    }
+    if (ollamaUrl) {
+      requireValidAIUrl(ollamaUrl)
+    }
+    if (lmstudioUrl) {
+      requireValidAIUrl(lmstudioUrl)
+    }
+
     let webSearchResults = null
     if (webSearch) {
       const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
@@ -1270,10 +1360,11 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
     if (model.startsWith('gpt') || model.startsWith('openai:') || /^o[1-9][-.]/.test(model) || parsedEndpoint?.provider === 'openai') {
       const openaiModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'openai')
       const baseUrl = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : 'https://api.openai.com/v1'
+      const formattedMsgs = formatOpenAIMessages(messages, attachments)
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: openaiModel, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages] })
+        body: JSON.stringify({ model: openaiModel, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs] })
       })
       const data = await response.json()
       if (data.error) return { error: data.error.message }
@@ -1305,10 +1396,11 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const lmModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'lmstudio')
       const modelId = lmModel === 'local' ? 'local-model' : lmModel
       const host = parsedEndpoint ? parsedEndpoint.baseUrl.replace(/\/$/, '') : (lmstudioUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234')
+      const formattedMsgs = formatOpenAIMessages(messages, attachments)
       const response = await fetch(`${host}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer lmstudio' },
-        body: JSON.stringify({ model: modelId, stream: false, messages })
+        body: JSON.stringify({ model: modelId, stream: false, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs] })
       })
       const data = await response.json()
       return { text: data.choices[0].message.content }
@@ -1318,12 +1410,13 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const orModel = pe ? pe.modelId : stripProvider(model, 'openrouter')
       const baseUrl = pe ? pe.baseUrl.replace(/\/$/, '') : 'https://openrouter.ai/api/v1'
       const tools = openRouterTools(webSearch)
+      const formattedMsgs = formatOpenAIMessages(messages, attachments)
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://github.com/Rmatix/cipher', 'X-Title': 'Cipher Studio' },
         body: JSON.stringify({
           model: orModel,
-          messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, { ...aiOptions, nativeWebSearch: Boolean(webSearch) }) }, ...messages],
+          messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, { ...aiOptions, nativeWebSearch: Boolean(webSearch) }) }, ...formattedMsgs],
           ...(tools ? { tools } : {})
         })
       })
@@ -1335,10 +1428,11 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const pe = parsedEndpoint
       const nimModel = pe ? pe.modelId : stripProvider(model, 'nim')
       const baseUrl = pe ? pe.baseUrl.replace(/\/$/, '') : 'https://integrate.api.nvidia.com/v1'
+      const formattedMsgs = formatOpenAIMessages(messages, attachments)
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({ model: nimModel, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages] })
+        body: JSON.stringify({ model: nimModel, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs] })
       })
       const data = await response.json()
       if (data.error) return { error: data.error.message }
@@ -1351,10 +1445,11 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       const baseUrl = parts[1]
       const modelId = parts.slice(2).join('|')
       if (baseUrl) {
+        const formattedMsgs = formatOpenAIMessages(messages, attachments)
         const response = await fetch(`${baseUrl}/chat/completions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify({ model: modelId, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...messages] })
+          body: JSON.stringify({ model: modelId, messages: [{ role: 'system', content: toSystemPrompt(context, systemPrompt, aiOptions) }, ...formattedMsgs] })
         })
         const data = await response.json()
         if (data.error) return { error: data.error.message }
@@ -1372,6 +1467,7 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
 ipcMain.handle('ollama-list', async (event, url) => {
   try {
     const host = url || process.env.OLLAMA_HOST || 'http://localhost:11434'
+    requireValidAIUrl(host)
     const response = await fetch(`${host}/api/tags`)
     const data = await response.json()
     return data.models || []
@@ -1383,6 +1479,7 @@ ipcMain.handle('ollama-list', async (event, url) => {
 ipcMain.handle('lmstudio-list', async (event, url) => {
   try {
     const host = url || process.env.LMSTUDIO_HOST || 'http://localhost:1234'
+    requireValidAIUrl(host)
     const response = await fetch(`${host}/v1/models`)
     const data = await response.json()
     return data.data || []
@@ -1468,6 +1565,9 @@ const PROVIDER_MODEL_ENDPOINTS = {
 
 ipcMain.handle('ai-list-models', async (event, { provider, apiKey, baseUrl }) => {
   if (!provider) return []
+  if (baseUrl) {
+    try { requireValidAIUrl(baseUrl) } catch { return [] }
+  }
   const config = PROVIDER_MODEL_ENDPOINTS[provider]
   if (!config) return []
 
@@ -1532,14 +1632,30 @@ ipcMain.handle('ai-cli-check', async (event, tool) => {
 ipcMain.handle('ai-cli-run', async (event, { tool, prompt, cwd, model }) => {
   const cli = getCliCommand(tool)
   if (!cli || !prompt) return { error: 'CLI o prompt invalido' }
+  const sanitizedPrompt = String(prompt).trim().slice(0, 10000)
   const args = tool === 'claude'
-    ? ['-p', prompt]
-    : ['exec', ...(model ? ['--model', model] : []), prompt]
+    ? ['-p', sanitizedPrompt]
+    : ['exec', ...(model ? ['--model', model] : []), sanitizedPrompt]
   try {
+    const resolvedCwd = resolveAllowedCwd(cwd)
+    requireAllowedPath(resolvedCwd)
+
+    try {
+      const auditDir = path.join(os.homedir(), '.cipher')
+      if (!fs.existsSync(auditDir)) {
+        fs.mkdirSync(auditDir, { recursive: true })
+      }
+      const auditPath = path.join(auditDir, 'cli-audit.log')
+      const logEntry = `[${new Date().toISOString()}] Tool: ${tool}, Command: ${cli.command}, Args: ${JSON.stringify(args)}, Cwd: ${resolvedCwd}\n`
+      fs.appendFileSync(auditPath, logEntry, 'utf-8')
+    } catch (auditErr) {
+      console.error('Failed to write to CLI audit log:', auditErr.message)
+    }
+
     const output = execFileSync(cli.command, args, {
-      cwd: resolveAllowedCwd(cwd),
+      cwd: resolvedCwd,
       encoding: 'utf-8',
-      timeout: 120000,
+      timeout: 60000,
       maxBuffer: 1024 * 1024 * 8
     })
     return { text: output.trim() }
@@ -1613,6 +1729,7 @@ Completa:`
     if (model.startsWith('ollama:')) {
       const m = stripProvider(model, 'ollama')
       const host = ollamaUrl || process.env.OLLAMA_HOST || 'http://localhost:11434'
+      requireValidAIUrl(host)
       const res = await fetch(`${host}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1627,6 +1744,7 @@ Completa:`
       const lmModel = stripProvider(model, 'lmstudio')
       const modelId = lmModel === 'local' ? 'local-model' : lmModel
       const host = lmstudioUrl || process.env.LMSTUDIO_HOST || 'http://localhost:1234'
+      requireValidAIUrl(host)
       const res = await fetch(`${host}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer lmstudio' },
@@ -1771,7 +1889,23 @@ ipcMain.handle('project-scan', (event, folderPath, maxFiles = 40) => {
 // ── App lifecycle ────────────────────────────────────────
 
 app.whenReady().then(() => {
-  registerDbHandlers()
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
+    const connectSrc = isDev
+      ? "connect-src 'self' http://localhost:* ws://localhost:* https://api.openai.com https://api.anthropic.com https://api.groq.com https://api.deepseek.com https://api.moonshot.cn https://dashscope.aliyuncs.com https://api.nvidia.com https://generativelanguage.googleapis.com"
+      : "connect-src 'self' http://localhost:* https://api.openai.com https://api.anthropic.com https://api.groq.com https://api.deepseek.com https://api.moonshot.cn https://dashscope.aliyuncs.com https://api.nvidia.com https://generativelanguage.googleapis.com"
+
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; ${connectSrc}; img-src 'self' data: https://*; font-src 'self' data:`
+        ]
+      }
+    })
+  })
+
+  registerDbHandlers(requireAllowedPath)
   createWindow()
   registerMcpHandlers(mainWindow)
   initUpdater(mainWindow)

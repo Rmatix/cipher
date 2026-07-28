@@ -83,7 +83,11 @@ contextBridge.exposeInMainWorld('cipher', {
     ipcRenderer.on('window-maximized-changed', listener)
     return () => ipcRenderer.removeListener('window-maximized-changed', listener)
   },
-  openDevTools: () => ipcRenderer.send('open-devtools'),
+  openDevTools: () => {
+    if (process.env.NODE_ENV === 'development') {
+      ipcRenderer.send('open-devtools')
+    }
+  },
 
   // ── Git ──────────────────────────────────────────────────────────────────
   gitStatus: (folderPath) => ipcRenderer.invoke('git-status', folderPath),

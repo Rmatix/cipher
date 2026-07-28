@@ -16,6 +16,9 @@ let connIdCounter = 0
 // ── SQLite (better-sqlite3) ───────────────────────────────────────────────────
 
 function openSQLite(filePath, createNew = false) {
+  if (requireAllowedPathHelper) {
+    requireAllowedPathHelper(filePath)
+  }
   const fs = require('fs')
   const dir = path.dirname(filePath)
   if (!fs.existsSync(dir)) {
@@ -97,7 +100,10 @@ async function getMysqlSchema(conn, database) {
 
 // ── IPC Handler registration ──────────────────────────────────────────────────
 
-function registerDbHandlers() {
+let requireAllowedPathHelper = null
+
+function registerDbHandlers(requireAllowedPath) {
+  requireAllowedPathHelper = requireAllowedPath
 
   // ── db:connect ──────────────────────────────────────────
   ipcMain.handle('db:connect', async (_event, params) => {
@@ -320,6 +326,9 @@ function registerDbHandlers() {
   // ── db:create-sqlite ────────────────────────────────────
   ipcMain.handle('db:create-sqlite', async (_event, { filePath }) => {
     try {
+      if (requireAllowedPathHelper) {
+        requireAllowedPathHelper(filePath)
+      }
       const db = openSQLite(filePath, true)
       db.close()
       return { ok: true }
@@ -333,13 +342,23 @@ function registerDbHandlers() {
 // ── SQL helpers ───────────────────────────────────────────────────────────────
 
 function quote(col, type) {
-  if (type === 'mssql') return `[${col}]`
-  return `"${col}"`
+  if (type === 'mysql') {
+    return '`' + col.replace(/`/g, '``') + '`'
+  }
+  if (type === 'mssql') {
+    return '[' + col.replace(/\]/g, ']]') + ']'
+  }
+  return '"' + col.replace(/"/g, '""') + '"'
 }
 
 function quoteTable(table, type) {
-  if (type === 'mssql') return `[${table}]`
-  return `"${table}"`
+  if (type === 'mysql') {
+    return '`' + table.replace(/`/g, '``') + '`'
+  }
+  if (type === 'mssql') {
+    return '[' + table.replace(/\]/g, ']]') + ']'
+  }
+  return '"' + table.replace(/"/g, '""') + '"'
 }
 
 function placeholder(type, index) {
