@@ -903,8 +903,8 @@ ipcMain.on('ai-stream-abort', (event, streamId) => {
 })
 
 ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages, context, systemPrompt, webSearch = false, thinking = false, ollamaUrl, lmstudioUrl, attachments }) => {
+  const parsedEndpoint = parseProviderEndpoint(model)
   try {
-    const parsedEndpoint = parseProviderEndpoint(model)
     if (parsedEndpoint?.baseUrl) {
       requireValidAIUrl(parsedEndpoint.baseUrl)
     }
@@ -946,8 +946,6 @@ ipcMain.on('ai-stream-start', async (event, { streamId, model, apiKey, messages,
   }
 
   try {
-
-    const parsedEndpoint = parseProviderEndpoint(model)
 
     // ── Anthropic ──────────────────────────────────────
     if (model.startsWith('claude') || model.startsWith('anthropic:') || parsedEndpoint?.provider === 'anthropic') {
@@ -1342,8 +1340,6 @@ ipcMain.handle('ai-chat', async (event, { model, apiKey, messages, context, syst
       }
     }
     const aiOptions = { webSearch: Boolean(webSearch), webSearchResults }
-
-    const parsedEndpoint = parseProviderEndpoint(model)
 
     if (model.startsWith('claude') || model.startsWith('anthropic:') || parsedEndpoint?.provider === 'anthropic') {
       const anthropicModel = parsedEndpoint ? parsedEndpoint.modelId : stripProvider(model, 'anthropic')
