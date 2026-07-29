@@ -9,6 +9,7 @@ import QueryEditor from './QueryEditor'
 import ResultsTable from './ResultsTable'
 import QueryHistory, { type HistoryEntry } from './QueryHistory'
 import ConnectionModal, { type ConnectionParams } from './ConnectionModal'
+import CreateTableModal from './CreateTableModal'
 
 interface Connection {
   connId: string
@@ -51,6 +52,7 @@ export default function DatabasePanel() {
 
   // ── Modal ──────────────────────────────────────────────
   const [showModal, setShowModal] = useState(false)
+  const [showCreateTableModal, setShowCreateTableModal] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [connectError, setConnectError] = useState<string | null>(null)
 
@@ -143,6 +145,17 @@ export default function DatabasePanel() {
     await runQuery(`SELECT * FROM "${table}" LIMIT 500`, table)
   }, [runQuery])
 
+  const handleCreateTable = useCallback(async (newTableName: string, createSql: string) => {
+    if (!activeConn) return
+    const res = await (window as any).cipher.dbQuery({ connId: activeConn.connId, sql: createSql })
+    if (res.ok) {
+      await loadSchema(activeConn.connId)
+      await handleTableSelect(newTableName)
+    } else {
+      throw new Error(res.error || 'Error al ejecutar CREATE TABLE')
+    }
+  }, [activeConn, handleTableSelect, loadSchema])
+
   // ── Layout helpers ─────────────────────────────────────
   const schemaPanel = (
     <div className="flex h-full flex-col border-r border-[var(--cipher-border)] bg-[var(--cipher-surface)]">
@@ -186,6 +199,7 @@ export default function DatabasePanel() {
             selectedTable={selectedTable}
             connName={activeConn.name}
             onRefresh={() => loadSchema(activeConn.connId)}
+            onCreateTableClick={() => setShowCreateTableModal(true)}
             loading={schemaLoading}
           />
         ) : (
@@ -368,6 +382,13 @@ export default function DatabasePanel() {
           error={connectError}
         />
       )}
+
+      {/* Create Table modal */}
+      <CreateTableModal
+        isOpen={showCreateTableModal}
+        onClose={() => setShowCreateTableModal(false)}
+        onCreate={handleCreateTable}
+      />
     </div>
   )
 }

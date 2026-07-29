@@ -35,6 +35,62 @@ function generateParticles(count: number): Particle[] {
 
 const PARTICLES = generateParticles(40)
 
+function playStartupSound() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    if (!AudioContextClass) return
+    const ctx = new AudioContextClass()
+
+    const masterGain = ctx.createGain()
+    masterGain.gain.setValueAtTime(0.22, ctx.currentTime)
+    masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.2)
+    masterGain.connect(ctx.destination)
+
+    // Frequencies: F#4, C#5, F#5, G#5, C#6 (Futuristic Cyber Chord)
+    const frequencies = [369.99, 554.37, 739.99, 830.61, 1108.73]
+    frequencies.forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const oscGain = ctx.createGain()
+
+      osc.type = idx % 2 === 0 ? 'sine' : 'triangle'
+      osc.frequency.setValueAtTime(freq, ctx.currentTime)
+
+      const startTime = ctx.currentTime + idx * 0.05
+      oscGain.gain.setValueAtTime(0.001, startTime)
+      oscGain.gain.linearRampToValueAtTime(0.15 / (idx + 1), startTime + 0.08)
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 1.8)
+
+      osc.connect(oscGain)
+      oscGain.connect(masterGain)
+
+      osc.start(startTime)
+      osc.stop(startTime + 2.0)
+    })
+
+    // Sub-bass thump
+    const subOsc = ctx.createOscillator()
+    const subGain = ctx.createGain()
+    subOsc.type = 'sine'
+    subOsc.frequency.setValueAtTime(110, ctx.currentTime)
+    subOsc.frequency.exponentialRampToValueAtTime(45, ctx.currentTime + 0.4)
+
+    subGain.gain.setValueAtTime(0.3, ctx.currentTime)
+    subGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+
+    subOsc.connect(subGain)
+    subGain.connect(ctx.destination)
+
+    subOsc.start(ctx.currentTime)
+    subOsc.stop(ctx.currentTime + 0.6)
+
+    setTimeout(() => {
+      ctx.close().catch(() => {})
+    }, 2500)
+  } catch (err) {
+    console.warn('WebAudio chime error:', err)
+  }
+}
+
 export default function SplashScreen({ onDone }: Props) {
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter')
   const [progress, setProgress] = useState(0)
@@ -72,10 +128,8 @@ export default function SplashScreen({ onDone }: Props) {
       }
     }, DURATION)
 
-    // Sound
-    const sound = new Audio('./startup.mp3')
-    sound.volume = 0.34
-    sound.play().catch(() => {})
+    // Web Audio Synthesizer Chime
+    playStartupSound()
 
     return () => {
       clearInterval(progressInterval)
@@ -83,7 +137,6 @@ export default function SplashScreen({ onDone }: Props) {
       clearTimeout(holdTimer)
       clearTimeout(exitTimer)
       clearTimeout(doneTimer)
-      sound.pause()
     }
   }, [onDone])
 

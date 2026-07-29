@@ -443,3 +443,59 @@ html[data-theme] {
 [data-theme='light'] ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.24);
 }
+
+/* ── React Bits Inspired Micro-Interactions & Animation Utilities ── */
+
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; filter: drop-shadow(0 0 8px rgba(122,92,255,0.4)); }
+  50% { opacity: 0.8; filter: drop-shadow(0 0 16px rgba(122,92,255,0.7)); }
+}
+
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  animation: shimmer-sweep 2.5s infinite;
+}
+
+.card-glow-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-glow-hover:hover {
+  border-color: rgba(122, 92, 255, 0.3);
+  box-shadow: 0 4px 20px -2px rgba(122, 92, 255, 0.15);
+}
+
+.active-tab-glow {
+  position: relative;
+}
+
+.active-tab-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: linear-gradient(90deg, #7a5cff, #38bdf8);
+  border-radius: 9999px;
+  box-shadow: 0 0 8px #7a5cff;
+}

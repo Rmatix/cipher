@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { ChevronRight, ChevronDown, Database, Table2, KeyRound, Link2, Hash, RefreshCw } from 'lucide-react'
+import { ChevronRight, ChevronDown, Database, Table2, KeyRound, Link2, Hash, RefreshCw, Plus } from 'lucide-react'
 
 export interface DBColumn {
   name: string
@@ -21,11 +21,12 @@ interface SchemaTreeProps {
   selectedTable: string | null
   connName: string
   onRefresh: () => void
+  onCreateTableClick?: () => void
   loading: boolean
 }
 
 export default function SchemaTree({
-  schema, onTableSelect, selectedTable, connName, onRefresh, loading
+  schema, onTableSelect, selectedTable, connName, onRefresh, onCreateTableClick, loading
 }: SchemaTreeProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
@@ -46,13 +47,24 @@ export default function SchemaTree({
           <Database size={14} className="flex-shrink-0 text-[#60cdff]" />
           <span className="truncate text-[12px] font-semibold text-[var(--cipher-text)]">{connName}</span>
         </div>
-        <button
-          onClick={onRefresh}
-          className="flex h-6 w-6 items-center justify-center rounded text-[var(--cipher-text-muted)] transition-all hover:text-[var(--cipher-text)]"
-          title="Refrescar esquema"
-        >
-          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-        </button>
+        <div className="flex items-center gap-1">
+          {onCreateTableClick && (
+            <button
+              onClick={onCreateTableClick}
+              className="flex items-center gap-1 rounded bg-[var(--cipher-accent)]/10 px-2 py-0.5 text-[10px] font-semibold text-[var(--cipher-accent)] hover:bg-[var(--cipher-accent)]/20 transition-all"
+              title="Crear nueva tabla"
+            >
+              <Plus size={11} /> Tabla
+            </button>
+          )}
+          <button
+            onClick={onRefresh}
+            className="flex h-6 w-6 items-center justify-center rounded text-[var(--cipher-text-muted)] transition-all hover:text-[var(--cipher-text)]"
+            title="Refrescar esquema"
+          >
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* Table list */}

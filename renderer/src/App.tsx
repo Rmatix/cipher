@@ -53,8 +53,7 @@ function AppEntrance({ children }: { children: React.ReactNode }) {
 
 // ── Main App Component ───────────────────────────────────
 export default function App() {
-  const skipSplash = localStorage.getItem('cipher-skip-splash') === 'true'
-  const [splashDone, setSplashDone] = useState(skipSplash)
+  const [splashDone, setSplashDone] = useState(() => localStorage.getItem('cipher-skip-splash') === 'true')
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [isMaximized, setIsMaximized] = useState(false)
   const [isWindows] = useState(() => navigator.userAgent.toLowerCase().includes('win'))
