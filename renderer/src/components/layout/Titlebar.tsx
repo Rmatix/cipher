@@ -1,9 +1,88 @@
 import ThemeSwitcher from './ThemeSwitcher';
-import { ExternalLink, Focus, Maximize2, Minimize2, Play, Search, Square, X } from 'lucide-react';
+import { ExternalLink, Focus, Maximize2, Minimize2, Play, Search, Square, X, Zap, Shield, Database } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import ModelSelector from './ModelSelector';
 
 import { useState, useEffect } from 'react';
+
+// ── About Modal ───────────────────────────────────────────────
+function AboutModal({ onClose }: { onClose: () => void }) {
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[var(--z-backdrop)] bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="cipher-pop-enter fixed left-1/2 top-1/2 z-[var(--z-modal)] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[var(--cipher-border)] bg-[var(--cipher-surface-alt)] p-8 shadow-2xl">
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-lg text-[var(--cipher-text-muted)] transition-all hover:bg-white/[0.08] hover:text-white"
+        >
+          <X size={14} />
+        </button>
+
+        {/* Logo + title */}
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative flex h-20 w-20 items-center justify-center">
+            <div
+              className="absolute h-full w-full rounded-2xl"
+              style={{ background: 'radial-gradient(circle, rgba(122,92,255,0.15), transparent 70%)' }}
+            />
+            <img
+              src="./logo.png"
+              alt="Cipher Logo"
+              className="relative h-14 w-14 object-contain"
+              style={{ filter: 'drop-shadow(0 0 14px rgba(122,92,255,0.8)) drop-shadow(0 0 28px rgba(56,189,248,0.35))' }}
+            />
+          </div>
+          <div className="text-center">
+            <h2 className="cipher-gradient-text text-2xl font-bold tracking-tight">Cipher Studio</h2>
+            <p className="mt-1 text-[13px] text-[var(--cipher-text-muted)]">v2.8.0 — The Augmented Release</p>
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="mt-6 grid grid-cols-3 gap-3">
+          {[
+            { icon: Zap,      label: 'AI Agents',    desc: 'Multi-model' },
+            { icon: Database, label: 'SQL Viewer',   desc: 'SQLite / PG' },
+            { icon: Shield,   label: 'Secure',       desc: 'CSP + SSRF'  },
+          ].map(({ icon: Icon, label, desc }) => (
+            <div
+              key={label}
+              className="card-glow-hover flex flex-col items-center gap-1.5 rounded-xl border border-[var(--cipher-border)] bg-[var(--cipher-bg)] p-3 text-center"
+            >
+              <Icon size={16} className="text-[var(--cipher-accent)]" />
+              <span className="text-[12px] font-medium text-[var(--cipher-text)]">{label}</span>
+              <span className="text-[10px] text-[var(--cipher-text-muted)]">{desc}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Links */}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button
+            onClick={() => window.cipher?.openExternal?.('https://github.com/Rmatix/cipher')}
+            className="flex items-center gap-2 rounded-lg border border-[var(--cipher-border)] bg-white/[0.04] px-4 py-2 text-[13px] text-[var(--cipher-text)] transition-all hover:border-[var(--cipher-accent-soft)] hover:bg-[var(--cipher-accent-bg)] hover:text-white"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </button>
+          <button
+            onClick={() => window.cipher?.openExternal?.('https://github.com/Rmatix/cipher/releases')}
+            className="flex items-center gap-2 rounded-lg border border-[var(--cipher-border)] bg-white/[0.04] px-4 py-2 text-[13px] text-[var(--cipher-text)] transition-all hover:border-[var(--cipher-accent-soft)] hover:bg-[var(--cipher-accent-bg)] hover:text-white"
+          >
+            <ExternalLink size={14} />
+            Releases
+          </button>
+        </div>
+
+        <p className="mt-6 text-center text-[11px] text-[var(--cipher-text-muted)]">MIT License · Built by Rmatix</p>
+      </div>
+    </>
+  )
+}
 
 // ── Run command map ──────────────────────────────────────
 const RUN_COMMANDS: Record<string, { cmd: (path: string) => string; label: string }> = {
@@ -43,6 +122,7 @@ export default function Titlebar() {
   const [isMaximized, setIsMaximized] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [runFlash, setRunFlash] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
   const [isMac] = useState(() => window.cipher.platform === 'darwin')
 
   // Derive runner from active tab language
@@ -126,13 +206,14 @@ export default function Titlebar() {
     {
       label: 'Ayuda',
       options: [
-        { label: 'Acerca de Cipher',          action: () => alert('Cipher Studio v2.9.0') },
+        { label: 'Acerca de Cipher',          action: () => setShowAbout(true) },
         { label: 'Documentacion del proyecto', action: openDocumentation, external: true        },
       ],
     },
   ]
 
   return (
+    <>
     <div className="drag z-50 flex h-14 w-full flex-shrink-0 select-none items-center justify-between border-b border-[var(--cipher-border)] bg-[var(--cipher-surface)]/95">
       <div className="no-drag flex h-full items-center gap-6 pr-4 pl-5">
         <div className="flex items-center gap-2.5 flex-shrink-0">
@@ -275,5 +356,9 @@ export default function Titlebar() {
         )}
       </div>
     </div>
+
+    {/* About modal */}
+    {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
+    </>
   )
 }

@@ -499,3 +499,57 @@ html[data-theme] {
   border-radius: 9999px;
   box-shadow: 0 0 8px #7a5cff;
 }
+
+/* ── Aurora background glow ────────────────────────────────────────── */
+@keyframes aurora-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.aurora-bg { position: relative; overflow: hidden; }
+.aurora-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(122,92,255,0.05) 0%, rgba(56,189,248,0.025) 50%, rgba(122,92,255,0.04) 100%);
+  background-size: 100% 300%;
+  animation: aurora-shift 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Accent focus ring ──────────────────────────────────────────────── */
+.cipher-focus:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(122,92,255,0.6); }
+
+/* ── Input glow ─────────────────────────────────────────────────────── */
+.cipher-input-glow:focus { border-color: rgba(122,92,255,0.5) !important; box-shadow: 0 0 0 3px rgba(122,92,255,0.12) !important; }
+
+/* ── Toast animations ───────────────────────────────────────────────── */
+@keyframes toast-in  { from { opacity:0; transform:translateY(12px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes toast-out { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-8px) scale(0.97); } }
+.toast-enter { animation: toast-in  0.22s cubic-bezier(0.16,1,0.3,1) forwards; }
+.toast-exit  { animation: toast-out 0.18s ease forwards; }
+
+/* ── Gradient spinner ───────────────────────────────────────────────── */
+@keyframes spin-ring { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+.cipher-spin-ring {
+  width:16px; height:16px; border-radius:50%;
+  background: conic-gradient(from 0deg, #7a5cff, #38bdf8, transparent);
+  animation: spin-ring 0.75s linear infinite;
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), black calc(100% - 2.5px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), black calc(100% - 2.5px));
+}
+
+/* ── Save indicator ─────────────────────────────────────────────────── */
+@keyframes save-flash { 0%{opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{opacity:0} }
+.save-flash { animation: save-flash 1.4s ease forwards; }
+
+/* ── Gradient text ──────────────────────────────────────────────────── */
+.cipher-gradient-text {
+  background: linear-gradient(135deg, #7a5cff, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Button press micro-interaction ─────────────────────────────────── */
+.cipher-press:active { transform: scale(0.96) !important; transition: transform 0.08s ease; }
