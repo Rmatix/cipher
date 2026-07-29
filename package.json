@@ -53,12 +53,7 @@
         "tar.gz"
       ],
       "icon": "renderer/public/logo.png",
-      "category": "Development",
-      "desktop": {
-        "Name": "Cipher Studio",
-        "Comment": "Open source code editor with multi-model AI agent",
-        "Categories": "Development;IDE;"
-      }
+      "category": "Development"
     },
     "nsis": {
       "oneClick": false,
