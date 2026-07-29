@@ -38,7 +38,7 @@ function AboutModal({ onClose }: { onClose: () => void }) {
           </div>
           <div className="text-center">
             <h2 className="cipher-gradient-text text-2xl font-bold tracking-tight">Cipher Studio</h2>
-            <p className="mt-1 text-[13px] text-[var(--cipher-text-muted)]">v2.8.0 — The Augmented Release</p>
+            <p className="mt-1 text-[13px] text-[var(--cipher-text-muted)]">v2.8.1 — Workflows & Improvements</p>
           </div>
         </div>
 

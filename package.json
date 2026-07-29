@@ -1,6 +1,6 @@
 {
   "name": "cipher",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "description": "Open source code editor (Cipher Studio) with multi-model AI agent",
   "main": "src/main/index.js",
   "author": {

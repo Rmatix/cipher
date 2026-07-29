@@ -463,7 +463,7 @@ export default function SplashScreen({ onDone }: Props) {
                 : 'sp-subtitle-enter 600ms 600ms cubic-bezier(0.16,1,0.3,1) both',
             }}
           >
-            v0.2.0
+            v2.8.1
           </p>
         </div>
       </div>
