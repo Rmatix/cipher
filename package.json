@@ -3,7 +3,10 @@
   "version": "2.8.0",
   "description": "Open source code editor (Cipher Studio) with multi-model AI agent",
   "main": "src/main/index.js",
-  "author": "Rmatix",
+  "author": {
+    "name": "Rmatix",
+    "email": "contact@rmatix.dev"
+  },
   "license": "MIT",
   "type": "commonjs",
   "scripts": {
@@ -44,8 +47,7 @@
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb",
+        "zip",
         "tar.gz"
       ],
       "icon": "renderer/public/logo.png",
