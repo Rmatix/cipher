@@ -1,0 +1,140 @@
+name: Build Linux Installers
+
+on:
+  # Run on every push to main
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'renderer/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/build-linux.yml'
+
+  # Run on every published GitHub Release
+  release:
+    types: [published]
+
+  # Manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build Linux packages
+    runs-on: ubuntu-22.04          # LTS runner — compatible with glibc used by most distros
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Node.js & pnpm ──────────────────────────────────────────────
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      # ── 3. System dependencies for electron-builder Linux targets ──────
+      - name: Install system build dependencies
+        run: |
+          sudo apt-get update -y
+          # fpm dependencies (for .deb and .rpm generation)
+          sudo apt-get install -y \
+            ruby ruby-dev build-essential rpm \
+            libarchive-tools squashfs-tools \
+            libfuse2
+          sudo gem install fpm --no-document
+
+      # ── 4. Install project dependencies ────────────────────────────────
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install renderer dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: renderer
+
+      # ── 5. Build renderer (Vite + TypeScript) ──────────────────────────
+      - name: Build renderer
+        run: pnpm build
+        working-directory: renderer
+
+      # ── 6. Build Linux packages ─────────────────────────────────────────
+      # Targets:
+      #   AppImage  — universal, runs on ANY distro (Arch, Fedora, Debian, etc.)
+      #   deb       — Debian, Ubuntu, Linux Mint, Pop!_OS, etc.
+      #   rpm       — Fedora, RHEL, CentOS, openSUSE, Arch (via alien)
+      #   tar.gz    — fallback for any distro, manual extraction
+      - name: Build Linux packages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: electron-builder
+        run: |
+          npx electron-builder --linux AppImage deb rpm tar.gz --x64
+
+      # ── 7. List generated artifacts ────────────────────────────────────
+      - name: List release artifacts
+        run: ls -lh release/ || true
+
+      # ── 8. Upload artifacts to GitHub Actions run ───────────────────────
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: cipher-linux-AppImage
+          path: release/*.AppImage
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload DEB package
+        uses: actions/upload-artifact@v4
+        with:
+          name: cipher-linux-deb
+          path: release/*.deb
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload RPM package
+        uses: actions/upload-artifact@v4
+        with:
+          name: cipher-linux-rpm
+          path: release/*.rpm
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload tar.gz
+        uses: actions/upload-artifact@v4
+        with:
+          name: cipher-linux-targz
+          path: release/*.tar.gz
+          if-no-files-found: warn
+          retention-days: 30
+
+      # ── 9. Attach to GitHub Release (only on release events) ────────────
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.AppImage
+            release/*.deb
+            release/*.rpm
+            release/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

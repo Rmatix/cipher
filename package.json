@@ -47,11 +47,18 @@
     },
     "linux": {
       "target": [
-        "zip",
+        "AppImage",
+        "deb",
+        "rpm",
         "tar.gz"
       ],
       "icon": "renderer/public/logo.png",
-      "category": "Development"
+      "category": "Development",
+      "desktop": {
+        "Name": "Cipher Studio",
+        "Comment": "Open source code editor with multi-model AI agent",
+        "Categories": "Development;IDE;"
+      }
     },
     "nsis": {
       "oneClick": false,

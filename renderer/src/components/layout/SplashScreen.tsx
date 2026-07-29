@@ -35,34 +35,105 @@ function generateParticles(count: number): Particle[] {
 
 const PARTICLES = generateParticles(40)
 
-function playStartupSound() {
+/**
+ * Hybrid startup sound system:
+ * 1. Loads startup.mp3 and runs it through a Web Audio processing pipeline:
+ *    pitch-glide on start → dynamics compressor → high-shelf EQ → master gain
+ *    + a subtle stereo chorus branch for width and uniqueness.
+ * 2. Falls back to a pure synthesizer chord if the file cannot be decoded.
+ */
+async function playStartupSound() {
   try {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
     if (!AudioContextClass) return
+
     const ctx = new AudioContextClass()
 
+    // ── Try loading the real startup.mp3 ─────────────────────────────
+    try {
+      const response = await fetch('./startup.mp3')
+      if (!response.ok) throw new Error('fetch failed')
+      const arrayBuffer = await response.arrayBuffer()
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
+
+      const source = ctx.createBufferSource()
+      source.buffer = audioBuffer
+
+      // Cinematic pitch-glide: starts slightly flat and rises to pitch.
+      // Makes the startup feel alive and uniquely "Cipher".
+      source.playbackRate.setValueAtTime(0.93, ctx.currentTime)
+      source.playbackRate.linearRampToValueAtTime(1.0, ctx.currentTime + 0.4)
+
+      // Dynamics compressor — tightens transients, adds studio punch
+      const compressor = ctx.createDynamicsCompressor()
+      compressor.threshold.value = -18
+      compressor.knee.value = 8
+      compressor.ratio.value = 4
+      compressor.attack.value = 0.004
+      compressor.release.value = 0.25
+
+      // High-shelf EQ +2 dB @ 6 kHz — presence & clarity on any speaker
+      const shelf = ctx.createBiquadFilter()
+      shelf.type = 'highshelf'
+      shelf.frequency.value = 6000
+      shelf.gain.value = 2
+
+      // Master gain: cinematic fade-in → natural tail
+      const masterGain = ctx.createGain()
+      masterGain.gain.setValueAtTime(0, ctx.currentTime)
+      masterGain.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 0.12)
+      masterGain.gain.setValueAtTime(0.9, ctx.currentTime + 1.6)
+      masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.8)
+
+      // Subtle stereo chorus: slightly detuned delay panned wide
+      // adds natural width without any extra audio assets.
+      const chorusDelay = ctx.createDelay(0.06)
+      chorusDelay.delayTime.setValueAtTime(0.022, ctx.currentTime)
+      chorusDelay.delayTime.linearRampToValueAtTime(0.028, ctx.currentTime + 2.5)
+      const chorusGain = ctx.createGain()
+      chorusGain.gain.value = 0.16
+      const chorusPanner = ctx.createStereoPanner()
+      chorusPanner.pan.value = 0.65
+
+      // Signal chain: source → compressor → shelf → masterGain → out
+      //                                     shelf → chorus branch → out
+      source.connect(compressor)
+      compressor.connect(shelf)
+      shelf.connect(masterGain)
+      masterGain.connect(ctx.destination)
+      shelf.connect(chorusDelay)
+      chorusDelay.connect(chorusGain)
+      chorusGain.connect(chorusPanner)
+      chorusPanner.connect(ctx.destination)
+
+      source.start(ctx.currentTime)
+      setTimeout(() => ctx.close().catch(() => {}), 3500)
+      return // success — skip synthesizer fallback
+    } catch {
+      // File not available — fall through to synthesizer chord
+    }
+
+    // ── Fallback: pure Web Audio synthesizer chord ────────────────────
+    // F#4, C#5, F#5, G#5, C#6 — Futuristic Cyber Chord
     const masterGain = ctx.createGain()
     masterGain.gain.setValueAtTime(0.22, ctx.currentTime)
     masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.2)
     masterGain.connect(ctx.destination)
 
-    // Frequencies: F#4, C#5, F#5, G#5, C#6 (Futuristic Cyber Chord)
     const frequencies = [369.99, 554.37, 739.99, 830.61, 1108.73]
     frequencies.forEach((freq, idx) => {
       const osc = ctx.createOscillator()
       const oscGain = ctx.createGain()
-
       osc.type = idx % 2 === 0 ? 'sine' : 'triangle'
       osc.frequency.setValueAtTime(freq, ctx.currentTime)
-
       const startTime = ctx.currentTime + idx * 0.05
       oscGain.gain.setValueAtTime(0.001, startTime)
       oscGain.gain.linearRampToValueAtTime(0.15 / (idx + 1), startTime + 0.08)
       oscGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 1.8)
-
       osc.connect(oscGain)
       oscGain.connect(masterGain)
-
       osc.start(startTime)
       osc.stop(startTime + 2.0)
     })
@@ -73,21 +144,16 @@ function playStartupSound() {
     subOsc.type = 'sine'
     subOsc.frequency.setValueAtTime(110, ctx.currentTime)
     subOsc.frequency.exponentialRampToValueAtTime(45, ctx.currentTime + 0.4)
-
     subGain.gain.setValueAtTime(0.3, ctx.currentTime)
     subGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
-
     subOsc.connect(subGain)
     subGain.connect(ctx.destination)
-
     subOsc.start(ctx.currentTime)
     subOsc.stop(ctx.currentTime + 0.6)
 
-    setTimeout(() => {
-      ctx.close().catch(() => {})
-    }, 2500)
+    setTimeout(() => ctx.close().catch(() => {}), 2500)
   } catch (err) {
-    console.warn('WebAudio chime error:', err)
+    console.warn('Startup sound error:', err)
   }
 }
 
